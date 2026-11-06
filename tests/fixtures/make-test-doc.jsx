@@ -18,6 +18,6 @@ for (var i = 0; i < names.length; i++) {
   label.position = [r[0] + 60, r[1] - 120];
   label.textRange.characterAttributes.size = 28;
 }
-var outFile = new File(File($.fileName).parent.fsName + '/ilus-test-5-artboards.ai');
+var outFile = new File(File($.fileName).parent.fsName + '/vector-test-5-artboards.ai');
 doc.saveAs(outFile);
 'saved ' + outFile.fsName;

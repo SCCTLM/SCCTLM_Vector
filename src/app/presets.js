@@ -14,7 +14,7 @@
     var base = process.platform === 'win32'
       ? (process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'))
       : path.join(os.homedir(), 'Library', 'Application Support');
-    return path.join(base, 'ilus-batch-export');
+    return path.join(base, 'vector-batch-export');
   }
 
   function filePath() { return path.join(dataDir(), 'presets.json'); }

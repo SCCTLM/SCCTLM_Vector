@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="vn.scctlm.ilus" ExtensionBundleVersion="0.0.1" ExtensionBundleName="SCCTLM Ilus"
+<ExtensionManifest Version="7.0" ExtensionBundleId="vn.scctlm.vector" ExtensionBundleVersion="0.0.1" ExtensionBundleName="SCCTLM Vector"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="vn.scctlm.ilus.panel" Version="0.0.1" />
+    <Extension Id="vn.scctlm.vector.panel" Version="0.0.1" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -16,7 +16,7 @@
     </RequiredRuntimeList>
   </ExecutionEnvironment>
   <DispatchInfoList>
-    <Extension Id="vn.scctlm.ilus.panel">
+    <Extension Id="vn.scctlm.vector.panel">
       <DispatchInfo>
         <Resources>
           <MainPath>./loader.html</MainPath>
@@ -30,7 +30,7 @@
         </Lifecycle>
         <UI>
           <Type>Panel</Type>
-          <Menu>SCCTLM Ilus</Menu>
+          <Menu>SCCTLM Vector</Menu>
           <Geometry>
             <Size>
               <Width>320</Width>

@@ -16,7 +16,7 @@
   var extDir = path.dirname(appDir);
   var dataDir = Presets.dataDir();
   var stateFile = path.join(dataDir, 'update-state.json');
-  var repo = (window.IlusConfig && window.IlusConfig.UPDATE_REPO) || '';
+  var repo = (window.VectorConfig && window.VectorConfig.UPDATE_REPO) || '';
   var current = '0.0.0';
   var offered = null;
 
@@ -80,7 +80,7 @@
   // Called by panel.js once the panel and the export engine have loaded.
   window.signalReady = function () {
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'ilus-ready', version: current }, '*');
+      window.parent.postMessage({ type: 'vector-ready', version: current }, '*');
     }
   };
 

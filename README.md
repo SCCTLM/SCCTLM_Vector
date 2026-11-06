@@ -1,4 +1,4 @@
-# SCCTLM Ilus
+# SCCTLM Vector
 
 An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, many formats and many scales in one click, with naming templates and saved presets.
 
@@ -21,15 +21,15 @@ See [docs/install.md](docs/install.md) to install and [docs/release-process.md](
 
 ## Try the spike by hand
 
-The panel id is `vn.scctlm.ilus`. Until installers exist, copy the contents of `src/` into the CEP extensions folder and enable unsigned panels.
+The panel id is `vn.scctlm.vector`. Until installers exist, copy the contents of `src/` into the CEP extensions folder and enable unsigned panels.
 
 1. Enable debug mode for CSXS 9 to 12.
    - Windows: set `HKCU\Software\Adobe\CSXS.<n>` value `PlayerDebugMode` (string) to `1`.
    - macOS: `defaults write com.adobe.CSXS.<n> PlayerDebugMode 1`.
 2. Copy `src/*` to:
-   - Windows: `%APPDATA%\Adobe\CEP\extensions\vn.scctlm.ilus`
-   - macOS: `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.ilus`
-3. Restart Illustrator and open **Window > Extensions > SCCTLM Ilus**.
+   - Windows: `%APPDATA%\Adobe\CEP\extensions\vn.scctlm.vector`
+   - macOS: `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector`
+3. Restart Illustrator and open **Window > Extensions > SCCTLM Vector**.
 
 The panel shows the Illustrator version and `process.arch`. Test results are tracked in [docs/spike-results.md](docs/spike-results.md).
 

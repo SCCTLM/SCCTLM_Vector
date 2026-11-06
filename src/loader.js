@@ -19,7 +19,7 @@
       core = require(path.join(extDir, 'loader-core.js'));
       dataDir = path.join(process.platform === 'win32'
         ? (process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'))
-        : path.join(os.homedir(), 'Library', 'Application Support'), 'ilus-batch-export');
+        : path.join(os.homedir(), 'Library', 'Application Support'), 'vector-batch-export');
     } catch (e) {
       frame.src = 'app/index.html'; // Node unavailable: run without update support
       return;
@@ -43,7 +43,7 @@
     } catch (e) { /* no probation timer */ }
 
     window.addEventListener('message', function (ev) {
-      if (ev.source !== frame.contentWindow || !ev.data || ev.data.type !== 'ilus-ready') return;
+      if (ev.source !== frame.contentWindow || !ev.data || ev.data.type !== 'vector-ready') return;
       if (timer) clearTimeout(timer);
       try { core.markHealthy(dataDir); } catch (e) { /* ignore */ }
     });

@@ -168,7 +168,7 @@ function runExport(jobJson) {
     var template = job.template;
     var scaleInTemplate = templateUsesScale(template || "{doc}_{artboard}@{scale}x");
 
-    tempRoot = new Folder(Folder.temp.fsName + "/scctlm-ilus-" + new Date().getTime());
+    tempRoot = new Folder(Folder.temp.fsName + "/scctlm-vector-" + new Date().getTime());
     tempRoot.create();
 
     for (var ai = 0; ai < indexes.length; ai++) {

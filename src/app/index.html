@@ -2,11 +2,21 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>SCCTLM Ilus</title>
+  <title>SCCTLM Vector</title>
   <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-  <div id="tabs" class="row tabs">
+  <header class="brand">
+    <svg class="logo" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+      <rect width="22" height="22" rx="6" fill="#F50008"/>
+      <path d="M6 7l5 9 5-9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="6" cy="7" r="1.7" fill="#fff"/><circle cx="16" cy="7" r="1.7" fill="#fff"/><circle cx="11" cy="16" r="1.7" fill="#15C671"/>
+    </svg>
+    <span class="wordmark">SCCTLM <b>Vector</b></span>
+    <span id="version-label" class="muted version"></span>
+  </header>
+
+  <div id="tabs" class="tabs">
     <button class="tab on" data-tab="images">Images</button>
     <button class="tab" data-tab="pdf">PDF</button>
   </div>
@@ -42,10 +52,10 @@
   <section data-pane="images">
     <h4>Formats</h4>
     <div id="formats" class="row">
-      <label><input type="checkbox" value="png" checked> PNG</label>
-      <label><input type="checkbox" value="jpg"> JPG</label>
-      <label><input type="checkbox" value="svg"> SVG</label>
-      <label><input type="checkbox" value="pdf"> PDF</label>
+      <label class="pill"><input type="checkbox" value="png" checked><span>PNG</span></label>
+      <label class="pill"><input type="checkbox" value="jpg"><span>JPG</span></label>
+      <label class="pill"><input type="checkbox" value="svg"><span>SVG</span></label>
+      <label class="pill"><input type="checkbox" value="pdf"><span>PDF</span></label>
     </div>
     <h4>Scale</h4>
     <div id="scales" class="row">
@@ -109,7 +119,7 @@
     </div>
   </section>
 
-  <div id="update-banner" class="muted" hidden>
+  <div id="update-banner" class="banner" hidden>
     <span id="update-text"></span>
     <button id="update-install" hidden>Install</button>
   </div>
@@ -118,9 +128,8 @@
   <button id="pdf-export" class="primary" data-pane="pdf">Export PDF</button>
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
-  <div class="muted">
-    <span id="version-label"></span>
-    <button id="update-check" hidden>Check for updates</button>
+  <div class="foot">
+    <button id="update-check" class="link" hidden>Check for updates</button>
   </div>
 
   <script src="lib/CSInterface.js"></script>

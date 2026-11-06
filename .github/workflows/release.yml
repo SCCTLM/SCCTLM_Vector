@@ -44,10 +44,10 @@ jobs:
       - run: shellcheck installer/macos/install-mac.sh
       - run: node scripts/package-app.mjs 0.0.1
       - name: Install from a local file URL
-        run: ILUS_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
+        run: VECTOR_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
       - name: Assert installed state
         run: |
-          EXT="$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.ilus"
+          EXT="$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector"
           test -f "$EXT/CSXS/manifest.xml"
           test -f "$EXT/loader.html"
           test -f "$EXT/app/index.html"
@@ -55,15 +55,15 @@ jobs:
           test "$(defaults read com.adobe.CSXS.11 PlayerDebugMode)" = "1"
           node scripts/scan-native.mjs "$EXT"
       - name: Re-run is idempotent
-        run: ILUS_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
+        run: VECTOR_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
       - name: Tampered download is rejected
         run: |
-          mkdir bad && cp dist/ilus-extension.zip bad/ && echo 0000000000000000000000000000000000000000000000000000000000000000 > bad/ilus-extension.zip.sha256
-          ! ILUS_BASE_URL="file://$PWD/bad" bash installer/macos/install-mac.sh
+          mkdir bad && cp dist/vector-extension.zip bad/ && echo 0000000000000000000000000000000000000000000000000000000000000000 > bad/vector-extension.zip.sha256
+          ! VECTOR_BASE_URL="file://$PWD/bad" bash installer/macos/install-mac.sh
       - name: Uninstall
         run: |
           bash installer/macos/install-mac.sh --uninstall
-          test ! -e "$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.ilus"
+          test ! -e "$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector"
 
   windows-installer:
     runs-on: windows-latest
@@ -87,14 +87,14 @@ jobs:
       - name: Silent install and assert
         shell: pwsh
         run: |
-          Start-Process -Wait -FilePath dist\SCCTLM-Ilus-Setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES'
-          $ext = "$env:APPDATA\Adobe\CEP\extensions\vn.scctlm.ilus"
+          Start-Process -Wait -FilePath dist\SCCTLM-Vector-Setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES'
+          $ext = "$env:APPDATA\Adobe\CEP\extensions\vn.scctlm.vector"
           if (-not (Test-Path "$ext\CSXS\manifest.xml")) { throw 'manifest missing' }
           if ((Get-ItemProperty 'HKCU:\Software\Adobe\CSXS.11').PlayerDebugMode -ne '1') { throw 'PlayerDebugMode not set' }
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: dist/SCCTLM-Ilus-Setup.exe
+          path: dist/SCCTLM-Vector-Setup.exe
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -113,9 +113,9 @@ jobs:
         run: node scripts/package-app.mjs "${GITHUB_REF_NAME#v}"
       - name: Sign update zip
         env:
-          ILUS_SIGNING_KEY: ${{ secrets.ILUS_SIGNING_KEY }}
+          VECTOR_SIGNING_KEY: ${{ secrets.VECTOR_SIGNING_KEY }}
         run: |
-          test -n "$ILUS_SIGNING_KEY" || { echo "ILUS_SIGNING_KEY secret is not set"; exit 1; }
+          test -n "$VECTOR_SIGNING_KEY" || { echo "VECTOR_SIGNING_KEY secret is not set"; exit 1; }
           node scripts/sign-release.mjs "dist/app-${GITHUB_REF_NAME}.zip"
       - uses: actions/download-artifact@v4
         with:
@@ -129,4 +129,4 @@ jobs:
           # At public launch, publish to the release-only repo with a token scoped to it.
           gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes \
             "dist/app-${GITHUB_REF_NAME}.zip" "dist/app-${GITHUB_REF_NAME}.zip.sha256" "dist/app-${GITHUB_REF_NAME}.zip.sig" \
-            dist/ilus-extension.zip dist/ilus-extension.zip.sha256 dist/SCCTLM-Ilus-Setup.exe installer/macos/install-mac.sh
+            dist/vector-extension.zip dist/vector-extension.zip.sha256 dist/SCCTLM-Vector-Setup.exe installer/macos/install-mac.sh

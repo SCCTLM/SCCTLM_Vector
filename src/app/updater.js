@@ -45,7 +45,7 @@
         return;
       }
       var client = require(secure ? 'https' : 'http');
-      var headers = { 'User-Agent': 'scctlm-ilus-updater', Accept: opts.accept || '*/*' };
+      var headers = { 'User-Agent': 'scctlm-vector-updater', Accept: opts.accept || '*/*' };
       var req = client.get({
         protocol: parsed.protocol, hostname: parsed.hostname, port: parsed.port, path: parsed.pathname + parsed.search, headers: headers
       }, function (res) {

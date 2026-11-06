@@ -28,6 +28,9 @@
     var root = document.documentElement.style;
     root.setProperty('--bg', hex(bg));
     root.setProperty('--fg', dark ? '#ddd' : '#222');
+    root.setProperty('--muted', dark ? 'rgba(238,238,238,.8)' : 'rgba(20,20,20,.8)');
+    root.setProperty('--green-text', dark ? '#3ee690' : '#055a2f');
+    root.setProperty('--err', dark ? '#ff7378' : '#a80008');
     root.setProperty('--field', hex(shift(bg, dark ? -20 : 25)));
     root.setProperty('--btn', hex(shift(bg, dark ? 25 : -20)));
   }

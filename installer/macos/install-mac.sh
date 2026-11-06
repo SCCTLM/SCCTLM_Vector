@@ -1,18 +1,18 @@
 #!/bin/bash
-# SCCTLM Ilus installer for macOS. Runs as the current user (no sudo) and uses only stock tools.
+# SCCTLM Vector installer for macOS. Runs as the current user (no sudo) and uses only stock tools.
 #
 #   Install / update:  curl -fsSL <release-url>/install-mac.sh | bash
 #   Uninstall:         bash install-mac.sh --uninstall
 #
-# ILUS_BASE_URL overrides where ilus-extension.zip and its .sha256 are fetched from
+# VECTOR_BASE_URL overrides where vector-extension.zip and its .sha256 are fetched from
 # (file:// URLs work, which is how CI tests this script).
 set -euo pipefail
 
-EXT_ID="vn.scctlm.ilus"
-BASE_URL="${ILUS_BASE_URL:-https://github.com/SCCTLM/SCCTLM_Ilus-releases/releases/latest/download}"
+EXT_ID="vn.scctlm.vector"
+BASE_URL="${VECTOR_BASE_URL:-https://github.com/SCCTLM/SCCTLM_Vector-releases/releases/latest/download}"
 EXT_ROOT="$HOME/Library/Application Support/Adobe/CEP/extensions"
 EXT_DIR="$EXT_ROOT/$EXT_ID"
-ZIP_NAME="ilus-extension.zip"
+ZIP_NAME="vector-extension.zip"
 
 fail() { echo "Error: $*" >&2; exit 1; }
 
@@ -31,7 +31,7 @@ done
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-echo "Downloading SCCTLM Ilus..."
+echo "Downloading SCCTLM Vector..."
 curl -fsSL "$BASE_URL/$ZIP_NAME" -o "$WORK/$ZIP_NAME" || fail "could not download $BASE_URL/$ZIP_NAME"
 curl -fsSL "$BASE_URL/$ZIP_NAME.sha256" -o "$WORK/$ZIP_NAME.sha256" || fail "could not download the checksum file"
 
@@ -52,4 +52,4 @@ for n in 9 10 11 12; do
 done
 killall cfprefsd >/dev/null 2>&1 || true
 
-echo "Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Ilus."
+echo "Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Vector."

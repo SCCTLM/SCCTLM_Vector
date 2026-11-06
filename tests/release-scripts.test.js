@@ -9,11 +9,11 @@ const { execFileSync } = require('node:child_process');
 
 const root = path.join(__dirname, '..');
 const script = (name) => path.join(root, 'scripts', name);
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-rel-'));
+const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'vector-rel-'));
 
 test('package-app builds stamped, hashed, native-free artifacts the updater can read', async () => {
   const out = tmp();
-  execFileSync('node', [script('package-app.mjs'), '1.2.3'], { env: { ...process.env, ILUS_OUT_DIR: out } });
+  execFileSync('node', [script('package-app.mjs'), '1.2.3'], { env: { ...process.env, VECTOR_OUT_DIR: out } });
 
   const zipPath = path.join(out, 'app-v1.2.3.zip');
   const zip = fs.readFileSync(zipPath);
@@ -22,9 +22,9 @@ test('package-app builds stamped, hashed, native-free artifacts the updater can 
 
   const manifest = fs.readFileSync(path.join(out, 'ext', 'CSXS', 'manifest.xml'), 'utf8');
   assert.match(manifest, /ExtensionBundleVersion="1\.2\.3"/);
-  assert.match(manifest, /<Extension Id="vn\.scctlm\.ilus\.panel" Version="1\.2\.3"/);
+  assert.match(manifest, /<Extension Id="vn\.scctlm\.vector\.panel" Version="1\.2\.3"/);
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(out, 'ext', 'app', 'version.json'), 'utf8')).version, '1.2.3');
-  assert.ok(fs.existsSync(path.join(out, 'ilus-extension.zip.sha256')));
+  assert.ok(fs.existsSync(path.join(out, 'vector-extension.zip.sha256')));
 
   // Same bytes through the updater's own zip reader and signature check.
   const vm = require('node:vm');
@@ -37,13 +37,13 @@ test('package-app builds stamped, hashed, native-free artifacts the updater can 
 
   const keys = crypto.generateKeyPairSync('ed25519');
   execFileSync('node', [script('sign-release.mjs'), zipPath], {
-    env: { ...process.env, ILUS_SIGNING_KEY: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }) }
+    env: { ...process.env, VECTOR_SIGNING_KEY: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }) }
   });
   sandbox.Updater.verifyDownload(zip, shaLine, fs.readFileSync(zipPath + '.sig'), keys.publicKey.export({ type: 'spki', format: 'pem' }));
 
   // Deterministic: a second build gives identical bytes.
   const out2 = tmp();
-  execFileSync('node', [script('package-app.mjs'), '1.2.3'], { env: { ...process.env, ILUS_OUT_DIR: out2 } });
+  execFileSync('node', [script('package-app.mjs'), '1.2.3'], { env: { ...process.env, VECTOR_OUT_DIR: out2 } });
   assert.ok(fs.readFileSync(path.join(out2, 'app-v1.2.3.zip')).equals(zip));
 });
 

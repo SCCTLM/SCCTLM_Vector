@@ -7,7 +7,7 @@ const path = require('node:path');
 const core = require('../src/loader-core.js');
 
 function setup() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-loader-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-loader-'));
   const ext = path.join(root, 'ext');
   const data = path.join(root, 'data');
   fs.mkdirSync(data, { recursive: true });
