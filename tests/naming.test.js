@@ -25,6 +25,14 @@ test('unsaved/empty document falls back to Untitled', () => {
   assert.strictEqual(run('documentBaseName("Logo.ai")'), 'Logo');
 });
 
+test('templateForScales appends the scale only where files would collide', () => {
+  assert.strictEqual(run('templateForScales("{doc}_{artboard}", true, 2)'), '{doc}_{artboard}@{scale}x');
+  assert.strictEqual(run('templateForScales("", true, 2)'), '');
+  assert.strictEqual(run('templateForScales("{doc}_{scale}", true, 2)'), '{doc}_{scale}');
+  assert.strictEqual(run('templateForScales("{doc}", true, 1)'), '{doc}');
+  assert.strictEqual(run('templateForScales("{doc}", false, 3)'), '{doc}');
+});
+
 test('template tokens and truncation', () => {
   assert.strictEqual(
     run('buildFileBaseName("{doc}_{artboard}@{scale}x", {doc:"Logo",artboard:"Icon",index:1,scale:2,format:"png",date:"20261106"})'),
