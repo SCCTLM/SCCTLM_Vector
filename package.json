@@ -3,5 +3,5 @@
   "version": "0.0.1",
   "private": true,
   "description": "Illustrator Batch Export CEP panel",
-  "license": "UNLICENSED"
+  "license": "Apache-2.0"
 }
