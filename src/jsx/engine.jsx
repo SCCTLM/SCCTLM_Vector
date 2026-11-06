@@ -24,7 +24,10 @@ function listArtboards() {
     for (var i = 0; i < doc.artboards.length; i++) {
       out.push({ index: i, name: doc.artboards[i].name });
     }
-    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), artboards: out });
+    // Saved path tells apart same-named files from different folders; unsaved docs have no path.
+    var docPath = "";
+    try { docPath = doc.fullName.fsName; } catch (ignore) {}
+    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), docPath: docPath, artboards: out });
   } catch (e) {
     return JSON.stringify({ ok: false, error: engineErrorMessage(e), artboards: [] });
   }
@@ -178,12 +181,7 @@ function runExport(jobJson) {
           // Scale-independent formats only repeat per scale when the template asks for {scale}.
           if (!spec.raster && s > 0 && !scaleInTemplate) continue;
 
-          var tpl = template;
-          // Raster with several scales and no {scale} token would collide; keep files distinct.
-          if (spec.raster && scales.length > 1 && !scaleInTemplate) {
-            tpl = (template || "{doc}_{artboard}") + "@{scale}x";
-          }
-          var base = buildFileBaseName(tpl, {
+          var base = buildFileBaseName(templateForScales(template, spec.raster, scales.length), {
             doc: docName,
             artboard: names[idx],
             index: idx + 1,

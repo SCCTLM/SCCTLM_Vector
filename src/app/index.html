@@ -2,33 +2,84 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>SCCTLM Ilus spike</title>
-  <style>
-    body { font: 12px sans-serif; color: #ddd; background: #323232; padding: 12px; }
-    td { padding: 2px 8px 2px 0; }
-  </style>
+  <title>SCCTLM Ilus</title>
+  <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-  <h3>SCCTLM Ilus - spike</h3>
-  <table>
-    <tr><td>Illustrator version</td><td id="ai">...</td></tr>
-    <tr><td>process.arch</td><td id="arch">...</td></tr>
-    <tr><td>process.platform</td><td id="plat">...</td></tr>
-    <tr><td>Node</td><td id="node">...</td></tr>
-  </table>
-  <script>
-    function show(id, v) { document.getElementById(id).textContent = v; }
-    try {
-      show('arch', process.arch);
-      show('plat', process.platform);
-      show('node', process.version);
-    } catch (e) { show('arch', 'no Node: ' + e.message); }
-    var cep = window.__adobe_cep__ || (window.parent && window.parent.__adobe_cep__);
-    if (cep) {
-      cep.evalScript('pingVersion()', function (r) { show('ai', r); });
-    } else {
-      show('ai', 'CEP bridge unavailable');
-    }
-  </script>
+  <section>
+    <h4>Preset</h4>
+    <div class="row">
+      <select id="preset-select"></select>
+      <button id="preset-apply" title="Apply selected preset">Apply</button>
+    </div>
+    <div class="row">
+      <button id="preset-save">Save as…</button>
+      <button id="preset-rename">Rename</button>
+      <button id="preset-delete">Delete</button>
+    </div>
+    <div class="row" id="name-row" hidden>
+      <span id="name-label" class="muted"></span>
+      <input id="name-input" type="text" spellcheck="false">
+      <button id="name-ok">OK</button>
+      <button id="name-cancel">Cancel</button>
+    </div>
+  </section>
+
+  <section>
+    <h4>Artboards <span id="doc-name" class="muted"></span></h4>
+    <div class="row">
+      <button id="ab-all">All</button>
+      <button id="ab-none">None</button>
+    </div>
+    <div id="artboards" class="list"></div>
+  </section>
+
+  <section>
+    <h4>Formats</h4>
+    <div id="formats" class="row">
+      <label><input type="checkbox" value="png" checked> PNG</label>
+      <label><input type="checkbox" value="jpg"> JPG</label>
+      <label><input type="checkbox" value="svg"> SVG</label>
+      <label><input type="checkbox" value="pdf"> PDF</label>
+    </div>
+    <h4>Scale</h4>
+    <div id="scales" class="row">
+      <button class="chip on" data-scale="1">1x</button>
+      <button class="chip" data-scale="2">2x</button>
+      <button class="chip" data-scale="3">3x</button>
+      <button class="chip" data-scale="4">4x</button>
+    </div>
+  </section>
+
+  <section>
+    <h4>File name</h4>
+    <input id="template" type="text" spellcheck="false">
+    <div id="tokens" class="row">
+      <button data-token="{doc}">doc</button>
+      <button data-token="{artboard}">artboard</button>
+      <button data-token="{index}">index</button>
+      <button data-token="{scale}">scale</button>
+      <button data-token="{format}">format</button>
+      <button data-token="{date}">date</button>
+    </div>
+    <div class="muted">Example: <span id="example">-</span></div>
+  </section>
+
+  <section>
+    <h4>Output folder</h4>
+    <div class="row">
+      <input id="outdir" type="text" spellcheck="false">
+      <button id="browse">Browse…</button>
+    </div>
+  </section>
+
+  <button id="export" class="primary">Export</button>
+  <div id="status" class="muted"></div>
+  <ul id="results" class="list"></ul>
+
+  <script src="lib/CSInterface.js"></script>
+  <script src="bridge.js"></script>
+  <script src="presets.js"></script>
+  <script src="panel.js"></script>
 </body>
 </html>

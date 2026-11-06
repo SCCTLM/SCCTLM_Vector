@@ -2,3 +2,6 @@ SCCTLM Ilus
 Copyright 2026 SCCTLM
 
 This product includes software developed by SCCTLM.
+
+This product bundles CSInterface.js (src/app/lib/CSInterface.js),
+Copyright Adobe Systems Incorporated, from the Adobe CEP-Resources repository.
