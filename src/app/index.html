@@ -73,13 +73,25 @@
     </div>
   </section>
 
+  <div id="update-banner" class="muted" hidden>
+    <span id="update-text"></span>
+    <button id="update-install" hidden>Install</button>
+  </div>
+
   <button id="export" class="primary">Export</button>
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
+  <div class="muted">
+    <span id="version-label"></span>
+    <button id="update-check" hidden>Check for updates</button>
+  </div>
 
   <script src="lib/CSInterface.js"></script>
   <script src="bridge.js"></script>
   <script src="presets.js"></script>
+  <script src="config.js"></script>
+  <script src="updater.js"></script>
+  <script src="update-ui.js"></script>
   <script src="panel.js"></script>
 </body>
 </html>

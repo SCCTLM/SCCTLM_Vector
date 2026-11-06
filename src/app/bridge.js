@@ -23,20 +23,43 @@
     return jsonText(String(value));
   }
 
+  function rawEval(code) {
+    return new Promise(function (resolve) {
+      if (!cs) { resolve('EvalScript error.'); return; }
+      cs.evalScript(code, resolve);
+    });
+  }
+
+  // The engine lives in app/jsx so updates replace it with the rest of the app (the manifest
+  // cannot name it, because the manifest never changes after install). Loaded once, before any call.
+  var engineLoaded = null;
+  function loadEngine() {
+    if (!engineLoaded) {
+      var base = global.location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '').replace(/^file:\/\/\/?/, '');
+      base = decodeURIComponent(base);
+      if (!/^[A-Za-z]:/.test(base)) base = '/' + base;
+      engineLoaded = rawEval('$.evalFile(File(' + jsonText(base + 'jsx/engine.jsx') + '));"ok"').then(function (r) {
+        if (r === 'EvalScript error.') { engineLoaded = null; throw new Error('Could not load the export engine'); }
+      });
+    }
+    return engineLoaded;
+  }
+
   function evalScript(code) {
     return new Promise(function (resolve, reject) {
       if (!cs) { reject(new Error('CEP bridge unavailable')); return; }
-      cs.evalScript(code, function (result) {
+      loadEngine().then(function () { return rawEval(code); }).then(function (result) {
         if (result === 'EvalScript error.') { reject(new Error('Illustrator script error')); return; }
         try { resolve(JSON.parse(result)); }
         catch (e) { reject(new Error('Unexpected engine reply: ' + result)); }
-      });
+      }).catch(reject);
     });
   }
 
   global.Bridge = {
     available: !!cs,
     cs: cs,
+    loadEngine: loadEngine,
     literal: literal,
     listArtboards: function () { return evalScript('listArtboards()'); },
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },

@@ -79,6 +79,7 @@
   global.Presets = {
     SCHEMA_VERSION: SCHEMA_VERSION,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    dataDir: dataDir,
     migrate: migrate,
     list: function () { return load().presets; },
     // Insert or overwrite by name.
