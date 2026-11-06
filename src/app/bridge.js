@@ -63,6 +63,8 @@
     literal: literal,
     listArtboards: function () { return evalScript('listArtboards()'); },
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },
+    runPdfJob: function (job) { return evalScript('runPdfExport(' + literal(JSON.stringify(job)) + ')'); },
+    estimatePdf: function (job) { return evalScript('estimatePdf(' + literal(JSON.stringify(job)) + ')'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {
       return evalScript('(function(){var c=' + jsonText(ctx) + ';c.artboard=uniqueArtboardNames(' +

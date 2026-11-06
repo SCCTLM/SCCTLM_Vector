@@ -1,6 +1,8 @@
 // Batch export engine. JSON string in, JSON string out; never shows native alerts.
 #include "json2.jsx"
 #include "naming.jsx"
+#include "pdf-options.jsx"
+#include "pdf-engine.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },
