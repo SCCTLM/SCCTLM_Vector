@@ -45,6 +45,9 @@ function applyPending(extDir, dataDir) {
     rmrf(staging); // half-written or abandoned download
     return { applied: false };
   }
+  // An update still on probation must be confirmed or rolled back first, so app.prev is always a
+  // version that was known to start. The staged folder is kept for a later launch.
+  if (readJson(stateFile(dataDir), {}).pending) return { applied: false, deferred: true };
   var version = appVersion(staging);
   var hasIndex = fs.existsSync(path.join(staging, 'index.html'));
   if (!version || !hasIndex) { rmrf(staging); return { applied: false }; }

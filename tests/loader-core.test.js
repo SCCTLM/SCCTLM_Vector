@@ -114,3 +114,16 @@ test('a failed restore keeps the current app and the pending state for a retry',
   assert.strictEqual(core.rollback(ext, data).rolledBack, true);
   assert.strictEqual(versionOf(path.join(ext, 'app')), '1.0.0');
 });
+
+test('a staged update waits while an earlier update is still unconfirmed', () => {
+  const { ext, data } = setup();
+  writeApp(path.join(ext, 'app.staging'), '1.1.0', { ready: true });
+  core.applyPending(ext, data);
+  writeApp(path.join(ext, 'app.staging'), '1.2.0', { ready: true });
+  assert.strictEqual(core.applyPending(ext, data).applied, false);
+  assert.strictEqual(versionOf(path.join(ext, 'app')), '1.1.0');
+  assert.strictEqual(versionOf(path.join(ext, 'app.prev')), '1.0.0');
+  assert.ok(fs.existsSync(path.join(ext, 'app.staging', '.ready')));
+  core.markHealthy(data);
+  assert.strictEqual(core.applyPending(ext, data).version, '1.2.0');
+});

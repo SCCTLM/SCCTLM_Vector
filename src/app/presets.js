@@ -9,21 +9,11 @@
 
   var DEFAULT_SETTINGS = { formats: ['png'], scales: [1], template: '{doc}_{artboard}@{scale}x' };
 
+  // Same folder the loader uses for update state, resolved the same way (both equal Adobe's USER_DATA path).
   function dataDir() {
-    var base = null;
-    try {
-      var cs = global.Bridge && global.Bridge.cs;
-      if (cs) {
-        var uri = cs.getSystemPath(SystemPath.USER_DATA);
-        base = decodeURI(String(uri).replace(/^file:\/\/\//, ''));
-        if (process.platform !== 'win32') base = '/' + base;
-      }
-    } catch (ignore) { /* fall through */ }
-    if (!base) {
-      base = process.platform === 'win32'
-        ? (process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'))
-        : path.join(os.homedir(), 'Library', 'Application Support');
-    }
+    var base = process.platform === 'win32'
+      ? (process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'))
+      : path.join(os.homedir(), 'Library', 'Application Support');
     return path.join(base, 'ilus-batch-export');
   }
 
