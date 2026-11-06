@@ -6,7 +6,12 @@
   <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-  <section>
+  <div id="tabs" class="row tabs">
+    <button class="tab on" data-tab="images">Images</button>
+    <button class="tab" data-tab="pdf">PDF</button>
+  </div>
+
+  <section data-pane="images">
     <h4>Preset</h4>
     <div class="row">
       <select id="preset-select"></select>
@@ -34,7 +39,7 @@
     <div id="artboards" class="list"></div>
   </section>
 
-  <section>
+  <section data-pane="images">
     <h4>Formats</h4>
     <div id="formats" class="row">
       <label><input type="checkbox" value="png" checked> PNG</label>
@@ -51,7 +56,7 @@
     </div>
   </section>
 
-  <section>
+  <section data-pane="images">
     <h4>File name</h4>
     <input id="template" type="text" spellcheck="false">
     <div id="tokens" class="row">
@@ -63,6 +68,37 @@
       <button data-token="{date}">date</button>
     </div>
     <div class="muted">Example: <span id="example">-</span></div>
+  </section>
+
+  <section data-pane="pdf">
+    <h4>Mode</h4>
+    <div id="pdf-modes" class="cards">
+      <button class="card on" data-mode="print">
+        <b>Print</b>
+        <span class="muted">Images keep their resolution (no downsampling), JPEG maximum.</span>
+        <span class="size" id="pdf-size-print">-</span>
+      </button>
+      <button class="card" data-mode="review">
+        <b>Review</b>
+        <span class="muted">Images above 225 ppi reduced to 150 ppi, JPEG quality set below. For email or chat.</span>
+        <span class="size" id="pdf-size-review">-</span>
+      </button>
+    </div>
+    <div id="pdf-quality-row" class="row">
+      <span class="muted">Review image quality</span>
+      <button class="chip on" data-quality="high">High</button>
+      <button class="chip" data-quality="medium">Medium</button>
+    </div>
+    <h4>Layout</h4>
+    <div id="pdf-layout" class="row">
+      <button class="chip on" data-layout="single">One multi-page PDF</button>
+      <button class="chip" data-layout="separate">One PDF per artboard</button>
+    </div>
+    <div class="row">
+      <span class="muted" id="pdf-estimate-note"></span>
+      <button id="pdf-recalc">Calculate size</button>
+    </div>
+    <div class="muted">Editing data is always removed, so open the PDF in Illustrator only for viewing. Keep your .ai file.</div>
   </section>
 
   <section>
@@ -78,7 +114,8 @@
     <button id="update-install" hidden>Install</button>
   </div>
 
-  <button id="export" class="primary">Export</button>
+  <button id="export" class="primary" data-pane="images">Export</button>
+  <button id="pdf-export" class="primary" data-pane="pdf">Export PDF</button>
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
   <div class="muted">
@@ -89,9 +126,11 @@
   <script src="lib/CSInterface.js"></script>
   <script src="bridge.js"></script>
   <script src="presets.js"></script>
+  <script src="pdf-format.js"></script>
   <script src="config.js"></script>
   <script src="updater.js"></script>
   <script src="update-ui.js"></script>
   <script src="panel.js"></script>
+  <script src="pdf-panel.js"></script>
 </body>
 </html>

@@ -113,6 +113,7 @@
       artboardNames = r.artboards.map(function (a) { return a.name; });
       artboardCount = r.artboards.length;
       updateExample();
+      document.dispatchEvent(new Event('artboards-changed'));
     }).catch(function (e) { $('status').textContent = e.message; });
   }
 

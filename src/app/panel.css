@@ -14,4 +14,12 @@ button:disabled { opacity: .5; cursor: default; }
 .list { max-height: 120px; overflow-y: auto; margin: 4px 0; padding: 0; list-style: none; }
 .list label, .list li { display: block; padding: 1px 0; word-break: break-all; }
 .fail { color: var(--err); }
+.tabs { border-bottom: 1px solid rgba(128,128,128,.25); margin-top: 0; padding-bottom: 6px; }
+.tab { flex: 1; }
+.tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+body.tab-pdf [data-pane="images"], body:not(.tab-pdf) [data-pane="pdf"] { display: none; }
+.cards { display: flex; gap: 6px; }
+.card { flex: 1; display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 8px; }
+.card.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.size { font-size: 15px; font-weight: bold; }
 [hidden] { display: none !important; }
