@@ -20,7 +20,7 @@
       <DispatchInfo>
         <Resources>
           <MainPath>./loader.html</MainPath>
-          <ScriptPath>./jsx/ping.jsx</ScriptPath>
+          <ScriptPath>./jsx/engine.jsx</ScriptPath>
           <CEFCommandLine>
             <Parameter>--enable-nodejs</Parameter>
             <Parameter>--mixed-context</Parameter>

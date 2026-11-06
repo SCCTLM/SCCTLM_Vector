@@ -1,0 +1,17 @@
+:root { --bg: #323232; --fg: #ddd; --muted: #999; --field: #232323; --btn: #4a4a4a; --accent: #2680eb; --err: #e34850; }
+* { box-sizing: border-box; }
+body { font: 12px sans-serif; color: var(--fg); background: var(--bg); margin: 0; padding: 10px; }
+h4 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+section { border-bottom: 1px solid rgba(128,128,128,.25); padding-bottom: 6px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+.muted { color: var(--muted); font-weight: normal; }
+button, select, input[type=text] { font: inherit; color: inherit; background: var(--btn); border: 1px solid rgba(128,128,128,.4); border-radius: 3px; padding: 3px 8px; }
+input[type=text], select { background: var(--field); flex: 1; min-width: 0; width: 100%; }
+button { cursor: pointer; }
+button:disabled { opacity: .5; cursor: default; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.primary { width: 100%; margin-top: 10px; padding: 7px; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: bold; }
+.list { max-height: 120px; overflow-y: auto; margin: 4px 0; padding: 0; list-style: none; }
+.list label, .list li { display: block; padding: 1px 0; word-break: break-all; }
+.fail { color: var(--err); }
+[hidden] { display: none !important; }

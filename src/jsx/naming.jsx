@@ -58,6 +58,18 @@ function templateUsesScale(template) {
   return /\{scale\}/.test(template);
 }
 
+var NAMING_DEFAULT_TEMPLATE = "{doc}_{artboard}@{scale}x";
+
+// Raster output with several scales and no {scale} token would collide, so "@{scale}x" is appended.
+// Shared by the export engine and the panel's filename preview so they cannot drift apart.
+function templateForScales(template, isRaster, scaleCount) {
+  var tpl = template ? String(template) : "";
+  if (isRaster && scaleCount > 1 && !templateUsesScale(tpl || NAMING_DEFAULT_TEMPLATE)) {
+    return (tpl || "{doc}_{artboard}") + "@{scale}x";
+  }
+  return tpl;
+}
+
 function namingPad2(n) {
   return (n < 10 ? "0" : "") + n;
 }
