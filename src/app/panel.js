@@ -277,6 +277,7 @@
     refreshArtboards();
     window.addEventListener('focus', refreshArtboards);
     setInterval(refreshArtboards, 2000);
+    if (Bridge.cs && window.signalReady) Bridge.loadEngine().then(window.signalReady, function () {});
   }
 
   init();

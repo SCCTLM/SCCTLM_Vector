@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 // Run without native JSON so the polyfill is exercised.
 const ctx = vm.createContext({ SyntaxError });
-vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/jsx/json2.jsx'), 'utf8'), ctx);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/app/jsx/json2.jsx'), 'utf8'), ctx);
 const run = (code) => vm.runInContext(code, ctx);
 
 test('stringify and parse round-trip a job', () => {

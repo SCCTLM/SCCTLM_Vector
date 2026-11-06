@@ -1,0 +1,132 @@
+name: ci-release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - name: Native code scan (Rosetta guard)
+        run: node scripts/scan-native.mjs src
+      - name: Package (dry run)
+        run: node scripts/package-app.mjs 0.0.0-ci 2>/dev/null || node scripts/package-app.mjs 0.0.1
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*.zip*
+
+  mac-install:
+    runs-on: macos-14 # Apple Silicon (arm64)
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Confirm arm64 and no Rosetta
+        run: |
+          test "$(uname -m)" = "arm64"
+          ! pgrep oahd
+      - run: brew install shellcheck
+      - run: shellcheck installer/macos/install-mac.sh
+      - run: node scripts/package-app.mjs 0.0.1
+      - name: Install from a local file URL
+        run: ILUS_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
+      - name: Assert installed state
+        run: |
+          EXT="$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.ilus"
+          test -f "$EXT/CSXS/manifest.xml"
+          test -f "$EXT/loader.html"
+          test -f "$EXT/app/index.html"
+          test -f "$EXT/app/jsx/engine.jsx"
+          test "$(defaults read com.adobe.CSXS.11 PlayerDebugMode)" = "1"
+          node scripts/scan-native.mjs "$EXT"
+      - name: Re-run is idempotent
+        run: ILUS_BASE_URL="file://$PWD/dist" bash installer/macos/install-mac.sh
+      - name: Tampered download is rejected
+        run: |
+          mkdir bad && cp dist/ilus-extension.zip bad/ && echo 0000000000000000000000000000000000000000000000000000000000000000 > bad/ilus-extension.zip.sha256
+          ! ILUS_BASE_URL="file://$PWD/bad" bash installer/macos/install-mac.sh
+      - name: Uninstall
+        run: |
+          bash installer/macos/install-mac.sh --uninstall
+          test ! -e "$HOME/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.ilus"
+
+  windows-installer:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Package
+        shell: pwsh
+        run: |
+          $v = if ($env:GITHUB_REF -like 'refs/tags/v*') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.1' }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+          node scripts/package-app.mjs $v
+      - name: Build installer
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress; $env:PATH += ';C:\Program Files (x86)\Inno Setup 6' }
+          iscc /DAppVersion=$env:VERSION /DSourceDir="$PWD\dist\ext" installer\windows\setup.iss
+      - name: Silent install and assert
+        shell: pwsh
+        run: |
+          Start-Process -Wait -FilePath dist\SCCTLM-Ilus-Setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES'
+          $ext = "$env:APPDATA\Adobe\CEP\extensions\vn.scctlm.ilus"
+          if (-not (Test-Path "$ext\CSXS\manifest.xml")) { throw 'manifest missing' }
+          if ((Get-ItemProperty 'HKCU:\Software\Adobe\CSXS.11').PlayerDebugMode -ne '1') { throw 'PlayerDebugMode not set' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/SCCTLM-Ilus-Setup.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, mac-install, windows-installer]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require the update public key
+        run: test -f src/update-pubkey.pem || { echo "src/update-pubkey.pem is missing; generate keys with scripts/sign-release.mjs --generate-key"; exit 1; }
+      - name: Package with the tag version
+        run: node scripts/package-app.mjs "${GITHUB_REF_NAME#v}"
+      - name: Sign update zip
+        env:
+          ILUS_SIGNING_KEY: ${{ secrets.ILUS_SIGNING_KEY }}
+        run: |
+          test -n "$ILUS_SIGNING_KEY" || { echo "ILUS_SIGNING_KEY secret is not set"; exit 1; }
+          node scripts/sign-release.mjs "dist/app-${GITHUB_REF_NAME}.zip"
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Before public launch this publishes on the private source repo for hand-installing testers.
+          # At public launch, publish to the release-only repo with a token scoped to it.
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes \
+            "dist/app-${GITHUB_REF_NAME}.zip" "dist/app-${GITHUB_REF_NAME}.zip.sha256" "dist/app-${GITHUB_REF_NAME}.zip.sig" \
+            dist/ilus-extension.zip dist/ilus-extension.zip.sha256 dist/SCCTLM-Ilus-Setup.exe installer/macos/install-mac.sh

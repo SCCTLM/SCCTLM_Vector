@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const ctx = vm.createContext({});
-vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/jsx/naming.jsx'), 'utf8'), ctx);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/app/jsx/naming.jsx'), 'utf8'), ctx);
 const run = (code) => vm.runInContext(code, ctx);
 
 test('sanitises illegal characters and reserved names', () => {

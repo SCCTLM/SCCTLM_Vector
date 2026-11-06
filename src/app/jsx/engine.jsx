@@ -3,10 +3,10 @@
 #include "naming.jsx"
 
 var ENGINE_FORMATS = {
-  png: { ext: "png", raster: true, typeConst: "TYPE_PNG24" },
-  jpg: { ext: "jpg", raster: true, typeConst: "TYPE_JPEG" },
-  svg: { ext: "svg", raster: false, typeConst: "TYPE_SVG" },
-  pdf: { ext: "pdf", raster: false, typeConst: "TYPE_PDF" }
+  png: { ext: "png", raster: true, typeConst: "SE_PNG24" },
+  jpg: { ext: "jpg", raster: true, typeConst: "SE_JPEG100" },
+  svg: { ext: "svg", raster: false, typeConst: "SE_SVG" },
+  pdf: { ext: "pdf", raster: false, typeConst: "SE_PDF" }
 };
 
 function engineErrorMessage(e) {

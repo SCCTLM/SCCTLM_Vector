@@ -16,6 +16,8 @@ An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, 
 
 - Adobe Illustrator 2022 (v26) or later.
 
+See [docs/install.md](docs/install.md) to install and [docs/release-process.md](docs/release-process.md) to release.
+
 ## Try the spike by hand
 
 The panel id is `vn.scctlm.ilus`. Until installers exist, copy the contents of `src/` into the CEP extensions folder and enable unsigned panels.
@@ -37,7 +39,10 @@ The panel shows the Illustrator version and `process.arch`. Test results are tra
 | `src/CSXS/manifest.xml` | CEP manifest |
 | `src/loader.html` | Stable shell that hosts the app |
 | `src/app/` | Panel UI |
-| `src/jsx/` | ExtendScript run inside Illustrator |
+| `src/app/jsx/` | ExtendScript run inside Illustrator (part of the updatable app) |
+| `src/loader*.js` | Fixed shell: applies updates, rolls back on failure |
+| `installer/` | Windows (Inno Setup) and macOS (shell script) installers |
+| `scripts/` | Packaging, signing and native-code scan |
 | `docs/` | Project documentation |
 
 ## License
