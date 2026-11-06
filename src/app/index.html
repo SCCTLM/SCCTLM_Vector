@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SCCTLM Ilus spike</title>
+  <style>
+    body { font: 12px sans-serif; color: #ddd; background: #323232; padding: 12px; }
+    td { padding: 2px 8px 2px 0; }
+  </style>
+</head>
+<body>
+  <h3>SCCTLM Ilus - spike</h3>
+  <table>
+    <tr><td>Illustrator version</td><td id="ai">...</td></tr>
+    <tr><td>process.arch</td><td id="arch">...</td></tr>
+    <tr><td>process.platform</td><td id="plat">...</td></tr>
+    <tr><td>Node</td><td id="node">...</td></tr>
+  </table>
+  <script>
+    function show(id, v) { document.getElementById(id).textContent = v; }
+    try {
+      show('arch', process.arch);
+      show('plat', process.platform);
+      show('node', process.version);
+    } catch (e) { show('arch', 'no Node: ' + e.message); }
+    var cep = window.__adobe_cep__ || (window.parent && window.parent.__adobe_cep__);
+    if (cep) {
+      cep.evalScript('pingVersion()', function (r) { show('ai', r); });
+    } else {
+      show('ai', 'CEP bridge unavailable');
+    }
+  </script>
+</body>
+</html>
