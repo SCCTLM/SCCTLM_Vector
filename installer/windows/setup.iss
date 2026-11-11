@@ -11,6 +11,7 @@ AppId={{0D8B3F52-6C1A-4E57-9B0E-5C1F2A7D9E31}
 AppName=SCCTLM Vector
 AppVersion={#AppVersion}
 AppPublisher=SCCTLM
+SetupIconFile=logo.ico
 DefaultDirName={userappdata}\Adobe\CEP\extensions\vn.scctlm.vector
 DisableDirPage=yes
 DisableProgramGroupPage=yes
