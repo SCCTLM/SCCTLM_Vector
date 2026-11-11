@@ -59,7 +59,7 @@ const keys = crypto.generateKeyPairSync('ed25519');
 const pubPem = keys.publicKey.export({ type: 'spki', format: 'pem' });
 const sign = (buf) => crypto.sign(null, buf, keys.privateKey);
 const sha = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-upd-'));
+const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'vector-upd-'));
 
 const goodFiles = (version) => ({
   'version.json': JSON.stringify({ version, minLoaderVersion: 1 }),

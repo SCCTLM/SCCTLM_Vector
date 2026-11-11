@@ -1,7 +1,7 @@
 // Build release artifacts into dist/ for a version.
 // Usage: node scripts/package-app.mjs <X.Y.Z>
 // Produces: dist/ext/ (full extension), app-vX.Y.Z.zip (+ .sha256) for the updater,
-//           ilus-extension.zip (+ .sha256) for the installers.
+//           vector-extension.zip (+ .sha256) for the installers.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const version = (process.argv[2] || '').replace(/^v/, '');
 if (!/^\d+\.\d+\.\d+$/.test(version)) { console.error('Usage: package-app.mjs <X.Y.Z>'); process.exit(2); }
 
-const dist = process.env.ILUS_OUT_DIR ? path.resolve(process.env.ILUS_OUT_DIR) : path.join(root, 'dist');
+const dist = process.env.VECTOR_OUT_DIR ? path.resolve(process.env.VECTOR_OUT_DIR) : path.join(root, 'dist');
 const ext = path.join(dist, 'ext');
 fs.mkdirSync(dist, { recursive: true });
 fs.rmSync(ext, { recursive: true, force: true });
@@ -42,4 +42,4 @@ function emit(name, buf) {
 }
 
 emit(`app-v${version}.zip`, zipDirectory(path.join(ext, 'app')));
-emit('ilus-extension.zip', zipDirectory(ext));
+emit('vector-extension.zip', zipDirectory(ext));

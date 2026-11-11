@@ -18,7 +18,7 @@ function loadPresets(appData) {
 const settings = { formats: ['png', 'svg'], scales: [1, 2], template: '{doc}_{artboard}', outputDir: 'C:/out' };
 
 test('save, list, rename, remove round-trip through the user data file', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-presets-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-presets-'));
   const p = loadPresets(dir);
   assert.strictEqual(JSON.stringify(p.list()), "[]");
   p.saveAs('Web', settings);
@@ -30,12 +30,12 @@ test('save, list, rename, remove round-trip through the user data file', () => {
   assert.ok(p.get('Web2'));
   p.remove('Web2');
   assert.strictEqual(JSON.stringify(p.list()), "[]");
-  const saved = JSON.parse(fs.readFileSync(path.join(dir, 'ilus-batch-export', 'presets.json'), 'utf8'));
+  const saved = JSON.parse(fs.readFileSync(path.join(dir, 'vector-batch-export', 'presets.json'), 'utf8'));
   assert.strictEqual(saved.version, p.SCHEMA_VERSION);
 });
 
 test('saving an existing name overwrites; renaming onto another name is rejected', () => {
-  const p = loadPresets(fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-presets-')));
+  const p = loadPresets(fs.mkdtempSync(path.join(os.tmpdir(), 'vector-presets-')));
   p.saveAs('A', settings);
   p.saveAs('A', Object.assign({}, settings, { scales: [3] }));
   assert.strictEqual(p.list().length, 1);
@@ -45,14 +45,14 @@ test('saving an existing name overwrites; renaming onto another name is rejected
 });
 
 test('corrupt or unknown-shape files fall back to an empty store', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-presets-'));
-  fs.mkdirSync(path.join(dir, 'ilus-batch-export'));
-  fs.writeFileSync(path.join(dir, 'ilus-batch-export', 'presets.json'), '{not json');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-presets-'));
+  fs.mkdirSync(path.join(dir, 'vector-batch-export'));
+  fs.writeFileSync(path.join(dir, 'vector-batch-export', 'presets.json'), '{not json');
   assert.strictEqual(JSON.stringify(loadPresets(dir).list()), "[]");
 });
 
 test('migrate drops invalid entries and normalises settings', () => {
-  const p = loadPresets(fs.mkdtempSync(path.join(os.tmpdir(), 'ilus-presets-')));
+  const p = loadPresets(fs.mkdtempSync(path.join(os.tmpdir(), 'vector-presets-')));
   const out = p.migrate({ presets: [{ name: 'ok', settings: { formats: ['gif'], scales: [-1] } }, { name: '' }, null] });
   assert.strictEqual(out.presets.length, 1);
   assert.deepStrictEqual(Array.from(out.presets[0].settings.formats), ['png']);

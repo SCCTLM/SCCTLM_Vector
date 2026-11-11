@@ -5,7 +5,7 @@ Status: partially complete. Spike files are written and copied to the Windows CE
 ## Setup used
 - Manifest: host `ILST` `[26.0,99.9]`, `RequiredRuntime CSXS 10.0`, params `--enable-nodejs --mixed-context`.
 - Debug mode: `HKCU\Software\Adobe\CSXS.9` to `CSXS.12`, `PlayerDebugMode=1` (set on the dev Windows PC). Mac equivalent: `defaults write com.adobe.CSXS.<n> PlayerDebugMode 1`.
-- Panel copied by hand to `%APPDATA%\Adobe\CEP\extensions\vn.scctlm.ilus`.
+- Panel copied by hand to `%APPDATA%\Adobe\CEP\extensions\vn.scctlm.vector`.
 - Illustrator was not found under `C:\Program Files\Adobe` on the dev PC at check time, so no load test has run yet.
 
 ## Matrix

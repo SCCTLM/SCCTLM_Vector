@@ -119,7 +119,7 @@ function estimatePdf(jobJson) {
       sample = [p.indexes[pdfPickRepresentative(areas)]];
       approx = true;
     }
-    tempRoot = new Folder(Folder.temp.fsName + "/scctlm-ilus-pdf-" + new Date().getTime());
+    tempRoot = new Folder(Folder.temp.fsName + "/scctlm-vector-pdf-" + new Date().getTime());
     tempRoot.create();
     var sizes = enginePdfWithCopy(p.doc, function (copyDoc) {
       var out = {};

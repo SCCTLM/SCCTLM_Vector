@@ -8,18 +8,18 @@
 
 [Setup]
 AppId={{0D8B3F52-6C1A-4E57-9B0E-5C1F2A7D9E31}
-AppName=SCCTLM Ilus
+AppName=SCCTLM Vector
 AppVersion={#AppVersion}
 AppPublisher=SCCTLM
-DefaultDirName={userappdata}\Adobe\CEP\extensions\vn.scctlm.ilus
+DefaultDirName={userappdata}\Adobe\CEP\extensions\vn.scctlm.vector
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
-OutputBaseFilename=SCCTLM-Ilus-Setup
+OutputBaseFilename=SCCTLM-Vector-Setup
 OutputDir=..\..\dist
 Compression=lzma2
 SolidCompression=yes
-UninstallDisplayName=SCCTLM Ilus (Illustrator panel)
+UninstallDisplayName=SCCTLM Vector (Illustrator panel)
 LicenseFile=..\..\LICENSE
 
 [InstallDelete]
@@ -42,4 +42,4 @@ Root: HKCU; Subkey: "Software\Adobe\CSXS.11"; ValueType: string; ValueName: "Pla
 Root: HKCU; Subkey: "Software\Adobe\CSXS.12"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
 
 [Messages]
-FinishedLabel=Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Ilus.
+FinishedLabel=Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Vector.
