@@ -7,7 +7,7 @@
 
 ## Cut a release
 1. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
-2. The `ci-release` workflow runs tests, the native-code scan, the macOS install test on `macos-14`, builds the Windows installer, signs `app-vX.Y.Z.zip`, and publishes a GitHub Release with:
+2. The `ci-release` workflow runs tests, the native-code scan, the macOS install test on `macos-15`, builds the Windows installer, signs `app-vX.Y.Z.zip`, and publishes a GitHub Release with:
    `app-vX.Y.Z.zip` (+ `.sha256`, `.sig`) for the updater, and `vector-extension.zip` (+ `.sha256`), `SCCTLM-Vector-Setup.exe`, `install-mac.sh` for installs.
 3. The release job fails if `src/update-pubkey.pem` or the signing secret is missing.
 
