@@ -36,10 +36,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Confirm arm64 and no Rosetta
-        run: |
-          test "$(uname -m)" = "arm64"
-          ! pgrep oahd
+      # The hosted image ships Rosetta, so the "no Rosetta needed" guarantee is the native-code scan
+      # of the installed folder below, not the runner's state.
+      - name: Confirm arm64
+        run: test "$(uname -m)" = "arm64"
       - run: brew install shellcheck
       - run: shellcheck installer/macos/install-mac.sh
       - run: node scripts/package-app.mjs 0.0.1
