@@ -5,7 +5,7 @@
   <title>SCCTLM Vector</title>
   <link rel="stylesheet" href="panel.css">
 </head>
-<body>
+<body data-tab="images">
   <header class="brand">
     <img class="logo" src="assets/logo.svg" width="22" height="22" alt="">
     <span class="wordmark">SCCTLM <b>Vector</b></span>
@@ -15,6 +15,7 @@
   <div id="tabs" class="tabs">
     <button class="tab on" data-tab="images">Images</button>
     <button class="tab" data-tab="pdf">PDF</button>
+    <button class="tab" data-tab="grid">Grid</button>
   </div>
 
   <section data-pane="images">
@@ -36,7 +37,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="export-only">
     <h4>Artboards <span id="doc-name" class="muted"></span></h4>
     <div class="row">
       <button id="ab-all">All</button>
@@ -107,7 +108,37 @@
     <div class="muted">Editing data is always removed, so open the PDF in Illustrator only for viewing. Keep your .ai file.</div>
   </section>
 
-  <section>
+  <section data-pane="grid">
+    <h4>Draw</h4>
+    <div id="grid-elements"></div>
+    <h4>Gridlines</h4>
+    <div class="row">
+      <span class="muted">Merge</span>
+      <span class="muted">Low</span>
+      <input id="grid-sensitivity" type="range" min="0" max="100" step="1">
+      <span class="muted">High</span>
+    </div>
+    <div class="row">
+      <span class="muted" title="How far gridlines run past the artwork">Margin</span>
+      <input id="grid-margin" type="number" min="0" step="1"> <span class="muted">pt</span>
+    </div>
+    <h4>Circles</h4>
+    <div class="row">
+      <span class="muted">Minimal</span>
+      <input id="grid-complexity" type="range" min="0" max="100" step="1">
+      <span class="muted">Complex</span>
+    </div>
+    <div id="grid-cmode" class="row">
+      <span class="muted">Per curve</span>
+      <button class="chip" data-cmode="all">All</button>
+      <button class="chip" data-cmode="first">First</button>
+      <button class="chip" data-cmode="longest">Longest</button>
+      <input id="grid-n" type="number" min="1" max="99" step="1" title="Number of circles per curve">
+    </div>
+    <div class="muted">Each curve gets circles that follow its shape; more complexity means more, tighter circles. First keeps the circles from the start of the curve, Longest keeps those covering its longest parts.</div>
+  </section>
+
+  <section class="export-only">
     <h4>Output folder</h4>
     <div class="row">
       <input id="outdir" type="text" spellcheck="false">
@@ -122,6 +153,16 @@
 
   <button id="export" class="primary" data-pane="images">Export</button>
   <button id="pdf-export" class="primary" data-pane="pdf">Export PDF</button>
+  <div class="row" id="grid-confirm" data-pane="grid" hidden>
+    <span id="grid-confirm-text" class="muted"></span>
+    <button id="grid-confirm-ok">Continue</button>
+    <button id="grid-confirm-cancel">Cancel</button>
+  </div>
+  <button id="grid-generate" class="primary" data-pane="grid">Generate</button>
+  <div class="row split" data-pane="grid">
+    <button id="grid-generate-all" title="Draw every element once; your toggles stay as they are">Generate all</button>
+    <button id="grid-clear" title="Remove the SCCTLM Grid layer">Clear</button>
+  </div>
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
   <div class="foot">
@@ -137,5 +178,8 @@
   <script src="update-ui.js"></script>
   <script src="panel.js"></script>
   <script src="pdf-panel.js"></script>
+  <script src="grid-settings.js"></script>
+  <script src="grid-panel.js"></script>
+  <script src="tabs.js"></script>
 </body>
 </html>

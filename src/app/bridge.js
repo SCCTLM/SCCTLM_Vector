@@ -65,6 +65,9 @@
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },
     runPdfJob: function (job) { return evalScript('runPdfExport(' + literal(JSON.stringify(job)) + ')'); },
     estimatePdf: function (job) { return evalScript('estimatePdf(' + literal(JSON.stringify(job)) + ')'); },
+    gridInspect: function (job) { return evalScript('gridInspect(' + literal(JSON.stringify(job || {})) + ')'); },
+    gridGenerate: function (job) { return evalScript('gridGenerate(' + literal(JSON.stringify(job)) + ')'); },
+    gridClear: function () { return evalScript('gridClear()'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {
       return evalScript('(function(){var c=' + jsonText(ctx) + ';c.artboard=uniqueArtboardNames(' +
