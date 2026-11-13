@@ -116,16 +116,13 @@
   }
 
   function init() {
-    $('tabs').onclick = function (e) {
-      var tab = e.target.dataset && e.target.dataset.tab;
-      if (!tab) return;
+    document.addEventListener('tab-changed', function (e) {
+      var tab = e.detail;
       state.tab = tab;
-      document.body.classList.toggle('tab-pdf', tab === 'pdf');
-      each($('tabs').querySelectorAll('.tab'), function (b) { b.classList.toggle('on', b.dataset.tab === tab); });
       seq++;
       clearTimeout(timer);
       if (tab === 'pdf') $('pdf-estimate-note').textContent = 'Press Calculate size to see the predicted file size.';
-    };
+    });
     $('pdf-modes').onclick = function (e) {
       var card = e.target.closest ? e.target.closest('.card') : null;
       if (!card) return;

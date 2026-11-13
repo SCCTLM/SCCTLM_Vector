@@ -8,6 +8,7 @@ An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, 
 
 - Export multiple artboards to PNG and SVG at several scales (for example 1x and 2x).
 - PDF tab with Print and Review modes, multi-page or per-artboard output, and a predicted file size. See [docs/pdf-export.md](docs/pdf-export.md).
+- Grid tab that draws a logo construction grid (anchors, handles, outlines, gridlines, fitted circles) from the selected paths. See [docs/logo-grid.md](docs/logo-grid.md).
 - Naming templates and saved presets.
 - One-step install on Windows and macOS.
 - Self-update from GitHub Releases.

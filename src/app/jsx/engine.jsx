@@ -3,6 +3,8 @@
 #include "naming.jsx"
 #include "pdf-options.jsx"
 #include "pdf-engine.jsx"
+#include "grid-geometry.jsx"
+#include "grid-engine.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },
