@@ -76,13 +76,21 @@
   }
 
   // Fills RGBA pixels (row-major, top row first). isOut(r, g, b) marks pixels to paint grey, or null.
+  // Runs once per frame while dragging, so the per-pixel work is kept minimal: axis values are computed once
+  // per field and the converter is chosen once (Illustrator's Chromium is several times slower than Node).
   function renderField(id, v, w, h, data, isOut) {
-    var m = mode(id), cur = v.slice(), rgb = [0, 0, 0], p = 0;
+    var m = mode(id), g = m.group, xi = m.x, yi = m.y, p = 0, col;
+    var c0 = v[0], c1 = v[1], c2 = v[2], rgb = [0, 0, 0];
+    var conv = g === 'hsb' ? CM.hsbToRgbInto : (g === 'lab' ? CM.labToRgbInto : null);
+    var xs = new Float64Array(w);
+    for (col = 0; col < w; col++) xs[col] = denorm(g, xi, col / (w - 1));
     for (var row = 0; row < h; row++) {
-      cur[m.y] = denorm(m.group, m.y, 1 - row / (h - 1));
-      for (var col = 0; col < w; col++) {
-        cur[m.x] = denorm(m.group, m.x, col / (w - 1));
-        toRgbInto(m.group, cur, rgb);
+      var yv = denorm(g, yi, 1 - row / (h - 1));
+      if (yi === 0) c0 = yv; else if (yi === 1) c1 = yv; else c2 = yv;
+      for (col = 0; col < w; col++) {
+        if (xi === 0) c0 = xs[col]; else if (xi === 1) c1 = xs[col]; else c2 = xs[col];
+        if (conv) conv(c0, c1, c2, rgb);
+        else { rgb[0] = c0; rgb[1] = c1; rgb[2] = c2; }
         if (isOut && isOut(rgb[0], rgb[1], rgb[2])) { data[p] = data[p + 1] = data[p + 2] = GREY; }
         else { data[p] = rgb[0]; data[p + 1] = rgb[1]; data[p + 2] = rgb[2]; }
         data[p + 3] = 255;
