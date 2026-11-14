@@ -140,9 +140,10 @@
       sliderCtx.putImageData(sliderImg, 0, 0);
     }
     var p = CF.position(state.mode, v);
-    $('ring').style.left = (1 + p.x * 255) + 'px';
-    $('ring').style.top = (1 + p.y * 255) + 'px';
-    $('arrows').style.top = (1 + p.s * 255) + 'px';
+    // 1px border, then the centre of pixel 0..255.
+    $('ring').style.left = (1.5 + p.x * 255) + 'px';
+    $('ring').style.top = (1.5 + p.y * 255) + 'px';
+    $('arrows').style.top = (1.5 + p.s * 255) + 'px';
 
     $('sw-new').style.background = css(state.rgb);
     $('sw-cur').style.background = css(state.current);
@@ -169,9 +170,11 @@
 
   // ---------- input ----------
   function drag(box, canvas, onMove) {
+    // Pixel centres of the drawn image (inside the 1px border) map to 0..1, the same grid the renderer uses.
     function move(e) {
       var r = canvas.getBoundingClientRect();
-      onMove((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+      onMove((e.clientX - r.left - canvas.clientLeft - 0.5) / (canvas.clientWidth - 1),
+        (e.clientY - r.top - canvas.clientTop - 0.5) / (canvas.clientHeight - 1));
     }
     box.addEventListener('pointerdown', function (e) {
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();

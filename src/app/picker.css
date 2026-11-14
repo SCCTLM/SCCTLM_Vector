@@ -4,6 +4,8 @@ body.picker { padding: 14px 14px 10px; overflow: hidden; user-select: none; }
 
 /* field and slider */
 .pk-field, .pk-slider { position: relative; flex: none; line-height: 0; cursor: crosshair; touch-action: none; }
+/* content-box: the 256 image pixels must map 1:1 to CSS pixels (panel.css makes everything border-box). */
+.pk-field canvas, .pk-slider canvas { box-sizing: content-box; display: block; }
 .pk-field canvas { width: 256px; height: 256px; border: 1px solid var(--line); }
 .pk-slider { padding: 0 9px; cursor: ns-resize; }
 .pk-slider canvas { width: 20px; height: 256px; border: 1px solid var(--line); }
