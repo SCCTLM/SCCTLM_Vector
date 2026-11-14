@@ -119,6 +119,16 @@ input[type=color]:disabled { opacity: .35; cursor: default; }
 #grid-confirm { padding: 6px 8px; border: 1px solid var(--red); border-radius: var(--radius-sm); }
 #grid-confirm span { flex: 1; }
 
+/* Artboard size block */
+.doc-size { margin-top: 6px; }
+.doc-size summary { cursor: pointer; color: var(--muted); list-style: none; }
+.doc-size summary::-webkit-details-marker { display: none; }
+.doc-size summary::after { content: " \25BE"; }
+.doc-size[open] summary::after { content: " \25B4"; }
+.doc-size input[type=text] { flex: 1; min-width: 46px; text-align: right; }
+.doc-size input[type=text]::placeholder { color: var(--muted); }
+.doc-size select { flex: none; width: 58px; }
+
 /* tab switching */
 body:not([data-tab="images"]) [data-pane="images"],
 body:not([data-tab="pdf"]) [data-pane="pdf"],

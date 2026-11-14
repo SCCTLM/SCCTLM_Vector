@@ -8,6 +8,7 @@ An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, 
 
 - Export multiple artboards to PNG and SVG at several scales (for example 1x and 2x).
 - PDF tab with Print and Review modes, multi-page or per-artboard output, and a predicted file size. See [docs/pdf-export.md](docs/pdf-export.md).
+- Artboard size and orientation controls: resize or flip the ticked artboards in place, in pt/mm/cm/in/px, without rebuilding the document. See [docs/artboard-size.md](docs/artboard-size.md).
 - Grid tab that draws a logo construction grid (anchors, handles, outlines, gridlines, fitted circles) from the selected paths. See [docs/logo-grid.md](docs/logo-grid.md).
 - Colour picker window with a live CMYK gamut warning: out-of-gamut colours are greyed across the whole field, using the document's ICC profile, and OK paints the selection. See [docs/color-picker.md](docs/color-picker.md).
 - Naming templates and saved presets.

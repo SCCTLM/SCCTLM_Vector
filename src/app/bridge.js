@@ -62,6 +62,7 @@
     loadEngine: loadEngine,
     literal: literal,
     listArtboards: function () { return evalScript('listArtboards()'); },
+    resizeArtboards: function (job) { return evalScript('engineResizeArtboards(' + literal(JSON.stringify(job)) + ')'); },
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },
     runPdfJob: function (job) { return evalScript('runPdfExport(' + literal(JSON.stringify(job)) + ')'); },
     estimatePdf: function (job) { return evalScript('estimatePdf(' + literal(JSON.stringify(job)) + ')'); },

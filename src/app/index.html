@@ -47,6 +47,20 @@
       <button id="ab-none">Bỏ chọn</button>
     </div>
     <div id="artboards" class="list"></div>
+    <details id="doc-size" class="doc-size">
+      <summary>Kích thước &amp; hướng</summary>
+      <div class="row">
+        <input id="doc-w" type="text" inputmode="decimal" spellcheck="false" title="Chiều rộng">
+        <span class="muted">×</span>
+        <input id="doc-h" type="text" inputmode="decimal" spellcheck="false" title="Chiều cao">
+        <select id="doc-unit" title="Đơn vị đo"></select>
+      </div>
+      <div class="row split">
+        <button id="doc-swap" title="Hoán đổi chiều rộng và chiều cao của từng artboard đang chọn">Đổi hướng</button>
+        <button id="doc-apply">Áp dụng</button>
+      </div>
+      <div class="muted">Hướng: <span id="doc-orient">-</span>. Giữ góc trên-trái; nội dung không co giãn.</div>
+    </details>
   </section>
 
   <section data-pane="images">
@@ -174,6 +188,7 @@
 
   <script src="lib/CSInterface.js"></script>
   <script src="bridge.js"></script>
+  <script src="jsx/artboard-size.jsx"></script>
   <script src="theme.js"></script>
   <script src="presets.js"></script>
   <script src="pdf-format.js"></script>
@@ -181,6 +196,7 @@
   <script src="updater.js"></script>
   <script src="update-ui.js"></script>
   <script src="panel.js"></script>
+  <script src="doc-size.js"></script>
   <script src="pdf-panel.js"></script>
   <script src="grid-settings.js"></script>
   <script src="grid-panel.js"></script>

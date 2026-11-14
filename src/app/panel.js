@@ -78,11 +78,13 @@
   }
 
   // Called on focus and every 2s: Illustrator exposes no reliable document-change event to CEP.
+  // Resolves with the response on a successful read (even when nothing changed) and null on failure,
+  // so a caller can tell its own message from an error this refresh found.
   function refreshArtboards() {
     if (busy || document.hidden) return Promise.resolve();
     return Bridge.listArtboards().then(function (r) {
       var sig = JSON.stringify(r);
-      if (sig === artboardSignature) return;
+      if (sig === artboardSignature) return r;
       var prev = artboardSignature ? JSON.parse(artboardSignature) : null;
       var sameDoc = !!prev && prev.docName === r.docName && prev.docPath === r.docPath;
       artboardSignature = sig;
@@ -93,8 +95,11 @@
       artboardNames = r.artboards.map(function (a) { return a.name; });
       artboardCount = r.artboards.length;
       updateExample();
-      document.dispatchEvent(new Event('artboards-changed'));
-    }).catch(function (e) { $('status').textContent = e.message; });
+      document.dispatchEvent(new CustomEvent('artboards-changed', {
+        detail: { artboards: r.artboards, docName: r.docName, docPath: r.docPath }
+      }));
+      return r;
+    }).catch(function (e) { $('status').textContent = e.message; return null; });
   }
 
   // ---------- presets ----------
@@ -257,6 +262,13 @@
     refreshArtboards();
     window.addEventListener('focus', refreshArtboards);
     setInterval(refreshArtboards, 2000);
+    // Another module changed the document; re-read it and then show the message it asked to display.
+    // A failed re-read left its own error in the status line, so nothing is overwritten then.
+    document.addEventListener('refresh-artboards', function (e) {
+      refreshArtboards().then(function (r) {
+        if (r && e.detail && e.detail.message) $('status').textContent = e.detail.message;
+      });
+    });
     if (Bridge.cs && window.signalReady) Bridge.loadEngine().then(window.signalReady, function () {});
   }
 

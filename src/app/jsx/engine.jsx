@@ -6,6 +6,7 @@
 #include "grid-geometry.jsx"
 #include "grid-engine.jsx"
 #include "color-engine.jsx"
+#include "artboard-size.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },
@@ -18,7 +19,12 @@ function engineErrorMessage(e) {
   return e && e.message ? e.message : String(e);
 }
 
-// Artboards for the UI: [{index (0-based), name}]
+// Saved path tells apart same-named files from different folders; unsaved docs have no path.
+function engineDocPath(doc) {
+  try { return doc.fullName.fsName; } catch (ignore) { return ""; }
+}
+
+// Artboards for the UI: [{index (0-based), name, widthPt, heightPt}]
 function listArtboards() {
   try {
     if (app.documents.length === 0) {
@@ -27,12 +33,10 @@ function listArtboards() {
     var doc = app.activeDocument;
     var out = [];
     for (var i = 0; i < doc.artboards.length; i++) {
-      out.push({ index: i, name: doc.artboards[i].name });
+      var size = artboardSizeOf(doc.artboards[i].artboardRect);
+      out.push({ index: i, name: doc.artboards[i].name, widthPt: size.width, heightPt: size.height });
     }
-    // Saved path tells apart same-named files from different folders; unsaved docs have no path.
-    var docPath = "";
-    try { docPath = doc.fullName.fsName; } catch (ignore) {}
-    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), docPath: docPath, artboards: out });
+    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), docPath: engineDocPath(doc), artboards: out });
   } catch (e) {
     return JSON.stringify({ ok: false, error: engineErrorMessage(e), artboards: [] });
   }
@@ -58,6 +62,99 @@ function engineResolveArtboards(spec, count) {
   }
   result.sort(function (a, b) { return a - b; });
   return result;
+}
+
+// job: { artboards: "all" | [indexes], swap?: true, widthPt?, heightPt? }
+// Resizes or flips artboards in place; each keeps its top-left corner and no artwork is scaled.
+// Every target is validated before the first write, and a host failure restores the ones already
+// written. Sizes are read back from the document, so a host-side clamp cannot be reported as success.
+function engineResizeArtboards(jobJson) {
+  try {
+    if (app.documents.length === 0) {
+      return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
+    }
+    var job = JSON.parse(jobJson || "{}");
+    var doc = app.activeDocument;
+    var i;
+    var indexes = engineResolveArtboards(job.artboards, doc.artboards.length);
+    if (indexes.length === 0) throw new Error("H\u00e3y ch\u1ecdn \u00edt nh\u1ea5t m\u1ed9t artboard");
+    // The panel sends what it displayed (document, count and per-target names). Indexes are only
+    // positional, so any mismatch means the document changed since that list was read.
+    if (typeof job.docPath === "string" && job.docPath !== engineDocPath(doc)) {
+      throw new Error("T\u00e0i li\u1ec7u \u0111\u00e3 thay \u0111\u1ed5i; h\u00e3y ch\u1ecdn l\u1ea1i artboard");
+    }
+    if (typeof job.docName === "string" && documentBaseName(doc.name) !== job.docName) {
+      throw new Error("T\u00e0i li\u1ec7u \u0111\u00e3 thay \u0111\u1ed5i; h\u00e3y ch\u1ecdn l\u1ea1i artboard");
+    }
+    if (typeof job.count === "number" && job.count !== doc.artboards.length) {
+      throw new Error("T\u00e0i li\u1ec7u \u0111\u00e3 thay \u0111\u1ed5i; h\u00e3y ch\u1ecdn l\u1ea1i artboard");
+    }
+    if (Object.prototype.toString.call(job.targets) === "[object Array]") {
+      for (i = 0; i < job.targets.length; i++) {
+        var target = job.targets[i];
+        var targetIndex = target ? Number(target.index) : -1;
+        if (targetIndex >= 0 && targetIndex < doc.artboards.length &&
+            doc.artboards[targetIndex].name !== target.name) {
+          throw new Error("T\u00e0i li\u1ec7u \u0111\u00e3 thay \u0111\u1ed5i; h\u00e3y ch\u1ecdn l\u1ea1i artboard");
+        }
+      }
+    }
+    var swap = !!job.swap;
+    var sized = typeof job.widthPt === "number" && isFinite(job.widthPt) && job.widthPt > 0 &&
+      typeof job.heightPt === "number" && isFinite(job.heightPt) && job.heightPt > 0;
+    if (!swap && !sized) {
+      throw new Error("Chi\u1ec1u r\u1ed9ng v\u00e0 chi\u1ec1u cao ph\u1ea3i l\u1edbn h\u01a1n 0");
+    }
+    var targets = [];
+    for (i = 0; i < indexes.length; i++) {
+      var r = doc.artboards[indexes[i]].artboardRect;
+      var original = [r[0], r[1], r[2], r[3]];
+      targets.push({
+        index: indexes[i],
+        original: original,
+        next: swap ? artboardSwapRect(original) : artboardResizeRect(original, job.widthPt, job.heightPt)
+      });
+    }
+    // One failure path: a throwing setter and a host that clamps instead of applying both end in a
+    // rollback, so the document never keeps a size the caller was not told about. Every target is
+    // verified against the rectangle that was written, swap included, and the origin is checked too.
+    var written = [];
+    var out = [];
+    var failed = null;
+    var unrestored = 0;
+    try {
+      for (i = 0; i < targets.length; i++) {
+        doc.artboards[targets[i].index].artboardRect = targets[i].next;
+        written.push(targets[i]);
+      }
+      for (i = 0; i < targets.length; i++) {
+        var now = doc.artboards[targets[i].index].artboardRect;
+        var size = artboardSizeOf(now);
+        if (artboardRectDiffers(now, targets[i].next)) {
+          failed = "Illustrator gi\u1edbi h\u1ea1n k\u00edch th\u01b0\u1edbc: artboard " + (targets[i].index + 1) +
+            " c\u00f2n " + artboardFormatSize(size.width, "pt") + " x " +
+            artboardFormatSize(size.height, "pt") + " pt";
+          break;
+        }
+        out.push({ index: targets[i].index, widthPt: size.width, heightPt: size.height });
+      }
+    } catch (e) {
+      failed = "Kh\u00f4ng \u0111\u1ed5i \u0111\u01b0\u1ee3c k\u00edch th\u01b0\u1edbc artboard: " + engineErrorMessage(e);
+    }
+    if (failed) {
+      for (i = written.length - 1; i >= 0; i--) {
+        try { doc.artboards[written[i].index].artboardRect = written[i].original; }
+        catch (ignore) { unrestored++; }
+      }
+      if (unrestored > 0) {
+        throw new Error(failed + " (kh\u00f4ng kh\u00f4i ph\u1ee5c \u0111\u01b0\u1ee3c " + unrestored + " artboard)");
+      }
+      throw new Error(failed);
+    }
+    return JSON.stringify({ ok: true, artboards: out });
+  } catch (e) {
+    return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
+  }
 }
 
 function engineCollectFiles(folder, acc) {
