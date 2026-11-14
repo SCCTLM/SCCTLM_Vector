@@ -113,6 +113,12 @@
   var fieldCtx = $('field').getContext('2d'), sliderCtx = $('slider').getContext('2d');
   var fieldImg = fieldCtx.createImageData(256, 256), sliderImg = sliderCtx.createImageData(20, 256);
   var fieldKey = '', sliderKey = '', frame = 0;
+  // While a drag is in progress the field is drawn at half resolution and scaled up (a full 256x256 field
+  // costs ~20 ms in Illustrator's Chromium, a 128x128 one a quarter of that); the full field follows on release.
+  var DRAFT = 128, draftCanvas = document.createElement('canvas');
+  draftCanvas.width = draftCanvas.height = DRAFT;
+  var draftCtx = draftCanvas.getContext('2d'), draftImg = draftCtx.createImageData(DRAFT, DRAFT);
+  var dragging = false, fieldIsDraft = false;
 
   function gamutMask() {
     var g = state.gamut;
@@ -128,8 +134,16 @@
     frame = 0;
     var m = CF.MODES[state.mode], v = state[m.group];
     var fk = state.mode + '|' + v[m.slider] + '|' + (state.gamutOn ? state.gamutName : '');
-    if (fk !== fieldKey) {
+    if (fk !== fieldKey && dragging) {
       fieldKey = fk;
+      fieldIsDraft = true;
+      CF.renderField(state.mode, v, DRAFT, DRAFT, draftImg.data, gamutMask());
+      draftCtx.putImageData(draftImg, 0, 0);
+      fieldCtx.imageSmoothingEnabled = true;
+      fieldCtx.drawImage(draftCanvas, 0, 0, 256, 256);
+    } else if (fk !== fieldKey || (fieldIsDraft && !dragging)) {
+      fieldKey = fk;
+      fieldIsDraft = false;
       CF.renderField(state.mode, v, 256, 256, fieldImg.data, gamutMask());
       fieldCtx.putImageData(fieldImg, 0, 0);
     }
@@ -180,10 +194,12 @@
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
       box.setPointerCapture(e.pointerId);
       box.onpointermove = move;
+      dragging = true;
       move(e);
     });
-    box.addEventListener('pointerup', function () { box.onpointermove = null; });
-    box.addEventListener('lostpointercapture', function () { box.onpointermove = null; });
+    function end() { box.onpointermove = null; dragging = false; render(); }
+    box.addEventListener('pointerup', end);
+    box.addEventListener('lostpointercapture', end);
   }
 
   function onFieldInput(el) {
