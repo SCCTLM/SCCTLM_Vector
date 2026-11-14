@@ -1,0 +1,57 @@
+/* Colour picker window, on top of panel.css tokens. Fixed layout for a 600x410 window. */
+body.picker { padding: 14px 14px 10px; overflow: hidden; user-select: none; }
+.pk { display: flex; gap: 12px; align-items: flex-start; }
+
+/* field and slider */
+.pk-field, .pk-slider { position: relative; flex: none; line-height: 0; cursor: crosshair; touch-action: none; }
+.pk-field canvas { width: 256px; height: 256px; border: 1px solid var(--line); }
+.pk-slider { padding: 0 9px; cursor: ns-resize; }
+.pk-slider canvas { width: 20px; height: 256px; border: 1px solid var(--line); }
+.pk-ring { position: absolute; width: 12px; height: 12px; margin: -5px 0 0 -5px; border-radius: 50%; pointer-events: none;
+  border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.6); }
+.pk-arrows { position: absolute; left: 0; right: 0; height: 0; pointer-events: none; }
+.pk-arrows::before, .pk-arrows::after { content: ""; position: absolute; top: -5px; border: 5px solid transparent; }
+.pk-arrows::before { left: 0; border-left: 7px solid var(--fg); border-right-width: 0; }
+.pk-arrows::after { right: 0; border-right: 7px solid var(--fg); border-left-width: 0; }
+
+/* right side */
+.pk-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.pk-top { display: flex; gap: 10px; align-items: flex-start; }
+.pk-swatches { display: flex; flex-direction: column; align-items: center; width: 74px; }
+.pk-cap { font-size: 10px; color: var(--muted); line-height: 1.3; }
+.pk-sw { width: 74px; height: 34px; border: 1px solid var(--line); padding: 0; border-radius: 0; }
+#sw-new { border-bottom: 0; }
+#sw-cur { cursor: pointer; }
+.pk-warn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 14px; }
+.pk-warn[hidden] { display: none; }
+.pk-warn-btn { padding: 0; border: 0; background: transparent; color: var(--fg); line-height: 0; }
+.pk-warn-btn:hover:not(:disabled) { background: transparent; color: #ffd60a; }
+.pk-sw-small { width: 16px; height: 16px; cursor: pointer; }
+.pk-actions { margin-left: auto; display: flex; flex-direction: column; gap: 6px; width: 92px; }
+.pk-actions button, .pk-actions select { width: 100%; padding: 5px 8px; }
+.pk-ok { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 700; }
+.pk-ok:hover:not(:disabled) { background: #2bd884; border-color: #2bd884; }
+select#target { background: var(--field); }
+
+/* numeric fields */
+.pk-fields { display: flex; gap: 14px; }
+.pk-col { display: flex; flex-direction: column; gap: 3px; }
+.pk-f { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.pk-f.pk-k { padding-left: 17px; cursor: default; }
+.pk-f.pk-gap { margin-top: 7px; }
+.pk-f b { width: 16px; font-weight: 600; }
+.pk-f i { width: 12px; font-style: normal; color: var(--muted); }
+.pk-f input:not([type]), .pk-hex input { width: 48px; font: inherit; color: inherit; background: var(--field); border: 1px solid var(--line);
+  border-radius: 5px; padding: 2px 5px; text-align: right; outline: 0; user-select: text; }
+.pk-f input:not([type]):focus, .pk-hex input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(21,198,113,.28); }
+.pk-f input[type=radio] { margin: 0; accent-color: var(--green); }
+.pk-hex { display: flex; align-items: center; gap: 6px; padding-left: 17px; }
+.pk-hex input { width: 78px; text-align: left; font-family: Consolas, Menlo, monospace; }
+
+/* footer */
+.pk-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.pk-check { display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+.pk-check input { margin: 0; accent-color: var(--green); }
+.pk-foot select { width: 220px; flex: none; padding: 3px 6px; }
+.pk-status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.pk-status.err { color: var(--err); }

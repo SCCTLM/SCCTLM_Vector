@@ -9,6 +9,7 @@ An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, 
 - Export multiple artboards to PNG and SVG at several scales (for example 1x and 2x).
 - PDF tab with Print and Review modes, multi-page or per-artboard output, and a predicted file size. See [docs/pdf-export.md](docs/pdf-export.md).
 - Grid tab that draws a logo construction grid (anchors, handles, outlines, gridlines, fitted circles) from the selected paths. See [docs/logo-grid.md](docs/logo-grid.md).
+- Colour picker window with a live CMYK gamut warning: out-of-gamut colours are greyed across the whole field, using the document's ICC profile, and OK paints the selection. See [docs/color-picker.md](docs/color-picker.md).
 - Naming templates and saved presets.
 - One-step install on Windows and macOS.
 - Self-update from GitHub Releases.
@@ -40,6 +41,7 @@ The panel shows the Illustrator version and `process.arch`. Test results are tra
 |---|---|
 | `src/CSXS/manifest.xml` | CEP manifest |
 | `src/loader.html` | Stable shell that hosts the app |
+| `src/picker-loader.html` | Stable shell for the colour picker window (`app/picker.html`) |
 | `src/app/` | Panel UI |
 | `src/app/jsx/` | ExtendScript run inside Illustrator (part of the updatable app) |
 | `src/loader*.js` | Fixed shell: applies updates, rolls back on failure |

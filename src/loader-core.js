@@ -5,7 +5,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var LOADER_VERSION = 1;
+var LOADER_VERSION = 2; // 2: manifest adds the colour picker window
 var MAX_BOOT_ATTEMPTS = 3;
 
 function rmrf(target) {

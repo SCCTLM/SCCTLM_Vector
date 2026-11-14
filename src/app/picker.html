@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Màu CMYK</title>
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="picker.css">
+</head>
+<body class="picker">
+  <main class="pk">
+    <div class="pk-field" id="field-box">
+      <canvas id="field" width="256" height="256"></canvas>
+      <div id="ring" class="pk-ring"></div>
+    </div>
+
+    <div class="pk-slider" id="slider-box">
+      <canvas id="slider" width="20" height="256"></canvas>
+      <div id="arrows" class="pk-arrows"></div>
+    </div>
+
+    <div class="pk-side">
+      <div class="pk-top">
+        <div class="pk-swatches">
+          <span class="pk-cap">mới</span>
+          <div id="sw-new" class="pk-sw"></div>
+          <div id="sw-cur" class="pk-sw" title="Bấm để quay lại màu hiện tại"></div>
+          <span class="pk-cap">hiện tại</span>
+        </div>
+        <div class="pk-warn" id="warn" hidden>
+          <button id="warn-btn" class="pk-warn-btn" title="Ngoài gamut CMYK: bấm để lấy màu in được gần nhất">
+            <svg viewBox="0 0 20 18" width="20" height="18" aria-hidden="true">
+              <path d="M10 1.5 19 16.5H1Z" fill="currentColor"/>
+              <rect x="9" y="6.5" width="2" height="5.5" rx="1" fill="var(--bg)"/>
+              <circle cx="10" cy="14" r="1.1" fill="var(--bg)"/>
+            </svg>
+          </button>
+          <button id="warn-sw" class="pk-sw pk-sw-small" title="Màu in được gần nhất"></button>
+        </div>
+        <div class="pk-actions">
+          <button id="ok" class="pk-ok">OK</button>
+          <button id="cancel">Huỷ</button>
+          <select id="target" title="Tô màu cho">
+            <option value="fill">Fill</option>
+            <option value="stroke">Stroke</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pk-fields">
+        <div class="pk-col">
+          <label class="pk-f"><input type="radio" name="mode" value="hsb-h" checked><b>H:</b><input id="f-hsb-0" data-group="hsb" data-ch="0"><i>°</i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="hsb-s"><b>S:</b><input id="f-hsb-1" data-group="hsb" data-ch="1"><i>%</i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="hsb-b"><b>B:</b><input id="f-hsb-2" data-group="hsb" data-ch="2"><i>%</i></label>
+          <label class="pk-f pk-gap"><input type="radio" name="mode" value="rgb-r"><b>R:</b><input id="f-rgb-0" data-group="rgb" data-ch="0"><i></i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="rgb-g"><b>G:</b><input id="f-rgb-1" data-group="rgb" data-ch="1"><i></i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="rgb-b"><b>B:</b><input id="f-rgb-2" data-group="rgb" data-ch="2"><i></i></label>
+        </div>
+        <div class="pk-col">
+          <label class="pk-f"><input type="radio" name="mode" value="lab-l"><b>L:</b><input id="f-lab-0" data-group="lab" data-ch="0"><i></i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="lab-a"><b>a:</b><input id="f-lab-1" data-group="lab" data-ch="1"><i></i></label>
+          <label class="pk-f"><input type="radio" name="mode" value="lab-b"><b>b:</b><input id="f-lab-2" data-group="lab" data-ch="2"><i></i></label>
+          <label class="pk-f pk-gap pk-k"><b>C:</b><input id="f-cmyk-0" data-group="cmyk" data-ch="0"><i>%</i></label>
+          <label class="pk-f pk-k"><b>M:</b><input id="f-cmyk-1" data-group="cmyk" data-ch="1"><i>%</i></label>
+          <label class="pk-f pk-k"><b>Y:</b><input id="f-cmyk-2" data-group="cmyk" data-ch="2"><i>%</i></label>
+          <label class="pk-f pk-k"><b>K:</b><input id="f-cmyk-3" data-group="cmyk" data-ch="3"><i>%</i></label>
+        </div>
+      </div>
+
+      <label class="pk-hex"><b>#</b><input id="f-hex" maxlength="7" spellcheck="false"></label>
+    </div>
+  </main>
+
+  <footer class="pk-foot">
+    <label class="pk-check"><input type="checkbox" id="gamut-on" checked> Cảnh báo gamut</label>
+    <select id="profile" title="Profile CMYK dùng để kiểm tra gamut"></select>
+    <span id="pk-status" class="pk-status"></span>
+  </footer>
+
+  <script src="lib/CSInterface.js"></script>
+  <script src="bridge.js"></script>
+  <script src="theme.js"></script>
+  <script src="presets.js"></script>
+  <script src="color-math.js"></script>
+  <script src="color-gamut.js"></script>
+  <script src="color-field.js"></script>
+  <script src="picker.js"></script>
+</body>
+</html>

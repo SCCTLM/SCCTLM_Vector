@@ -5,6 +5,7 @@
 #include "pdf-engine.jsx"
 #include "grid-geometry.jsx"
 #include "grid-engine.jsx"
+#include "color-engine.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },

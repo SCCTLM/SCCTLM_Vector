@@ -28,7 +28,7 @@ fs.writeFileSync(versionFile, JSON.stringify(meta, null, 2) + '\n');
 const manifestFile = path.join(ext, 'CSXS', 'manifest.xml');
 const manifest = fs.readFileSync(manifestFile, 'utf8')
   .replace(/(ExtensionBundleVersion=")[^"]*"/, `$1${version}"`)
-  .replace(/(<Extension Id="[^"]*" Version=")[^"]*"/, `$1${version}"`);
+  .replace(/(<Extension Id="[^"]*" Version=")[^"]*"/g, `$1${version}"`);
 fs.writeFileSync(manifestFile, manifest);
 
 const offenders = scanDir(ext);

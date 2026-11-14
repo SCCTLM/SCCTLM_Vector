@@ -15,7 +15,9 @@
 Updates stay off until `UPDATE_REPO` in `src/app/config.js` is set. At public launch: create `SCCTLM/SCCTLM_Vector-releases`, publish releases there (token scoped to that repo only), set `UPDATE_REPO` to `SCCTLM/SCCTLM_Vector-releases`, and ship that build.
 
 ## What needs a full reinstall
-Changes to `CSXS/manifest.xml`, `loader.html`, `loader.js`, `loader-core.js`, or `update-pubkey.pem`. An update whose `version.json` has a higher `minLoaderVersion` than the installed loader is refused with a prompt to run the installer.
+Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js`, `loader-core.js`, or `update-pubkey.pem`. An update whose `version.json` has a higher `minLoaderVersion` than the installed loader is refused with a prompt to run the installer.
+
+When one of these files changes, raise `LOADER_VERSION` in `loader-core.js` and `minLoaderVersion` in `app/version.json` together. Loader version 2 added the colour picker window (a second extension in the manifest), so every install from before it needs the installer once.
 
 ## Release gate (manual)
 - Clean Windows machine: install, export a fixture, publish a higher version, accept the update, relaunch, confirm the new version; publish a deliberately broken version and confirm rollback.
