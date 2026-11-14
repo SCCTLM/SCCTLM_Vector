@@ -22,7 +22,7 @@ function pdfModeDescriptor(mode, quality) {
       jpegQuality: quality === "medium" ? "medium" : "high"
     };
   }
-  throw new Error("Unknown PDF mode: " + mode);
+  throw new Error("Ch\u1ebf \u0111\u1ed9 PDF kh\u00f4ng h\u1ee3p l\u1ec7: " + mode);
 }
 
 // Suffix that keeps the two modes from overwriting each other when exported into the same folder.

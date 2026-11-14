@@ -6,7 +6,7 @@
   var cepApi = window.cep || (window.parent && window.parent.cep);
   var busy = false;
   var artboardSignature = '';
-  var lastDocName = 'Untitled';
+  var lastDocName = 'Chưa đặt tên';
   var previewSeq = 0;
   var artboardNames = [];
   var artboardCount = 0;
@@ -109,7 +109,7 @@
       var prev = artboardSignature ? JSON.parse(artboardSignature) : null;
       var sameDoc = !!prev && prev.docName === r.docName && prev.docPath === r.docPath;
       artboardSignature = sig;
-      lastDocName = r.ok ? r.docName : 'Untitled';
+      lastDocName = r.ok ? r.docName : 'Chưa đặt tên';
       $('doc-name').textContent = r.ok ? '(' + r.docName + ')' : '';
       $('status').textContent = r.ok ? '' : r.error;
       renderArtboards(r.artboards, sameDoc ? selectedArtboards() : null);
@@ -125,7 +125,7 @@
     var sel = $('preset-select');
     sel.textContent = '';
     var list = [];
-    try { list = Presets.list(); } catch (e) { $('status').textContent = 'Presets unavailable: ' + e.message; }
+    try { list = Presets.list(); } catch (e) { $('status').textContent = 'Không tải được preset: ' + e.message; }
     list.forEach(function (p) {
       var o = document.createElement('option');
       o.textContent = p.name;
@@ -160,7 +160,7 @@
   function setBusy(on) {
     busy = on;
     $('export').disabled = on;
-    $('export').textContent = on ? 'Exporting…' : 'Export';
+    $('export').textContent = on ? 'Đang xuất…' : 'Xuất';
   }
   function showResults(r) {
     var ul = $('results');
@@ -175,18 +175,18 @@
   function runExport() {
     var s = readSettings();
     var artboards = selectedArtboards();
-    if (!artboards.length) { $('status').textContent = 'Select at least one artboard.'; return; }
-    if (!s.formats.length) { $('status').textContent = 'Select at least one format.'; return; }
-    if (!s.scales.length) { $('status').textContent = 'Select at least one scale.'; return; }
-    if (!s.outputDir) { $('status').textContent = 'Choose an output folder.'; return; }
+    if (!artboards.length) { $('status').textContent = 'Hãy chọn ít nhất một artboard.'; return; }
+    if (!s.formats.length) { $('status').textContent = 'Hãy chọn ít nhất một định dạng.'; return; }
+    if (!s.scales.length) { $('status').textContent = 'Hãy chọn ít nhất một tỉ lệ.'; return; }
+    if (!s.outputDir) { $('status').textContent = 'Hãy chọn thư mục xuất.'; return; }
     setBusy(true);
-    $('status').textContent = 'Exporting… Illustrator may not respond until it finishes.';
+    $('status').textContent = 'Đang xuất… Illustrator có thể không phản hồi cho đến khi xong.';
     $('results').textContent = '';
     Bridge.runJob({ artboards: artboards, formats: s.formats, scales: s.scales, template: s.template, outputDir: s.outputDir })
       .then(function (r) {
         var files = r.files || [];
         var okCount = files.filter(function (f) { return f.ok; }).length;
-        $('status').textContent = r.error ? r.error : okCount + ' of ' + files.length + ' files exported.';
+        $('status').textContent = r.error ? r.error : 'Đã xuất ' + okCount + '/' + files.length + ' tệp.';
         showResults(r);
       })
       .catch(function (e) { $('status').textContent = e.message; })
@@ -194,14 +194,14 @@
   }
 
   function browse() {
-    if (!cepApi || !cepApi.fs) { $('status').textContent = 'Folder picker unavailable.'; return; }
-    var res = cepApi.fs.showOpenDialogEx(false, true, 'Choose output folder', $('outdir').value || '', [], '');
+    if (!cepApi || !cepApi.fs) { $('status').textContent = 'Không mở được hộp chọn thư mục.'; return; }
+    var res = cepApi.fs.showOpenDialogEx(false, true, 'Chọn thư mục xuất', $('outdir').value || '', [], '');
     if (res && res.err === 0 && res.data && res.data.length) $('outdir').value = res.data[0];
   }
 
   // ---------- wiring ----------
   function init() {
-    if (!Bridge.available) $('status').textContent = 'CEP bridge unavailable (open inside Illustrator).';
+    if (!Bridge.available) $('status').textContent = 'Không có kết nối CEP (hãy mở panel trong Illustrator).';
     applyTheme();
     if (Bridge.cs) Bridge.cs.addEventListener(CSInterface.THEME_COLOR_CHANGED_EVENT, applyTheme);
 
@@ -236,14 +236,14 @@
       });
     };
     $('preset-save').onclick = function () {
-      askName('Save preset as:', $('preset-select').value, function (name) {
+      askName('Lưu preset với tên:', $('preset-select').value, function (name) {
         Presets.saveAs(name, readSettings());
         renderPresets(name);
       });
     };
     $('preset-rename').onclick = function () {
       var old = $('preset-select').value;
-      askName('Rename preset to:', old, function (name) {
+      askName('Đổi tên preset thành:', old, function (name) {
         if (name === old) return;
         Presets.rename(old, name);
         renderPresets(name);
@@ -254,13 +254,13 @@
     function resetDelete() {
       clearTimeout(deleteArmed);
       deleteArmed = null;
-      $('preset-delete').textContent = 'Delete';
+      $('preset-delete').textContent = 'Xoá';
     }
     $('preset-delete').onclick = function () {
       var name = $('preset-select').value;
       if (!name) return;
       if (!deleteArmed) {
-        $('preset-delete').textContent = 'Confirm?';
+        $('preset-delete').textContent = 'Xác nhận?';
         deleteArmed = setTimeout(resetDelete, 3000);
         return;
       }

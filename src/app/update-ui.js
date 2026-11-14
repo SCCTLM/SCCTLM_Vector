@@ -43,28 +43,28 @@
 
   function check(manual) {
     if (!manual && !Updater.dueForCheck(stateFile, Date.now())) return;
-    if (manual) show('Checking for updates…', false);
+    if (manual) show('Đang kiểm tra cập nhật…', false);
     Updater.checkForUpdate({ repo: repo, currentVersion: current, failedVersions: readState().failed }).then(function (info) {
       try { Updater.recordCheck(stateFile, Date.now()); } catch (e) { /* throttle is best effort */ }
       offered = info;
       if (info) {
-        show('Update ' + info.version + ' available.', true);
+        show('Có bản cập nhật ' + info.version + '.', true);
         $('update-banner').title = info.notes;
       } else {
-        show(manual ? 'You have the latest version.' : '', false);
+        show(manual ? 'Bạn đang dùng phiên bản mới nhất.' : '', false);
       }
     }).catch(function () {
-      show(manual ? 'Could not check for updates.' : '', false);
+      show(manual ? 'Không kiểm tra được bản cập nhật.' : '', false);
     });
   }
 
   function install() {
     if (!offered) return;
-    show('Downloading ' + offered.version + '…', false);
+    show('Đang tải ' + offered.version + '…', false);
     Updater.stageUpdate(offered, { extDir: extDir, publicKeyPem: publicKey(), loaderVersion: loaderVersion() }).then(function () {
-      show('Update ' + offered.version + ' ready. Close and reopen the panel to finish.', false);
+      show('Bản cập nhật ' + offered.version + ' đã sẵn sàng. Đóng và mở lại panel để hoàn tất.', false);
     }).catch(function (e) {
-      show(e && e.needsInstaller ? 'This update needs the full installer.' : 'Update failed; nothing was changed.', false);
+      show(e && e.needsInstaller ? 'Bản cập nhật này cần cài bằng bộ cài đầy đủ.' : 'Cập nhật thất bại; chưa có gì bị thay đổi.', false);
     });
   }
 

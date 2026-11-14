@@ -26,7 +26,7 @@ test('review mode downsamples to 150 ppi with JPEG high, or medium on request', 
 });
 
 test('unknown mode throws', () => {
-  assert.throws(() => run('pdfModeDescriptor("draft")'), /Unknown PDF mode/);
+  assert.throws(() => run('pdfModeDescriptor("draft")'), /Chế độ PDF không hợp lệ/);
 });
 
 test('mode suffix differs per mode', () => {

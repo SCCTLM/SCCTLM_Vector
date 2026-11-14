@@ -1,6 +1,6 @@
 # SCCTLM Vector
 
-An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, many formats and many scales in one click, with naming templates and saved presets.
+An Adobe Illustrator panel (CEP) for batch exporting artboards: many artboards, many formats and many scales in one click, with naming templates and saved presets. The panel UI is in Vietnamese.
 
 > Status: early development. Only the loading spike exists so far; the export features are planned.
 
