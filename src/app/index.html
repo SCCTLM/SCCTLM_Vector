@@ -10,6 +10,9 @@
     <img class="logo" src="assets/logo.svg" width="22" height="22" alt="">
     <span class="wordmark">SCCTLM <b>Vector</b></span>
     <span id="version-label" class="muted version"></span>
+    <button id="open-picker" class="open-picker" title="Mở bảng chọn màu có cảnh báo gamut CMYK">
+      <span class="open-picker-dot" aria-hidden="true"></span>Màu CMYK
+    </button>
   </header>
 
   <div id="tabs" class="tabs">
@@ -171,6 +174,7 @@
 
   <script src="lib/CSInterface.js"></script>
   <script src="bridge.js"></script>
+  <script src="theme.js"></script>
   <script src="presets.js"></script>
   <script src="pdf-format.js"></script>
   <script src="config.js"></script>
@@ -181,5 +185,6 @@
   <script src="grid-settings.js"></script>
   <script src="grid-panel.js"></script>
   <script src="tabs.js"></script>
+  <script src="color-picker-launcher.js"></script>
 </body>
 </html>

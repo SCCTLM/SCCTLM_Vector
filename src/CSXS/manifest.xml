@@ -3,6 +3,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
     <Extension Id="vn.scctlm.vector.panel" Version="0.0.1" />
+    <Extension Id="vn.scctlm.vector.picker" Version="0.0.1" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -44,6 +45,37 @@
               <Width>1200</Width>
               <Height>2400</Height>
             </MaxSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./icons/icon.png</Icon>
+            <Icon Type="RollOver">./icons/icon.png</Icon>
+            <Icon Type="DarkNormal">./icons/icon.png</Icon>
+            <Icon Type="DarkRollOver">./icons/icon.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Colour picker window, opened from the panel. Its page lives in the updatable app folder. -->
+    <Extension Id="vn.scctlm.vector.picker">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./picker-loader.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Modeless</Type>
+          <Menu>SCCTLM Vector – Màu CMYK</Menu>
+          <Geometry>
+            <Size>
+              <Width>600</Width>
+              <Height>410</Height>
+            </Size>
           </Geometry>
           <Icons>
             <Icon Type="Normal">./icons/icon.png</Icon>

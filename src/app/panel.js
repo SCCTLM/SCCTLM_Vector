@@ -12,29 +12,6 @@
   var artboardCount = 0;
   var DEFAULT_TEMPLATE = '{doc}_{artboard}@{scale}x';
 
-  // ---------- theme ----------
-  function hex(c) {
-    var h = function (n) { return ('0' + Math.round(n).toString(16)).slice(-2); };
-    return '#' + h(c.red) + h(c.green) + h(c.blue);
-  }
-  function shift(c, delta) {
-    var clamp = function (n) { return Math.max(0, Math.min(255, n + delta)); };
-    return { red: clamp(c.red), green: clamp(c.green), blue: clamp(c.blue) };
-  }
-  function applyTheme() {
-    if (!Bridge.cs) return;
-    var bg = Bridge.cs.getHostEnvironment().appSkinInfo.panelBackgroundColor.color;
-    var dark = (bg.red + bg.green + bg.blue) / 3 < 128;
-    var root = document.documentElement.style;
-    root.setProperty('--bg', hex(bg));
-    root.setProperty('--fg', dark ? '#ddd' : '#222');
-    root.setProperty('--muted', dark ? 'rgba(238,238,238,.8)' : 'rgba(20,20,20,.8)');
-    root.setProperty('--green-text', dark ? '#3ee690' : '#055a2f');
-    root.setProperty('--err', dark ? '#ff7378' : '#a80008');
-    root.setProperty('--field', hex(shift(bg, dark ? -20 : 25)));
-    root.setProperty('--btn', hex(shift(bg, dark ? 25 : -20)));
-  }
-
   // ---------- settings <-> UI ----------
   function checkedFormats() {
     return Array.prototype.map.call($('formats').querySelectorAll('input:checked'), function (i) { return i.value; });
@@ -202,8 +179,7 @@
   // ---------- wiring ----------
   function init() {
     if (!Bridge.available) $('status').textContent = 'Không có kết nối CEP (hãy mở panel trong Illustrator).';
-    applyTheme();
-    if (Bridge.cs) Bridge.cs.addEventListener(CSInterface.THEME_COLOR_CHANGED_EVENT, applyTheme);
+    Theme.watch();
 
     $('ab-all').onclick = function () { each($('artboards').querySelectorAll('input'), function (i) { i.checked = true; }); };
     $('ab-none').onclick = function () { each($('artboards').querySelectorAll('input'), function (i) { i.checked = false; }); };

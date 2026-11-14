@@ -68,6 +68,9 @@
     gridInspect: function (job) { return evalScript('gridInspect(' + literal(JSON.stringify(job || {})) + ')'); },
     gridGenerate: function (job) { return evalScript('gridGenerate(' + literal(JSON.stringify(job)) + ')'); },
     gridClear: function () { return evalScript('gridClear()'); },
+    colorContext: function () { return evalScript('colorPickerContext()'); },
+    colorConvert: function (job) { return evalScript('colorConvert(' + literal(JSON.stringify(job)) + ')'); },
+    colorApply: function (job) { return evalScript('colorApply(' + literal(JSON.stringify(job)) + ')'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {
       return evalScript('(function(){var c=' + jsonText(ctx) + ';c.artboard=uniqueArtboardNames(' +

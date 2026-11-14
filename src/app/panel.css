@@ -16,6 +16,8 @@ body { font: 12px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; color: var
 .wordmark { font-size: 13px; letter-spacing: .01em; }
 .wordmark b { font-weight: 700; }
 .version { margin-left: auto; font-size: 10px; }
+.open-picker { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.open-picker-dot { width: 10px; height: 10px; border-radius: 50%; background: conic-gradient(#00aeef, #ec008c, #fff200, #00aeef); box-shadow: 0 0 0 1px rgba(0,0,0,.35); }
 
 /* segmented tabs */
 .tabs { display: flex; padding: 3px; margin-bottom: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
