@@ -58,12 +58,12 @@ function pdfDocIdentity(doc) {
 function enginePdfWithCopy(doc, work) {
   var src = null;
   try { src = doc.fullName; } catch (ignore) {}
-  if (!src) throw new Error("Save the document first: PDF export works from the saved file");
-  if (!doc.saved) throw new Error("The document has unsaved changes. Save it first so the PDF matches what you see");
+  if (!src) throw new Error("H\u00e3y l\u01b0u t\u00e0i li\u1ec7u tr\u01b0\u1edbc: xu\u1ea5t PDF d\u00f9ng t\u1ec7p \u0111\u00e3 l\u01b0u");
+  if (!doc.saved) throw new Error("T\u00e0i li\u1ec7u c\u00f3 thay \u0111\u1ed5i ch\u01b0a l\u01b0u. H\u00e3y l\u01b0u tr\u01b0\u1edbc \u0111\u1ec3 PDF kh\u1edbp v\u1edbi nh\u1eefng g\u00ec b\u1ea1n th\u1ea5y");
 
   var before = pdfDocIdentity(doc);
   var temp = new File(src.parent.fsName + "/~scctlm-" + new Date().getTime() + src.name.replace(/^[^.]*/, ""));
-  if (!src.copy(temp)) throw new Error("Could not create a temporary copy of the document: " + src.error);
+  if (!src.copy(temp)) throw new Error("Kh\u00f4ng t\u1ea1o \u0111\u01b0\u1ee3c b\u1ea3n sao t\u1ea1m c\u1ee7a t\u00e0i li\u1ec7u: " + src.error);
 
   var level = app.userInteractionLevel;
   var copyDoc = null;
@@ -87,14 +87,14 @@ function enginePdfJob(jobJson) {
   var job = typeof jobJson === "string" ? JSON.parse(jobJson) : jobJson;
   var doc = app.activeDocument;
   var indexes = engineResolveArtboards(job.artboards, doc.artboards.length);
-  if (indexes.length === 0) throw new Error("Select at least one artboard");
+  if (indexes.length === 0) throw new Error("H\u00e3y ch\u1ecdn \u00edt nh\u1ea5t m\u1ed9t artboard");
   return { doc: doc, indexes: indexes, job: job, identity: pdfDocIdentity(doc) };
 }
 
 // Final safety net: the PDF work must leave the user's document exactly as it was.
 function enginePdfAssertUntouched(p) {
   if (pdfDocIdentity(p.doc) !== p.identity) {
-    throw new Error("The open document changed during the PDF export; please check it before saving");
+    throw new Error("T\u00e0i li\u1ec7u \u0111ang m\u1edf \u0111\u00e3 thay \u0111\u1ed5i trong l\u00fac xu\u1ea5t PDF; h\u00e3y ki\u1ec3m tra l\u1ea1i tr\u01b0\u1edbc khi l\u01b0u");
   }
 }
 
@@ -108,7 +108,7 @@ function engineArtboardArea(ab) {
 function estimatePdf(jobJson) {
   var tempRoot = null;
   try {
-    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "No open document" });
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
     var p = enginePdfJob(jobJson);
     var modes = p.job.modes || ["print", "review"];
     var sample = p.indexes;
@@ -146,12 +146,12 @@ function estimatePdf(jobJson) {
 function runPdfExport(jobJson) {
   var files = [];
   try {
-    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "No open document", files: files });
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o", files: files });
     var p = enginePdfJob(jobJson);
     var descriptor = pdfModeDescriptor(p.job.mode, p.job.quality);
     var outDir = new Folder(p.job.outputDir);
     if (!outDir.exists && !outDir.create()) {
-      return JSON.stringify({ ok: false, error: "Cannot create output folder: " + p.job.outputDir, files: files });
+      return JSON.stringify({ ok: false, error: "Kh\u00f4ng t\u1ea1o \u0111\u01b0\u1ee3c th\u01b0 m\u1ee5c xu\u1ea5t: " + p.job.outputDir, files: files });
     }
     var docName = documentBaseName(p.doc.name);
     var suffix = pdfModeSuffix(descriptor.mode);

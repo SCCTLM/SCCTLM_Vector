@@ -39,7 +39,7 @@
       base = decodeURIComponent(base);
       if (!/^[A-Za-z]:/.test(base)) base = '/' + base;
       engineLoaded = rawEval('$.evalFile(File(' + jsonText(base + 'jsx/engine.jsx') + '));"ok"').then(function (r) {
-        if (r === 'EvalScript error.') { engineLoaded = null; throw new Error('Could not load the export engine'); }
+        if (r === 'EvalScript error.') { engineLoaded = null; throw new Error('Không tải được engine xuất'); }
       });
     }
     return engineLoaded;
@@ -47,11 +47,11 @@
 
   function evalScript(code) {
     return new Promise(function (resolve, reject) {
-      if (!cs) { reject(new Error('CEP bridge unavailable')); return; }
+      if (!cs) { reject(new Error('Không có kết nối CEP')); return; }
       loadEngine().then(function () { return rawEval(code); }).then(function (result) {
-        if (result === 'EvalScript error.') { reject(new Error('Illustrator script error')); return; }
+        if (result === 'EvalScript error.') { reject(new Error('Lỗi script Illustrator')); return; }
         try { resolve(JSON.parse(result)); }
-        catch (e) { reject(new Error('Unexpected engine reply: ' + result)); }
+        catch (e) { reject(new Error('Engine trả về kết quả không hợp lệ: ' + result)); }
       }).catch(reject);
     });
   }

@@ -84,9 +84,9 @@
     rename: function (oldName, newName) {
       var store = load();
       var i = indexOf(store, oldName);
-      if (i < 0) throw new Error('Preset not found');
+      if (i < 0) throw new Error('Không tìm thấy preset');
       var clash = indexOf(store, newName);
-      if (clash >= 0 && clash !== i) throw new Error('A preset with that name already exists');
+      if (clash >= 0 && clash !== i) throw new Error('Đã có preset trùng tên');
       store.presets[i].name = newName;
       save(store);
       return store.presets;

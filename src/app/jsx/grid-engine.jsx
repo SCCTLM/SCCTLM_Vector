@@ -274,7 +274,7 @@ function gridSize(bounds) {
 // the circle count is computed too (maths only, nothing is drawn): at high complexity it can dwarf the anchors.
 function gridInspect(jobJson) {
   try {
-    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "No open document" });
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
     var read = gridReadSelection(app.activeDocument);
     var job = jobJson ? JSON.parse(jobJson) : {};
     var circles = 0;
@@ -294,14 +294,14 @@ function gridInspect(jobJson) {
 function gridGenerate(jobJson) {
   var doc = null, selected = [], activeLayer = null, layers = null;
   try {
-    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "No open document" });
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
     var job = JSON.parse(jobJson);
     var el = job.elements || {};
     doc = app.activeDocument;
     selected = gridSelection(doc);
     var read = gridReadSelection(doc);
     if (!read.paths.length) {
-      return JSON.stringify({ ok: false, error: "Select vector paths first (outline any text)", skipped: read.skipped });
+      return JSON.stringify({ ok: false, error: "H\u00e3y ch\u1ecdn c\u00e1c path vector tr\u01b0\u1edbc (outline v\u0103n b\u1ea3n n\u1ebfu c\u00f3)", skipped: read.skipped });
     }
     var isCmyk = doc.documentColorSpace === DocumentColorSpace.CMYK;
     var paths = read.paths;
@@ -391,7 +391,7 @@ function gridGenerate(jobJson) {
 
 function gridClear() {
   try {
-    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "No open document" });
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
     var doc = app.activeDocument;
     return JSON.stringify({ ok: true, removed: gridRemoveLayer(doc, gridFindLayer(doc)) });
   } catch (e) {

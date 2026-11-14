@@ -5,12 +5,12 @@ The Grid tab draws a construction grid over the selected vector artwork. It neve
 ## Use
 
 1. Select the logo: paths, compound paths and groups (groups are searched inside). Outline text first; text, placed images, clipping masks, hidden items (including everything inside a hidden group) and other items are skipped and counted in the status line.
-2. Open the **Grid** tab, turn on the elements you want and press **Generate**.
-3. Press **Generate** again after changing options: the previous grid layer is replaced, even if it was locked or hidden. **Clear** removes it. If drawing fails, the previous grid stays and the partly drawn one is removed.
+2. Open the **Lưới** (Grid) tab, turn on the elements you want and press **Tạo lưới** (Generate).
+3. Press **Tạo lưới** again after changing options: the previous grid layer is replaced, even if it was locked or hidden. **Xoá lưới** (Clear) removes it. If drawing fails, the previous grid stays and the partly drawn one is removed.
 
-**Generate all** draws every element for that run without changing your toggles. When the anchor points plus the circles to draw exceed 2,000, the panel asks before running, because Illustrator stops responding while it draws. High circle complexity can produce many more circles than anchors.
+**Tạo tất cả** (Generate all) draws every element for that run without changing your toggles. When the anchor points plus the circles to draw exceed 2,000, the panel asks before running, because Illustrator stops responding while it draws. High circle complexity can produce many more circles than anchors.
 
-Illustrator may record the drawing as many undo steps, so use **Clear** to remove a grid rather than Undo.
+Illustrator may record the drawing as many undo steps, so use **Xoá lưới** to remove a grid rather than Undo.
 
 ## Elements
 
@@ -22,14 +22,14 @@ Illustrator may record the drawing as many undo steps, so use **Clear** to remov
 | Gridlines | every straight segment extended across the artwork, plus horizontal and vertical lines through anchors whose handles are horizontal or vertical (the top, bottom and sides of curves) | Gridlines |
 | Circles | circles that follow each curved segment | Circles |
 
-Sublayers with nothing on them are removed. Each element has its own style (size, fill, stroke, stroke width, with **None** to turn fill or stroke off). Sizes and widths are in points. In CMYK documents the chosen colours are converted with the plain formula k = 1 − max(r, g, b).
+Sublayers with nothing on them are removed. Each element has its own style (size, fill, stroke, stroke width, with **Không** (None) to turn fill or stroke off). Sizes and widths are in points. In CMYK documents the chosen colours are converted with the plain formula k = 1 − max(r, g, b).
 
 ## Options
 
-- **Gridlines, Merge (Low to High):** how close two lines must be to count as one. At Low only identical lines merge; at High lines within 3 degrees and 2% of the logo size merge. Merged lines are drawn as their average. The default (50) merges the duplicate lines a square or a symmetric logo produces.
-- **Gridlines, Margin:** how far the lines run past the artwork, in points.
-- **Circles, Minimal to Complex:** how closely the circles must follow the curve. Each curve is first split where it changes bend direction (an S-curve becomes two pieces); a piece gets one circle through its start, middle and end and is halved again while the curve strays too far from that circle. Minimal allows 5% of the logo size, Complex 0.05%. Nearly straight pieces get no circle.
-- **Circles, Per curve:** **All** circles, the **First** N from the start of each curve, or the N covering the **Longest** parts of it.
+- **Đường lưới, Gộp (Thấp to Cao)** (Gridlines, Merge, Low to High): how close two lines must be to count as one. At Low only identical lines merge; at High lines within 3 degrees and 2% of the logo size merge. Merged lines are drawn as their average. The default (50) merges the duplicate lines a square or a symmetric logo produces.
+- **Đường lưới, Lề** (Gridlines, Margin): how far the lines run past the artwork, in points.
+- **Vòng tròn, Tối giản to Phức tạp** (Circles, Minimal to Complex): how closely the circles must follow the curve. Each curve is first split where it changes bend direction (an S-curve becomes two pieces); a piece gets one circle through its start, middle and end and is halved again while the curve strays too far from that circle. Minimal allows 5% of the logo size, Complex 0.05%. Nearly straight pieces get no circle.
+- **Vòng tròn, Mỗi đường cong** (Circles, Per curve): **Tất cả** (All) circles, the **Đầu tiên** (First) N from the start of each curve, or the N covering the **Dài nhất** (Longest) parts of it.
 
 Settings are saved in `grid-settings.json` next to `presets.json` in the per-user data folder, so updates keep them.
 

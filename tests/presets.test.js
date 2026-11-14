@@ -41,7 +41,7 @@ test('saving an existing name overwrites; renaming onto another name is rejected
   assert.strictEqual(p.list().length, 1);
   assert.deepStrictEqual(Array.from(p.get('A').scales), [3]);
   p.saveAs('B', settings);
-  assert.throws(() => p.rename('A', 'B'), /already exists/);
+  assert.throws(() => p.rename('A', 'B'), /trùng tên/);
 });
 
 test('corrupt or unknown-shape files fall back to an empty store', () => {

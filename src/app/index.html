@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <title>SCCTLM Vector</title>
@@ -13,48 +13,48 @@
   </header>
 
   <div id="tabs" class="tabs">
-    <button class="tab on" data-tab="images">Images</button>
+    <button class="tab on" data-tab="images">Hình ảnh</button>
     <button class="tab" data-tab="pdf">PDF</button>
-    <button class="tab" data-tab="grid">Grid</button>
+    <button class="tab" data-tab="grid">Lưới</button>
   </div>
 
   <section data-pane="images">
     <h4>Preset</h4>
     <div class="row">
       <select id="preset-select"></select>
-      <button id="preset-apply" title="Apply selected preset">Apply</button>
+      <button id="preset-apply" title="Áp dụng preset đang chọn">Áp dụng</button>
     </div>
     <div class="row">
-      <button id="preset-save">Save as…</button>
-      <button id="preset-rename">Rename</button>
-      <button id="preset-delete">Delete</button>
+      <button id="preset-save">Lưu thành…</button>
+      <button id="preset-rename">Đổi tên</button>
+      <button id="preset-delete">Xoá</button>
     </div>
     <div class="row" id="name-row" hidden>
       <span id="name-label" class="muted"></span>
       <input id="name-input" type="text" spellcheck="false">
       <button id="name-ok">OK</button>
-      <button id="name-cancel">Cancel</button>
+      <button id="name-cancel">Huỷ</button>
     </div>
   </section>
 
   <section class="export-only">
-    <h4>Artboards <span id="doc-name" class="muted"></span></h4>
+    <h4>Artboard <span id="doc-name" class="muted"></span></h4>
     <div class="row">
-      <button id="ab-all">All</button>
-      <button id="ab-none">None</button>
+      <button id="ab-all">Tất cả</button>
+      <button id="ab-none">Bỏ chọn</button>
     </div>
     <div id="artboards" class="list"></div>
   </section>
 
   <section data-pane="images">
-    <h4>Formats</h4>
+    <h4>Định dạng</h4>
     <div id="formats" class="row">
       <label class="pill"><input type="checkbox" value="png" checked><span>PNG</span></label>
       <label class="pill"><input type="checkbox" value="jpg"><span>JPG</span></label>
       <label class="pill"><input type="checkbox" value="svg"><span>SVG</span></label>
       <label class="pill"><input type="checkbox" value="pdf"><span>PDF</span></label>
     </div>
-    <h4>Scale</h4>
+    <h4>Tỉ lệ</h4>
     <div id="scales" class="row">
       <button class="chip on" data-scale="1">1x</button>
       <button class="chip" data-scale="2">2x</button>
@@ -64,7 +64,7 @@
   </section>
 
   <section data-pane="images">
-    <h4>File name</h4>
+    <h4>Tên tệp</h4>
     <input id="template" type="text" spellcheck="false">
     <div id="tokens" class="row">
       <button data-token="{doc}">doc</button>
@@ -74,99 +74,99 @@
       <button data-token="{format}">format</button>
       <button data-token="{date}">date</button>
     </div>
-    <div class="muted">Example: <span id="example">-</span></div>
+    <div class="muted">Ví dụ: <span id="example">-</span></div>
   </section>
 
   <section data-pane="pdf">
-    <h4>Mode</h4>
+    <h4>Chế độ</h4>
     <div id="pdf-modes" class="cards">
       <button class="card on" data-mode="print">
-        <b>Print</b>
-        <span class="muted">Images keep their resolution (no downsampling), JPEG maximum.</span>
+        <b>In ấn</b>
+        <span class="muted">Ảnh giữ nguyên độ phân giải (không giảm mẫu), JPEG chất lượng tối đa.</span>
         <span class="size" id="pdf-size-print">-</span>
       </button>
       <button class="card" data-mode="review">
-        <b>Review</b>
-        <span class="muted">Images above 225 ppi reduced to 150 ppi, JPEG quality set below. For email or chat.</span>
+        <b>Duyệt</b>
+        <span class="muted">Ảnh trên 225 ppi được giảm xuống 150 ppi, chất lượng JPEG chọn bên dưới. Dùng để gửi email hoặc chat.</span>
         <span class="size" id="pdf-size-review">-</span>
       </button>
     </div>
     <div id="pdf-quality-row" class="row">
-      <span class="muted">Review image quality</span>
-      <button class="chip on" data-quality="high">High</button>
-      <button class="chip" data-quality="medium">Medium</button>
+      <span class="muted">Chất lượng ảnh (Duyệt)</span>
+      <button class="chip on" data-quality="high">Cao</button>
+      <button class="chip" data-quality="medium">Trung bình</button>
     </div>
-    <h4>Layout</h4>
+    <h4>Bố cục</h4>
     <div id="pdf-layout" class="row">
-      <button class="chip on" data-layout="single">One multi-page PDF</button>
-      <button class="chip" data-layout="separate">One PDF per artboard</button>
+      <button class="chip on" data-layout="single">Một PDF nhiều trang</button>
+      <button class="chip" data-layout="separate">Mỗi artboard một PDF</button>
     </div>
     <div class="row">
       <span class="muted" id="pdf-estimate-note"></span>
-      <button id="pdf-recalc">Calculate size</button>
+      <button id="pdf-recalc">Tính dung lượng</button>
     </div>
-    <div class="muted">Editing data is always removed, so open the PDF in Illustrator only for viewing. Keep your .ai file.</div>
+    <div class="muted">Dữ liệu chỉnh sửa luôn bị loại bỏ, nên chỉ mở PDF trong Illustrator để xem. Hãy giữ lại tệp .ai.</div>
   </section>
 
   <section data-pane="grid">
-    <h4>Draw</h4>
+    <h4>Vẽ</h4>
     <div id="grid-elements"></div>
-    <h4>Gridlines</h4>
+    <h4>Đường lưới</h4>
     <div class="row">
-      <span class="muted">Merge</span>
-      <span class="muted">Low</span>
+      <span class="muted">Gộp</span>
+      <span class="muted">Thấp</span>
       <input id="grid-sensitivity" type="range" min="0" max="100" step="1">
-      <span class="muted">High</span>
+      <span class="muted">Cao</span>
     </div>
     <div class="row">
-      <span class="muted" title="How far gridlines run past the artwork">Margin</span>
+      <span class="muted" title="Đường lưới kéo dài ra ngoài hình bao xa">Lề</span>
       <input id="grid-margin" type="number" min="0" step="1"> <span class="muted">pt</span>
     </div>
-    <h4>Circles</h4>
+    <h4>Vòng tròn</h4>
     <div class="row">
-      <span class="muted">Minimal</span>
+      <span class="muted">Tối giản</span>
       <input id="grid-complexity" type="range" min="0" max="100" step="1">
-      <span class="muted">Complex</span>
+      <span class="muted">Phức tạp</span>
     </div>
     <div id="grid-cmode" class="row">
-      <span class="muted">Per curve</span>
-      <button class="chip" data-cmode="all">All</button>
-      <button class="chip" data-cmode="first">First</button>
-      <button class="chip" data-cmode="longest">Longest</button>
-      <input id="grid-n" type="number" min="1" max="99" step="1" title="Number of circles per curve">
+      <span class="muted">Mỗi đường cong</span>
+      <button class="chip" data-cmode="all">Tất cả</button>
+      <button class="chip" data-cmode="first">Đầu tiên</button>
+      <button class="chip" data-cmode="longest">Dài nhất</button>
+      <input id="grid-n" type="number" min="1" max="99" step="1" title="Số vòng tròn trên mỗi đường cong">
     </div>
-    <div class="muted">Each curve gets circles that follow its shape; more complexity means more, tighter circles. First keeps the circles from the start of the curve, Longest keeps those covering its longest parts.</div>
+    <div class="muted">Mỗi đường cong được vẽ các vòng tròn bám theo hình dạng; độ phức tạp càng cao thì vòng tròn càng nhiều và sát hơn. Đầu tiên giữ các vòng tròn từ đầu đường cong, Dài nhất giữ các vòng tròn phủ phần dài nhất.</div>
   </section>
 
   <section class="export-only">
-    <h4>Output folder</h4>
+    <h4>Thư mục xuất</h4>
     <div class="row">
       <input id="outdir" type="text" spellcheck="false">
-      <button id="browse">Browse…</button>
+      <button id="browse">Chọn…</button>
     </div>
   </section>
 
   <div id="update-banner" class="banner" hidden>
     <span id="update-text"></span>
-    <button id="update-install" hidden>Install</button>
+    <button id="update-install" hidden>Cài đặt</button>
   </div>
 
-  <button id="export" class="primary" data-pane="images">Export</button>
-  <button id="pdf-export" class="primary" data-pane="pdf">Export PDF</button>
+  <button id="export" class="primary" data-pane="images">Xuất</button>
+  <button id="pdf-export" class="primary" data-pane="pdf">Xuất PDF</button>
   <div class="row" id="grid-confirm" data-pane="grid" hidden>
     <span id="grid-confirm-text" class="muted"></span>
-    <button id="grid-confirm-ok">Continue</button>
-    <button id="grid-confirm-cancel">Cancel</button>
+    <button id="grid-confirm-ok">Tiếp tục</button>
+    <button id="grid-confirm-cancel">Huỷ</button>
   </div>
-  <button id="grid-generate" class="primary" data-pane="grid">Generate</button>
+  <button id="grid-generate" class="primary" data-pane="grid">Tạo lưới</button>
   <div class="row split" data-pane="grid">
-    <button id="grid-generate-all" title="Draw every element once; your toggles stay as they are">Generate all</button>
-    <button id="grid-clear" title="Remove the SCCTLM Grid layer">Clear</button>
+    <button id="grid-generate-all" title="Vẽ tất cả thành phần một lần; các lựa chọn bật/tắt vẫn giữ nguyên">Tạo tất cả</button>
+    <button id="grid-clear" title="Xoá layer SCCTLM Grid">Xoá lưới</button>
   </div>
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
   <div class="foot">
-    <button id="update-check" class="link" hidden>Check for updates</button>
+    <button id="update-check" class="link" hidden>Kiểm tra cập nhật</button>
   </div>
 
   <script src="lib/CSInterface.js"></script>

@@ -21,7 +21,7 @@ function engineErrorMessage(e) {
 function listArtboards() {
   try {
     if (app.documents.length === 0) {
-      return JSON.stringify({ ok: false, error: "No open document", artboards: [] });
+      return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o", artboards: [] });
     }
     var doc = app.activeDocument;
     var out = [];
@@ -45,7 +45,7 @@ function engineResolveArtboards(spec, count) {
     return result;
   }
   if (Object.prototype.toString.call(spec) !== "[object Array]") {
-    throw new Error('"artboards" must be "all" or an array of indexes');
+    throw new Error('"artboards" ph\u1ea3i l\u00e0 "all" ho\u1eb7c m\u1ea3ng ch\u1ec9 s\u1ed1');
   }
   var seen = {};
   for (i = 0; i < spec.length; i++) {
@@ -99,7 +99,7 @@ function engineBuildOptions(format, scale) {
 function engineExportOne(doc, artboardIndex, format, scale, tempRoot) {
   var type = ExportForScreensType[ENGINE_FORMATS[format].typeConst];
   if (type === undefined) {
-    throw new Error("Format " + format + " is not supported by this Illustrator version");
+    throw new Error("Phi\u00ean b\u1ea3n Illustrator n\u00e0y kh\u00f4ng h\u1ed7 tr\u1ee3 \u0111\u1ecbnh d\u1ea1ng " + format);
   }
   var tempDir = new Folder(tempRoot.fsName + "/" + format + "_" + artboardIndex + "_" + scale);
   if (tempDir.exists) engineRemoveFolder(tempDir);
@@ -113,7 +113,7 @@ function engineExportOne(doc, artboardIndex, format, scale, tempRoot) {
 
   var produced = engineCollectFiles(tempDir, []);
   if (produced.length !== 1) {
-    throw new Error("Expected 1 exported file, found " + produced.length);
+    throw new Error("C\u1ea7n \u0111\u00fang 1 t\u1ec7p \u0111\u01b0\u1ee3c xu\u1ea5t, nh\u01b0ng c\u00f3 " + produced.length);
   }
   return produced[0];
 }
@@ -124,7 +124,7 @@ function engineMoveUnique(source, outDir, base, ext) {
   });
   var target = new File(outDir.fsName + "/" + name);
   if (!source.copy(target)) {
-    throw new Error("Could not write " + target.fsName + ": " + source.error);
+    throw new Error("Kh\u00f4ng ghi \u0111\u01b0\u1ee3c " + target.fsName + ": " + source.error);
   }
   return target;
 }
@@ -137,13 +137,13 @@ function runExport(jobJson) {
   try {
     var job = typeof jobJson === "string" ? JSON.parse(jobJson) : jobJson;
     if (app.documents.length === 0) {
-      return JSON.stringify({ ok: false, error: "No open document", files: files });
+      return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o", files: files });
     }
     var doc = app.activeDocument;
 
     var outDir = new Folder(job.outputDir);
     if (!outDir.exists && !outDir.create()) {
-      return JSON.stringify({ ok: false, error: "Cannot create output folder: " + job.outputDir, files: files });
+      return JSON.stringify({ ok: false, error: "Kh\u00f4ng t\u1ea1o \u0111\u01b0\u1ee3c th\u01b0 m\u1ee5c xu\u1ea5t: " + job.outputDir, files: files });
     }
 
     var indexes = engineResolveArtboards(job.artboards, doc.artboards.length);
@@ -159,7 +159,7 @@ function runExport(jobJson) {
     }
     if (scales.length === 0) scales.push(1);
     if (indexes.length === 0 || formats.length === 0) {
-      return JSON.stringify({ ok: false, error: "Nothing to export: select artboards and formats", files: files });
+      return JSON.stringify({ ok: false, error: "Kh\u00f4ng c\u00f3 g\u00ec \u0111\u1ec3 xu\u1ea5t: h\u00e3y ch\u1ecdn artboard v\u00e0 \u0111\u1ecbnh d\u1ea1ng", files: files });
     }
 
     var rawNames = [];

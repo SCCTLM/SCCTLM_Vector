@@ -23,7 +23,7 @@
     var busy = exporting || estimating;
     $('pdf-export').disabled = busy;
     $('pdf-recalc').disabled = busy;
-    $('pdf-export').textContent = exporting ? 'Exporting…' : 'Export PDF';
+    $('pdf-export').textContent = exporting ? 'Đang xuất…' : 'Xuất PDF';
   }
   function setExporting(on) {
     exporting = on;
@@ -38,7 +38,7 @@
     var el = $('pdf-size-' + mode);
     if (!result) { el.textContent = '-'; el.title = ''; el.classList.remove('fail'); return; }
     el.classList.toggle('fail', !result.ok);
-    el.textContent = result.ok ? (result.approx ? '≈ ' : '') + PdfFormat.formatBytes(result.bytes) : 'n/a';
+    el.textContent = result.ok ? (result.approx ? '≈ ' : '') + PdfFormat.formatBytes(result.bytes) : 'không rõ';
     el.title = result.ok ? '' : result.error;
   }
 
@@ -51,10 +51,10 @@
     showSize('print', null);
     showSize('review', null);
     if (!Bridge.available || !selectedArtboards().length) {
-      note.textContent = Bridge.available ? 'Select at least one artboard.' : '';
+      note.textContent = Bridge.available ? 'Hãy chọn ít nhất một artboard.' : '';
       return;
     }
-    note.textContent = 'Calculating… Illustrator may pause until this finishes.';
+    note.textContent = 'Đang tính… Illustrator có thể tạm dừng cho đến khi xong.';
     setEstimating(true);
     Bridge.estimatePdf({ artboards: selectedArtboards(), quality: state.quality, modes: ['print', 'review'] }).then(function (r) {
       if (id !== seq) return;
@@ -66,7 +66,7 @@
       }
       showSize('print', { ok: true, bytes: r.sizes.print, approx: r.approx });
       showSize('review', { ok: true, bytes: r.sizes.review, approx: r.approx });
-      note.textContent = r.approx ? 'Approximate: estimated from one representative artboard.' : 'Measured from a trial export.';
+      note.textContent = r.approx ? 'Gần đúng: ước tính từ một artboard đại diện.' : 'Đo từ một lần xuất thử.';
     }).catch(function (e) {
       if (id === seq) note.textContent = e.message;
     }).then(function () { setEstimating(false); });
@@ -80,25 +80,25 @@
     if (state.tab !== 'pdf' || exporting) return;
     showSize('print', null);
     showSize('review', null);
-    $('pdf-estimate-note').textContent = 'Selection or quality changed. Press Calculate size to see the predicted file size.';
+    $('pdf-estimate-note').textContent = 'Lựa chọn hoặc chất lượng đã thay đổi. Nhấn Tính dung lượng để xem dung lượng dự kiến.';
   }
 
   function runExport() {
     var outputDir = $('outdir').value;
     var artboards = selectedArtboards();
     if (exporting) return;
-    if (!artboards.length) { status('Select at least one artboard.'); return; }
-    if (!outputDir) { status('Choose an output folder.'); return; }
+    if (!artboards.length) { status('Hãy chọn ít nhất một artboard.'); return; }
+    if (!outputDir) { status('Hãy chọn thư mục xuất.'); return; }
     clearTimeout(timer);
     seq++;
     setExporting(true);
-    status('Exporting… Illustrator may not respond until it finishes.');
+    status('Đang xuất… Illustrator có thể không phản hồi cho đến khi xong.');
     $('results').textContent = '';
     var payload = { artboards: artboards, mode: state.mode, quality: state.quality, layout: state.layout, outputDir: outputDir };
     Bridge.runPdfJob(payload).then(function (r) {
       var files = r.files || [];
       var okCount = files.filter(function (f) { return f.ok; }).length;
-      status(r.error ? r.error : okCount + ' of ' + files.length + ' files exported.');
+      status(r.error ? r.error : 'Đã xuất ' + okCount + '/' + files.length + ' tệp.');
       files.forEach(function (f) {
         var li = document.createElement('li');
         li.textContent = (f.ok ? '✓ ' : '✗ ') + f.path + (f.ok ? '' : ' - ' + f.error);
@@ -121,7 +121,7 @@
       state.tab = tab;
       seq++;
       clearTimeout(timer);
-      if (tab === 'pdf') $('pdf-estimate-note').textContent = 'Press Calculate size to see the predicted file size.';
+      if (tab === 'pdf') $('pdf-estimate-note').textContent = 'Nhấn Tính dung lượng để xem dung lượng dự kiến.';
     });
     $('pdf-modes').onclick = function (e) {
       var card = e.target.closest ? e.target.closest('.card') : null;

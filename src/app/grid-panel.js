@@ -4,8 +4,8 @@
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
-  var LABELS = { anchors: 'Anchors', handles: 'Handles', outlines: 'Outlines', gridlines: 'Gridlines', circles: 'Circles' };
-  var STYLE_LABELS = { size: 'Size', fill: 'Fill', stroke: 'Stroke', strokeWidth: 'Stroke width' };
+  var LABELS = { anchors: 'Điểm neo', handles: 'Tay nắm', outlines: 'Đường viền', gridlines: 'Đường lưới', circles: 'Vòng tròn' };
+  var STYLE_LABELS = { size: 'Kích thước', fill: 'Tô', stroke: 'Nét', strokeWidth: 'Độ dày nét' };
   // Above this many anchors plus circles the run can freeze Illustrator for a while, so the panel asks first.
   var CONFIRM_ITEMS = 2000;
 
@@ -20,7 +20,7 @@
   function save() {
     settings = GridSettings.normalize(settings, saved);
     saved = GridSettings.normalize(settings);
-    try { GridSettings.save(settings); } catch (e) { status('Could not save grid settings: ' + e.message); }
+    try { GridSettings.save(settings); } catch (e) { status('Không lưu được thiết lập lưới: ' + e.message); }
   }
 
   // One row per element: toggle, then a collapsible style block built from that element's style keys.
@@ -40,7 +40,7 @@
       toggle.checked = settings.elements[key];
       toggle.onchange = function () { settings.elements[key] = toggle.checked; save(); };
       var details = document.createElement('details');
-      details.innerHTML = '<summary>Style</summary><div class="grid-style"></div>';
+      details.innerHTML = '<summary>Kiểu</summary><div class="grid-style"></div>';
       var grid = details.querySelector('.grid-style');
       Object.keys(settings.style[key]).forEach(function (prop) { addStyleControl(grid, key, prop); });
       row.appendChild(pill);
@@ -79,7 +79,7 @@
       none.onchange = update;
       cell.appendChild(picker);
       cell.appendChild(none);
-      cell.appendChild(document.createTextNode('None'));
+      cell.appendChild(document.createTextNode('Không'));
     }
     grid.appendChild(label);
     grid.appendChild(cell);
@@ -113,23 +113,23 @@
   function setRunning(on) {
     running = on;
     ['grid-generate', 'grid-generate-all', 'grid-clear'].forEach(function (id) { $(id).disabled = on; });
-    $('grid-generate').textContent = on ? 'Working…' : 'Generate';
+    $('grid-generate').textContent = on ? 'Đang xử lý…' : 'Tạo lưới';
   }
 
   function hideConfirm() { pending = null; $('grid-confirm').hidden = true; }
 
   function skippedNote(skipped) {
     var parts = [];
-    if (skipped && skipped.text) parts.push(skipped.text + ' text (outline it first)');
-    if (skipped && skipped.raster) parts.push(skipped.raster + ' image');
-    if (skipped && skipped.other) parts.push(skipped.other + ' other');
-    return parts.length ? ' Skipped: ' + parts.join(', ') + '.' : '';
+    if (skipped && skipped.text) parts.push(skipped.text + ' văn bản (hãy outline trước)');
+    if (skipped && skipped.raster) parts.push(skipped.raster + ' ảnh');
+    if (skipped && skipped.other) parts.push(skipped.other + ' đối tượng khác');
+    return parts.length ? ' Bỏ qua: ' + parts.join(', ') + '.' : '';
   }
 
   function summary(counts) {
     var parts = [];
     GridSettings.ELEMENTS.forEach(function (k) { if (counts[k]) parts.push(counts[k] + ' ' + LABELS[k].toLowerCase()); });
-    return parts.length ? 'Grid drawn: ' + parts.join(', ') + '.' : 'Nothing to draw for the chosen elements.';
+    return parts.length ? 'Đã vẽ lưới: ' + parts.join(', ') + '.' : 'Không có gì để vẽ với các thành phần đã chọn.';
   }
 
   // Generate all draws every element for this run only; the saved toggles stay as they are.
@@ -141,11 +141,11 @@
 
   function draw(job) {
     setRunning(true);
-    status('Drawing the grid…');
+    status('Đang vẽ lưới…');
     Bridge.gridGenerate(job).then(function (res) {
       status(res.ok ? summary(res.counts) + skippedNote(res.skipped) : res.error + skippedNote(res.skipped));
     }).catch(function (e) {
-      status('Grid failed: ' + e.message);
+      status('Tạo lưới thất bại: ' + e.message);
     }).then(function () { setRunning(false); });
   }
 
@@ -154,23 +154,23 @@
     hideConfirm();
     var job = jobFor(everything);
     var any = GridSettings.ELEMENTS.some(function (k) { return job.elements[k]; });
-    if (!any) { status('Turn on at least one element to draw.'); return; }
+    if (!any) { status('Hãy bật ít nhất một thành phần để vẽ.'); return; }
     setRunning(true);
     Bridge.gridInspect(job).then(function (info) {
       setRunning(false);
       if (!info.ok) { status(info.error); return; }
-      if (!info.paths) { status('Select vector paths first (outline any text).' + skippedNote(info.skipped)); return; }
+      if (!info.paths) { status('Hãy chọn các path vector trước (outline văn bản nếu có).' + skippedNote(info.skipped)); return; }
       if (info.anchors + (info.circles || 0) > CONFIRM_ITEMS) {
         pending = job;
-        $('grid-confirm-text').textContent = info.anchors + ' anchor points' + (info.circles ? ' and ' + info.circles + ' circles' : '') +
-          ' to draw. Illustrator may stop responding for a while.';
+        $('grid-confirm-text').textContent = 'Cần vẽ ' + info.anchors + ' điểm neo' + (info.circles ? ' và ' + info.circles + ' vòng tròn' : '') +
+          '. Illustrator có thể ngừng phản hồi một lúc.';
         $('grid-confirm').hidden = false;
         return;
       }
       draw(job);
     }).catch(function (e) {
       setRunning(false);
-      status('Grid failed: ' + e.message);
+      status('Tạo lưới thất bại: ' + e.message);
     });
   }
 
@@ -179,9 +179,9 @@
     hideConfirm();
     setRunning(true);
     Bridge.gridClear().then(function (res) {
-      status(!res.ok ? res.error : res.removed ? 'Grid removed.' : 'No grid layer in this document.');
+      status(!res.ok ? res.error : res.removed ? 'Đã xoá lưới.' : 'Tài liệu này không có layer lưới.');
     }).catch(function (e) {
-      status('Clear failed: ' + e.message);
+      status('Xoá lưới thất bại: ' + e.message);
     }).then(function () { setRunning(false); });
   }
 
@@ -193,7 +193,7 @@
     $('grid-generate-all').onclick = function () { generate(true); };
     $('grid-clear').onclick = clear;
     $('grid-confirm-ok').onclick = function () { var job = pending; hideConfirm(); if (job) draw(job); };
-    $('grid-confirm-cancel').onclick = function () { hideConfirm(); status('Cancelled.'); };
+    $('grid-confirm-cancel').onclick = function () { hideConfirm(); status('Đã huỷ.'); };
     document.addEventListener('tab-changed', function (e) { if (e.detail !== 'grid') hideConfirm(); });
   }
 

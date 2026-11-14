@@ -4,7 +4,7 @@ The **PDF** tab saves the selected artboards as PDF through Illustrator's PDF sa
 
 ## Modes
 
-| | Print | Review |
+| | In ấn (Print) | Duyệt (Review) |
 |---|---|---|
 | Base preset | High Quality Print | High Quality Print |
 | Images | no downsampling: images keep their resolution (naming the preset does not apply any downsampling, measured) | images above 225 ppi are reduced to 150 ppi (bicubic) |
@@ -14,11 +14,11 @@ The **PDF** tab saves the selected artboards as PDF through Illustrator's PDF sa
 Removing the editing data is the main reason these PDFs are far smaller than a default save. A PDF saved this way can lose layers or turn text into outlines when reopened in Illustrator, so keep the original `.ai` file.
 
 ## Layouts
-- **One multi-page PDF** (default): the selected artboards in order, named `<document>_print.pdf` or `<document>_review.pdf`.
-- **One PDF per artboard**: `<document>_<artboard>_print.pdf` and so on. Existing files are never overwritten; a number is appended.
+- **Một PDF nhiều trang** (One multi-page PDF, default): the selected artboards in order, named `<document>_print.pdf` or `<document>_review.pdf`.
+- **Mỗi artboard một PDF** (One PDF per artboard): `<document>_<artboard>_print.pdf` and so on. Existing files are never overwritten; a number is appended.
 
 ## Size estimate
-The panel saves a real trial PDF into a temporary folder, measures it and deletes it, once for Print and once for Review. With more than 20 selected artboards it trials only the median-sized artboard and scales by artboard count; the readout then shows `≈`. The estimate runs only when you press **Calculate size**, because Illustrator is unresponsive while it works (about 47 s for a 349 MB document with 13 artboards). Changing the artboard selection, the Review quality or the open document clears the numbers until you calculate again.
+The panel saves a real trial PDF into a temporary folder, measures it and deletes it, once for Print and once for Review. With more than 20 selected artboards it trials only the median-sized artboard and scales by artboard count; the readout then shows `≈`. The estimate runs only when you press **Tính dung lượng** (Calculate size), because Illustrator is unresponsive while it works (about 47 s for a 349 MB document with 13 artboards). Changing the artboard selection, the Review quality or the open document clears the numbers until you calculate again.
 
 ## Requirements and safety
 - The document must be **saved with no pending changes**. The PDF is made from the saved file, so the estimate and export show an error asking you to save first when there are unsaved edits or no file yet.

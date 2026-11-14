@@ -34,8 +34,16 @@
           <Geometry>
             <Size>
               <Width>320</Width>
-              <Height>420</Height>
+              <Height>640</Height>
             </Size>
+            <MinSize>
+              <Width>260</Width>
+              <Height>300</Height>
+            </MinSize>
+            <MaxSize>
+              <Width>1200</Width>
+              <Height>2400</Height>
+            </MaxSize>
           </Geometry>
           <Icons>
             <Icon Type="Normal">./icons/icon.png</Icon>

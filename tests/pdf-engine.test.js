@@ -117,14 +117,14 @@ test('an unsaved or never-saved document is refused before anything is opened', 
   const l = loadWithApp();
   l.ctx.app.open = () => { throw new Error('must not open'); };
   l.ctx.dirty = { name: 'Doc.ai', saved: false, fullName: { name: 'Doc.ai', parent: { fsName: 'C:/work' } } };
-  assert.throws(() => l.run('enginePdfWithCopy(dirty, function () {})'), /unsaved changes/);
+  assert.throws(() => l.run('enginePdfWithCopy(dirty, function () {})'), /thay đổi chưa lưu/);
   l.ctx.fresh = { name: 'Untitled-1', saved: false, get fullName() { throw new Error('no file'); } };
-  assert.throws(() => l.run('enginePdfWithCopy(fresh, function () {})'), /Save the document first/);
+  assert.throws(() => l.run('enginePdfWithCopy(fresh, function () {})'), /Hãy lưu tài liệu trước/);
 });
 
 test('a failed copy is reported', () => {
   const l = loadWithApp();
   l.ctx.broken = { name: 'Doc.ai', saved: true, fullName: { name: 'Doc.ai', parent: { fsName: 'C:/work' }, copy() { return false; }, error: 'denied' } };
   l.ctx.File = function () { return { exists: false }; };
-  assert.throws(() => l.run('enginePdfWithCopy(broken, function () {})'), /temporary copy.*denied/);
+  assert.throws(() => l.run('enginePdfWithCopy(broken, function () {})'), /bản sao tạm.*denied/);
 });
