@@ -19,7 +19,7 @@ Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js`
 
 When one of these files changes, raise `LOADER_VERSION` in `loader-core.js` and `minLoaderVersion` in `app/version.json` together. Loader version 2 added the colour picker window (a second extension in the manifest), so every install from before it needs the installer once.
 
-Everything under `app/` reloads in place: the panel footer's **↻ Tải lại** button reloads the page and re-evaluates `jsx/engine.jsx`, so no Illustrator restart is needed while developing either the UI or the ExtendScript engine.
+Changes under `app/` can be tested in place: copy the files into the installed `app/` folder and click the panel footer's **↻ Tải lại** button, which reloads the panel page and re-evaluates `jsx/engine.jsx`; it is refused while an export, PDF job, artboard resize or grid run is in flight. The colour picker window and ExtendScript globals are not reset by a reload, and the files listed above still need the installer.
 
 ## Release gate (manual)
 - Clean Windows machine: install, export a fixture, publish a higher version, accept the update, relaunch, confirm the new version; publish a deliberately broken version and confirm rollback.

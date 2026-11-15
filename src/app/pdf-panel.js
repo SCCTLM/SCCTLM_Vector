@@ -21,6 +21,7 @@
   var estimating = false;
   function syncButtons() {
     var busy = exporting || estimating;
+    if (window.PanelReload) PanelReload.setBusy('pdf', busy);
     $('pdf-export').disabled = busy;
     $('pdf-recalc').disabled = busy;
     $('pdf-export').textContent = exporting ? 'Đang xuất…' : 'Xuất PDF';

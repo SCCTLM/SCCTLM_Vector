@@ -141,6 +141,7 @@
   // ---------- export ----------
   function setBusy(on) {
     busy = on;
+    if (window.PanelReload) PanelReload.setBusy('export', on);
     $('export').disabled = on;
     $('export').textContent = on ? 'Đang xuất…' : 'Xuất';
   }

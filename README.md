@@ -34,7 +34,9 @@ The panel id is `vn.scctlm.vector`. Until installers exist, copy the contents of
    - macOS: `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector`
 3. Restart Illustrator and open **Window > Extensions > SCCTLM Vector**.
 
-After editing anything under `src/app/`, click **↻ Tải lại** in the panel footer (or close and reopen the panel) to reload the UI and the ExtendScript engine; Illustrator keeps running. The reload is a fresh page document, so unsaved panel state (ticked artboards, output folder) resets; presets are kept. The colour picker is a separate window: close and reopen it to reload its code. Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js` or `loader-core.js` still need Illustrator restarted and the files copied again.
+After editing anything under `src/app/`, copy the changed files into the installed `app/` folder first (or junction that folder to `src/app/` once), then click **↻ Tải lại** in the panel footer. The button reloads the installed page and re-evaluates `jsx/engine.jsx`, so Illustrator keeps running; it is refused while an export, PDF job, artboard resize or grid run is in flight. A reload is a fresh page document, so unsaved panel state (ticked artboards, output folder) resets; presets are kept.
+
+Reload is not a clean ExtendScript scope: the engine's functions live in Illustrator's global scope, so a function you delete or rename can linger in the current session and hide a call site that would fail after a fresh start. Restart Illustrator to test that case. The colour picker is a separate window: close and reopen it to reload its code. Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js` or `loader-core.js` still need Illustrator restarted and the files copied again.
 
 The panel shows the Illustrator version and `process.arch`. Test results are tracked in [docs/spike-results.md](docs/spike-results.md).
 

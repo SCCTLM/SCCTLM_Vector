@@ -75,6 +75,7 @@
 
   function setBusy(on) {
     busy = on;
+    if (window.PanelReload) PanelReload.setBusy('docSize', on);
     syncButtons();
   }
 

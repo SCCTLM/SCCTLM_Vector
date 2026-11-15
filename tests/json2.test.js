@@ -17,3 +17,14 @@ test('stringify and parse round-trip a job', () => {
 test('parse rejects non-JSON input', () => {
   assert.throws(() => run('JSON.parse("(function(){})()")'));
 });
+
+test('re-evaluating the file replaces both functions so edits take effect', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../src/app/jsx/json2.jsx'), 'utf8');
+  const ctx = vm.createContext({ SyntaxError });
+  vm.runInContext(src, ctx);
+  assert.strictEqual(vm.runInContext('JSON.stringify({a:1})', ctx), '{"a":1}');
+  const edited = src.replace('var s = String(text);', 'var s = String(text); throw new SyntaxError("edited");');
+  assert.notStrictEqual(edited, src, 'fixture line must exist in json2.jsx');
+  vm.runInContext(edited, ctx);
+  assert.throws(() => vm.runInContext('JSON.parse("{}")', ctx), /edited/);
+});

@@ -112,6 +112,7 @@
 
   function setRunning(on) {
     running = on;
+    if (window.PanelReload) PanelReload.setBusy('grid', on);
     ['grid-generate', 'grid-generate-all', 'grid-clear'].forEach(function (id) { $(id).disabled = on; });
     $('grid-generate').textContent = on ? 'Đang xử lý…' : 'Tạo lưới';
   }
