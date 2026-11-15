@@ -34,6 +34,8 @@ The panel id is `vn.scctlm.vector`. Until installers exist, copy the contents of
    - macOS: `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector`
 3. Restart Illustrator and open **Window > Extensions > SCCTLM Vector**.
 
+After editing anything under `src/app/`, click **↻ Tải lại** in the panel footer (or close and reopen the panel) to reload the UI and the ExtendScript engine; Illustrator keeps running. The reload is a fresh page document, so unsaved panel state (ticked artboards, output folder) resets; presets are kept. The colour picker is a separate window: close and reopen it to reload its code. Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js` or `loader-core.js` still need Illustrator restarted and the files copied again.
+
 The panel shows the Illustrator version and `process.arch`. Test results are tracked in [docs/spike-results.md](docs/spike-results.md).
 
 ## Layout

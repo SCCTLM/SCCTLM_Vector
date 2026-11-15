@@ -19,6 +19,8 @@ Changes to `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js`
 
 When one of these files changes, raise `LOADER_VERSION` in `loader-core.js` and `minLoaderVersion` in `app/version.json` together. Loader version 2 added the colour picker window (a second extension in the manifest), so every install from before it needs the installer once.
 
+Everything under `app/` reloads in place: the panel footer's **↻ Tải lại** button reloads the page and re-evaluates `jsx/engine.jsx`, so no Illustrator restart is needed while developing either the UI or the ExtendScript engine.
+
 ## Release gate (manual)
 - Clean Windows machine: install, export a fixture, publish a higher version, accept the update, relaunch, confirm the new version; publish a deliberately broken version and confirm rollback.
 - Apple Silicon Mac without Rosetta: same sequence; confirm no Rosetta prompt and `process.arch` is `arm64`. Mac support is not verified until this passes (needs a beta tester).

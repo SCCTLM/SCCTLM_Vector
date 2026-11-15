@@ -98,6 +98,7 @@ button:disabled { opacity: .5; cursor: default; }
 #status:empty { display: none; }
 #results { margin-top: 8px; }
 .foot { text-align: center; }
+.foot .link { margin: 0 8px; }
 
 /* Grid tab */
 input[type=number] { font: inherit; color: inherit; background: var(--field); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 4px 6px; width: 56px; outline: 0; }
