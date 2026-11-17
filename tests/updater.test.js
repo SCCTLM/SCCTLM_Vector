@@ -96,7 +96,7 @@ async function withServer(release, fn) {
 }
 
 // ---- versions ----
-test('compareVersions orders plain X.Y.Z and rejects anything else', () => {
+test('compareVersions orders X.Y.Z and X.Y.Z-beta.N and rejects anything else', () => {
   assert.strictEqual(Updater.compareVersions('1.2.0', '1.1.9'), 1);
   assert.strictEqual(Updater.compareVersions('v1.0.0', '1.0.0'), 0);
   assert.strictEqual(Updater.compareVersions('0.9.9', '1.0.0'), -1);

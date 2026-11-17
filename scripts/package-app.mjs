@@ -1,5 +1,5 @@
 // Build release artifacts into dist/ for a version.
-// Usage: node scripts/package-app.mjs <X.Y.Z>
+// Usage: node scripts/package-app.mjs <X.Y.Z | X.Y.Z-beta.N>
 // Produces: dist/ext/ (full extension), app-vX.Y.Z.zip (+ .sha256) for the updater,
 //           vector-extension.zip (+ .sha256) for the installers.
 import fs from 'node:fs';
@@ -11,7 +11,9 @@ import { scanDir } from './scan-native.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const version = (process.argv[2] || '').replace(/^v/, '');
-if (!/^\d+\.\d+\.\d+$/.test(version)) { console.error('Usage: package-app.mjs <X.Y.Z>'); process.exit(2); }
+if (!/^\d+\.\d+\.\d+(-beta\.\d+)?$/.test(version)) { console.error('Usage: package-app.mjs <X.Y.Z | X.Y.Z-beta.N>'); process.exit(2); }
+// The CEP manifest only takes a numeric version; the full string goes into version.json.
+const manifestVersion = version.replace(/-beta\.\d+$/, '');
 
 const dist = process.env.VECTOR_OUT_DIR ? path.resolve(process.env.VECTOR_OUT_DIR) : path.join(root, 'dist');
 const ext = path.join(dist, 'ext');
@@ -27,8 +29,8 @@ fs.writeFileSync(versionFile, JSON.stringify(meta, null, 2) + '\n');
 
 const manifestFile = path.join(ext, 'CSXS', 'manifest.xml');
 const manifest = fs.readFileSync(manifestFile, 'utf8')
-  .replace(/(ExtensionBundleVersion=")[^"]*"/, `$1${version}"`)
-  .replace(/(<Extension Id="[^"]*" Version=")[^"]*"/g, `$1${version}"`);
+  .replace(/(ExtensionBundleVersion=")[^"]*"/, `$1${manifestVersion}"`)
+  .replace(/(<Extension Id="[^"]*" Version=")[^"]*"/g, `$1${manifestVersion}"`);
 fs.writeFileSync(manifestFile, manifest);
 
 const offenders = scanDir(ext);

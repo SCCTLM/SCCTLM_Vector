@@ -19,17 +19,25 @@
   var DEFAULT_LOADER_VERSION = 1;
 
   // ---------- versions ----------
+  // Accepts X.Y.Z (stable) and X.Y.Z-beta.N. Returns { nums, beta } where beta is null for stable.
   function parseVersion(text) {
-    var m = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(String(text).trim());
-    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+    var m = /^v?(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$/.exec(String(text).trim());
+    if (!m) return null;
+    return { nums: [Number(m[1]), Number(m[2]), Number(m[3])], beta: m[4] === undefined ? null : Number(m[4]) };
   }
 
-  // 1 if a > b, -1 if a < b, 0 if equal; null when either is not a plain X.Y.Z version.
+  function versionText(v) { return v.nums.join('.') + (v.beta === null ? '' : '-beta.' + v.beta); }
+
+  // 1 if a > b, -1 if a < b, 0 if equal; null when either is not X.Y.Z or X.Y.Z-beta.N.
+  // A beta sorts below the stable release of the same X.Y.Z.
   function compareVersions(a, b) {
     var x = parseVersion(a), y = parseVersion(b);
     if (!x || !y) return null;
-    for (var i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i] ? 1 : -1;
-    return 0;
+    for (var i = 0; i < 3; i++) if (x.nums[i] !== y.nums[i]) return x.nums[i] > y.nums[i] ? 1 : -1;
+    if (x.beta === y.beta) return 0;
+    if (x.beta === null) return 1;
+    if (y.beta === null) return -1;
+    return x.beta > y.beta ? 1 : -1;
   }
 
   // ---------- http ----------
@@ -96,7 +104,7 @@
       var release = JSON.parse(buf.toString('utf8'));
       var version = parseVersion(release.tag_name);
       if (!version) throw new Error('Release tag is not a version: ' + release.tag_name);
-      var tag = version.join('.');
+      var tag = versionText(version);
       if (compareVersions(tag, opts.currentVersion) !== 1 || failed.indexOf(tag) >= 0) return null;
       var zip = findAsset(release, 'app-v' + tag + '.zip');
       var sha = findAsset(release, 'app-v' + tag + '.zip.sha256');
