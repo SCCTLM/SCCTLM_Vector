@@ -4,6 +4,7 @@
   <ExtensionList>
     <Extension Id="vn.scctlm.vector.panel" Version="0.0.1" />
     <Extension Id="vn.scctlm.vector.picker" Version="0.0.1" />
+    <Extension Id="vn.scctlm.vector.notice" Version="0.0.1" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -75,6 +76,37 @@
             <Size>
               <Width>600</Width>
               <Height>410</Height>
+            </Size>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./icons/icon.png</Icon>
+            <Icon Type="RollOver">./icons/icon.png</Icon>
+            <Icon Type="DarkNormal">./icons/icon.png</Icon>
+            <Icon Type="DarkRollOver">./icons/icon.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Message window: shows the panel's status line in its own small window. Its page lives in the updatable app folder. -->
+    <Extension Id="vn.scctlm.vector.notice">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./notice-loader.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Modeless</Type>
+          <Menu>SCCTLM Vector – Thông báo</Menu>
+          <Geometry>
+            <Size>
+              <Width>360</Width>
+              <Height>150</Height>
             </Size>
           </Geometry>
           <Icons>
