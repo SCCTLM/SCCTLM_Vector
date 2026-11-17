@@ -1,4 +1,4 @@
-// Update banner and startup handshake with the loader. Never installs without a click.
+// Update check, messages through the notice window, and startup handshake with the loader. Never installs without a click.
 (function () {
   'use strict';
 
@@ -35,36 +35,43 @@
     try { return require(path.join(extDir, 'loader-core.js')).LOADER_VERSION; } catch (e) { return 1; }
   }
 
-  function show(text, canInstall) {
-    $('update-banner').hidden = !text;
-    $('update-text').textContent = text || '';
-    $('update-install').hidden = !canInstall;
+  // Messages go to the notice window as plain text.
+  function say(text, opts) {
+    opts = opts || {};
+    if (window.Notice) window.Notice.show(text, { label: opts.label, run: opts.run });
+  }
+
+  function setChecking(on) {
+    var btn = $('update-check');
+    btn.disabled = on;
+    btn.textContent = on ? 'Đang kiểm tra…' : 'Kiểm tra cập nhật';
   }
 
   function check(manual) {
     if (!manual && !Updater.dueForCheck(stateFile, Date.now())) return;
-    if (manual) show('Đang kiểm tra cập nhật…', false);
+    if (manual) setChecking(true);
     Updater.checkForUpdate({ repo: repo, currentVersion: current, failedVersions: readState().failed }).then(function (info) {
       try { Updater.recordCheck(stateFile, Date.now()); } catch (e) { /* throttle is best effort */ }
       offered = info;
       if (info) {
-        show('Có bản cập nhật ' + info.version + '.', true);
-        $('update-banner').title = info.notes;
-      } else {
-        show(manual ? 'Bạn đang dùng phiên bản mới nhất.' : '', false);
+        say('Có bản cập nhật ' + info.version + '.' + (info.notes ? '\n\n' + info.notes : ''), { label: 'Cài đặt', run: install });
+      } else if (manual) {
+        say('Bạn đang dùng phiên bản mới nhất (v' + current + ').');
       }
     }).catch(function () {
-      show(manual ? 'Không kiểm tra được bản cập nhật.' : '', false);
-    });
+      if (manual) say('Không kiểm tra được bản cập nhật. Kiểm tra kết nối mạng rồi thử lại.');
+    }).then(function () { if (manual) setChecking(false); });
   }
 
   function install() {
     if (!offered) return;
-    show('Đang tải ' + offered.version + '…', false);
+    var version = offered.version;
+    say('Đang tải ' + version + '…');
     Updater.stageUpdate(offered, { extDir: extDir, publicKeyPem: publicKey(), loaderVersion: loaderVersion() }).then(function () {
-      show('Bản cập nhật ' + offered.version + ' đã sẵn sàng. Đóng và mở lại panel để hoàn tất.', false);
+      say('Bản cập nhật ' + version + ' đã sẵn sàng. Đóng và mở lại panel để hoàn tất.');
     }).catch(function (e) {
-      show(e && e.needsInstaller ? 'Bản cập nhật này cần cài bằng bộ cài đầy đủ.' : 'Cập nhật thất bại; chưa có gì bị thay đổi.', false);
+      if (e && e.needsInstaller) say('Bản cập nhật này cần cài bằng bộ cài đầy đủ. Tải bộ cài mới từ trang phát hành.');
+      else say('Cập nhật thất bại; chưa có gì bị thay đổi.');
     });
   }
 
@@ -73,7 +80,6 @@
     if (!repo) return; // updates are off in this build
     $('update-check').hidden = false;
     $('update-check').onclick = function () { check(true); };
-    $('update-install').onclick = install;
     check(false);
   }
 

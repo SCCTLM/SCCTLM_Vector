@@ -9,7 +9,6 @@
   <header class="brand">
     <img class="logo" src="assets/logo.svg" width="22" height="22" alt="">
     <span class="wordmark">SCCTLM <b>Vector</b></span>
-    <span id="version-label" class="muted version"></span>
     <button id="open-picker" class="open-picker" title="Mở bảng chọn màu có cảnh báo gamut CMYK">
       <span class="open-picker-dot" aria-hidden="true"></span>Màu CMYK
     </button>
@@ -163,11 +162,6 @@
     </div>
   </section>
 
-  <div id="update-banner" class="banner" hidden>
-    <span id="update-text"></span>
-    <button id="update-install" hidden>Cài đặt</button>
-  </div>
-
   <button id="export" class="primary" data-pane="images">Xuất</button>
   <button id="pdf-export" class="primary" data-pane="pdf">Xuất PDF</button>
   <div class="row" id="grid-confirm" data-pane="grid" hidden>
@@ -184,6 +178,7 @@
   <ul id="results" class="list"></ul>
   <div class="foot">
     <button id="reload-panel" class="link" title="Tải lại panel và engine ExtendScript sau khi sửa mã; không cần khởi động lại Illustrator">↻ Tải lại</button>
+    <span id="version-label" class="version" title="Phiên bản đang cài"></span>
     <button id="update-check" class="link" hidden>Kiểm tra cập nhật</button>
   </div>
 
@@ -195,6 +190,7 @@
   <script src="presets.js"></script>
   <script src="pdf-format.js"></script>
   <script src="config.js"></script>
+  <script src="notice-launcher.js"></script>
   <script src="updater.js"></script>
   <script src="update-ui.js"></script>
   <script src="panel.js"></script>
@@ -204,6 +200,5 @@
   <script src="grid-panel.js"></script>
   <script src="tabs.js"></script>
   <script src="color-picker-launcher.js"></script>
-  <script src="notice-launcher.js"></script>
 </body>
 </html>
