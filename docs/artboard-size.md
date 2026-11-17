@@ -23,3 +23,31 @@ Both actions keep each artboard's top-left corner and never scale or move the ar
 - The panel sends the document identity (name and path) and the name of every ticked artboard. If the document was switched, renamed, or its artboards rearranged, renamed or replaced since the list was read, the request is refused instead of resizing the wrong artboards.
 - Illustrator may record one undo step per artboard, so undoing a change to several artboards takes several undos.
 - The block is hidden on the Grid tab, where artboard size does not apply.
+
+---
+
+# Kích thước và hướng Artboard
+
+Khối **Kích thước & hướng** trong phần Artboard cho phép thay đổi kích thước các artboard mà bạn đã tích chọn, giúp tài liệu được tạo sai kích thước hoặc hướng không cần phải làm lại từ đầu.
+
+Illustrator không có thuộc tính hướng (orientation): chiều dọc và ngang chỉ đơn giản là cạnh nào dài hơn. Do đó, khối này không bao giờ lưu trữ hướng. Nó hiển thị các cạnh hiện tại là **Dọc**, **Ngang** hoặc **Vuông**, và nút **Đổi hướng** sẽ tự động hoán đổi hai cạnh của từng artboard.
+
+## Cách sử dụng
+
+1. Tích chọn các artboard cần thay đổi. Nếu không tích chọn artboard nào, khối vẫn hiển thị tất cả các artboard nhưng nút Áp dụng và Đổi hướng sẽ từ chối thực hiện.
+2. Mở **Kích thước & hướng** và chọn đơn vị: `pt`, `mm`, `cm`, `in` hoặc `px`. Một pixel tương đương một point; 72 pt = 1 in = 25,4 mm = 2,54 cm.
+3. Nhập chiều rộng và chiều cao, hoặc để nguyên và nhấn **Đổi hướng**.
+4. Nhấn **Áp dụng** hoặc **Đổi hướng**.
+
+Cả hai thao tác đều giữ nguyên góc trên bên trái của mỗi artboard và không bao giờ co giãn hay di chuyển hình vẽ: việc thu nhỏ artboard có thể để lại hình vẽ nằm ngoài artboard, tương tự như khi đổi kích thước trực tiếp trong Illustrator. Tên artboard, vị trí và color profile của tài liệu đều được giữ nguyên.
+
+## Chi tiết kỹ thuật
+
+- Một cặp giá trị rộng/cao sẽ áp dụng cho tất cả các artboard được tích chọn. Khi các artboard được tích chọn có kích thước khác nhau, các trường sẽ hiển thị **Hỗn hợp** và để trống cho đến khi bạn nhập giá trị mới.
+- Chấp nhận dấu phẩy thập phân (`21,5`) cũng như dấu chấm.
+- Kích thước được kiểm tra tính hợp lệ trước khi ghi lần đầu. Giá trị rỗng, bằng 0, âm hoặc không phải số sẽ không làm thay đổi gì và báo lỗi.
+- Nếu Illustrator từ chối một artboard (artboard bị khóa, kích thước vượt ngoài phạm vi cho phép), các artboard đã thay đổi trong lượt đó sẽ được khôi phục lại và hiển thị lỗi; nếu việc khôi phục cũng thất bại, thông báo lỗi sẽ cho biết số lượng artboard không thể phục hồi. Illustrator quản lý giới hạn kích thước cho phép; panel không đặt thêm giới hạn riêng nào.
+- Hình chữ nhật artboard được đọc lại sau khi thay đổi và so sánh với giá trị đã ghi, áp dụng cho cả **Áp dụng** và **Đổi hướng**. Độ lệch vượt quá 0,5 pt (0,18 mm) ở bất kỳ cạnh nào sẽ được tính là bị giới hạn (clamp): lượt chạy sẽ được hoàn tác và báo cáo kích thước thực tế mà tài liệu đang có. Dung sai này tồn tại do Illustrator lưu tọa độ với độ chính xác giới hạn.
+- Panel gửi thông tin định danh tài liệu (tên và đường dẫn) cùng tên của từng artboard được tích chọn. Nếu tài liệu bị chuyển đổi, đổi tên, hoặc các artboard bị sắp xếp lại, đổi tên hoặc thay thế kể từ khi danh sách được tải, yêu cầu sẽ bị từ chối để tránh đổi nhầm kích thước các artboard khác.
+- Illustrator có thể ghi nhận một bước Undo cho mỗi artboard, do đó việc hoàn tác thay đổi trên nhiều artboard sẽ cần nhiều lần Undo.
+- Khối này bị ẩn trên tab Lưới (Grid), nơi kích thước artboard không áp dụng.

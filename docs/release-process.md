@@ -24,3 +24,32 @@ Changes under `app/` can be tested in place: copy the files into the installed `
 ## Release gate (manual)
 - Clean Windows machine: install, export a fixture, publish a higher version, accept the update, relaunch, confirm the new version; publish a deliberately broken version and confirm rollback.
 - Apple Silicon Mac without Rosetta: same sequence; confirm no Rosetta prompt and `process.arch` is `arm64`. Mac support is not verified until this passes (needs a beta tester).
+
+---
+
+# Quy trình phát hành (Release process)
+
+## Thiết lập một lần duy nhất
+1. Tạo các khóa ký: `node scripts/sign-release.mjs --generate-key private.pem public.pem`.
+2. Commit `public.pem` dưới tên `src/update-pubkey.pem`. Lưu nội dung của `private.pem` thành repository secret có tên `VECTOR_SIGNING_KEY` và giữ một bản sao offline an toàn. Tuyệt đối không commit file này.
+3. Luân chuyển khóa (key rotation): một public key mới chỉ có thể đến tay người dùng thông qua việc cài đặt lại hoàn toàn (khóa nằm ngoài thư mục `app` có thể cập nhật).
+
+## Tạo một bản phát hành (Cut a release)
+1. Đặt tag và push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+2. Workflow `ci-release` sẽ chạy các bài kiểm thử, quét mã native, kiểm tra cài đặt macOS trên `macos-15`, build bộ cài đặt Windows, ký file `app-vX.Y.Z.zip`, và xuất bản một GitHub Release gồm:
+   `app-vX.Y.Z.zip` (+ `.sha256`, `.sig`) cho bộ cập nhật, và `vector-extension.zip` (+ `.sha256`), `SCCTLM-Vector-Setup.exe`, `install-mac.sh` cho các bản cài đặt mới.
+3. Release job sẽ thất bại nếu thiếu `src/update-pubkey.pem` hoặc secret khóa ký.
+
+## Công khai bản phát hành (Going public)
+Cơ chế cập nhật sẽ luôn tắt cho đến khi biến `UPDATE_REPO` trong `src/app/config.js` được thiết lập. Khi ra mắt công khai: tạo repo `SCCTLM/SCCTLM_Vector-releases`, phát hành các release tại đó (token chỉ cấp quyền cho repo đó), đặt `UPDATE_REPO` thành `SCCTLM/SCCTLM_Vector-releases`, và phát hành bản build đó.
+
+## Những gì cần cài đặt lại toàn bộ
+Những thay đổi đối với `CSXS/manifest.xml`, `loader.html`, `picker-loader.html`, `loader.js`, `loader-core.js`, hoặc `update-pubkey.pem`. Bản cập nhật có `version.json` chứa `minLoaderVersion` cao hơn loader đang cài đặt sẽ bị từ chối kèm thông báo yêu cầu chạy trình cài đặt.
+
+Khi một trong các file này thay đổi, hãy tăng đồng thời `LOADER_VERSION` trong `loader-core.js` và `minLoaderVersion` trong `app/version.json`. Loader phiên bản 2 đã thêm cửa sổ chọn màu (extension thứ hai trong manifest), do đó mọi bản cài đặt trước đó đều cần chạy lại trình cài đặt một lần.
+
+Các thay đổi trong thư mục `app/` có thể được kiểm thử trực tiếp tại chỗ: sao chép các file vào thư mục `app/` đã cài đặt và nhấn nút **↻ Tải lại** ở chân trang của panel, thao tác này sẽ tải lại trang của panel và nạp lại `jsx/engine.jsx`; nút này sẽ từ chối hoạt động khi đang có tác vụ xuất file, xử lý PDF, đổi kích thước artboard hay tạo lưới đang chạy. Cửa sổ chọn màu và các biến toàn cục ExtendScript sẽ không bị reset khi tải lại, và các file liệt kê ở trên vẫn cần chạy lại trình cài đặt.
+
+## Cổng phát hành (kiểm tra thủ công)
+- Máy Windows sạch: cài đặt, xuất một file mẫu fixture, phát hành phiên bản cao hơn, chấp nhận cập nhật, khởi động lại, xác nhận phiên bản mới; phát hành một phiên bản cố tình gây lỗi và xác nhận tính năng khôi phục (rollback).
+- Máy Mac Apple Silicon không có Rosetta: cùng quy trình trên; xác nhận không có thông báo yêu cầu Rosetta và `process.arch` là `arm64`. Hỗ trợ Mac chưa được xác thực cho đến khi vượt qua bước này (cần một beta tester).

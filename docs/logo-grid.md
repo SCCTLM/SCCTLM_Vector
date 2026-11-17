@@ -41,3 +41,49 @@ Settings are saved in `grid-settings.json` next to `presets.json` in the per-use
 - `tests/fixtures/make-grid-test-doc.jsx`: builds and selects a sample logo for a manual check in Illustrator.
 
 This feature is an original implementation written from a description of the behaviour. It contains no code or artwork from other grid tools.
+
+---
+
+# Tab Lưới: lưới cấu trúc logo (logo construction grid)
+
+Tab Lưới vẽ lưới cấu trúc lên trên đối tượng đồ họa vector được chọn. Nó không bao giờ thay đổi bản thân tác phẩm; mọi thứ đều được đưa vào một layer có tên `SCCTLM Grid` ở trên cùng của tài liệu.
+
+## Cách sử dụng
+
+1. Chọn logo: các path, compound path và group (các group sẽ được tìm kiếm bên trong). Cần outline văn bản trước; text, hình ảnh đặt vào (placed image), clipping mask, các mục bị ẩn (bao gồm mọi thứ bên trong group ẩn) và các đối tượng khác sẽ bị bỏ qua và được thống kê trong dòng trạng thái.
+2. Mở tab **Lưới**, bật các thành phần bạn muốn và nhấn **Tạo lưới**.
+3. Nhấn **Tạo lưới** lần nữa sau khi thay đổi tùy chọn: layer lưới trước đó sẽ được thay thế, ngay cả khi nó bị khóa hoặc ẩn. Nhấn **Xoá lưới** để xóa layer này. Nếu quá trình vẽ gặp lỗi, lưới trước đó vẫn được giữ nguyên và phần đang vẽ dở sẽ bị xóa bỏ.
+
+**Tạo tất cả** sẽ vẽ tất cả các thành phần cho lượt chạy đó mà không làm thay đổi các nút bật/tắt bạn đã chọn. Khi tổng số điểm neo (anchor point) cộng với các đường tròn cần vẽ vượt quá 2.000, panel sẽ hỏi xác nhận trước khi chạy, vì Illustrator sẽ tạm dừng phản hồi trong khi vẽ. Độ phức tạp vòng tròn cao có thể tạo ra nhiều vòng tròn hơn rất nhiều so với số điểm neo.
+
+Illustrator có thể ghi nhận quá trình vẽ thành nhiều bước Undo, vì vậy hãy sử dụng nút **Xoá lưới** để xóa lưới thay vì bấm Undo.
+
+## Các thành phần
+
+| Thành phần | Những gì được vẽ | Sublayer |
+|---|---|---|
+| Anchors | dấu điểm vuông trên mỗi điểm neo | Anchors |
+| Handles | đường nối từ mỗi điểm neo đến từng điểm điều hướng được kéo ra, kèm theo một điểm tròn ở đầu | Handles |
+| Outlines | một bản sao không fill của mọi path | Outlines |
+| Gridlines | mọi đoạn thẳng được kéo dài xuyên qua tác phẩm, kèm theo các đường ngang và dọc đi qua các điểm neo có tay nắm điều hướng nằm ngang hoặc thẳng đứng (đỉnh, đáy và các cạnh của đường cong) | Gridlines |
+| Circles | các đường tròn bám theo từng đoạn cong | Circles |
+
+Các sublayer không chứa đối tượng nào sẽ bị xóa. Mỗi thành phần có kiểu dáng riêng (kích thước, fill, stroke, độ dày nét, với tùy chọn **Không** để tắt fill hoặc stroke). Kích thước và độ dày nét tính bằng đơn vị point. Trong tài liệu CMYK, các màu được chọn sẽ được chuyển đổi theo công thức đơn giản k = 1 − max(r, g, b).
+
+## Tùy chọn
+
+- **Đường lưới, Gộp (Thấp đến Cao)**: khoảng cách hai đường thẳng cần đạt để được gộp thành một. Ở mức Thấp chỉ gộp các đường thẳng giống hệt nhau; ở mức Cao, các đường thẳng trong phạm vi 3 độ và 2% kích thước logo sẽ được gộp lại. Các đường được gộp sẽ vẽ theo vị trí trung bình của chúng. Mức mặc định (50) giúp gộp các đường trùng lặp do hình vuông hoặc logo đối xứng tạo ra.
+- **Đường lưới, Lề**: khoảng cách đường lưới chạy vượt ra ngoài phạm vi tác phẩm, tính bằng point.
+- **Vòng tròn, Tối giản đến Phức tạp**: mức độ các vòng tròn phải bám sát đường cong. Mỗi đường cong trước tiên được chia nhỏ tại vị trí đổi hướng uốn (đường cong chữ S tách thành hai đoạn); một đoạn sẽ nhận một đường tròn đi qua điểm đầu, giữa và cuối, rồi tiếp tục chia đôi nếu đường cong lệch quá xa khỏi đường tròn đó. Tối giản cho phép sai số 5% kích thước logo, Phức tạp cho phép 0,05%. Các đoạn gần như thẳng sẽ không nhận đường tròn nào.
+- **Vòng tròn, Mỗi đường cong**: **Tất cả** các vòng tròn, N vòng tròn **Đầu tiên** từ điểm bắt đầu của mỗi đường cong, hoặc N vòng tròn bao phủ các phần **Dài nhất** của nó.
+
+Các cài đặt được lưu trong `grid-settings.json` bên cạnh `presets.json` trong thư mục dữ liệu người dùng, vì vậy các bản cập nhật vẫn sẽ giữ lại chúng.
+
+## Mã nguồn
+
+- `src/app/jsx/grid-geometry.jsx`: chỉ xử lý toán học (các đoạn, điểm uốn, khớp đường tròn, cắt và gộp đường thẳng), được unit test trong `tests/grid-geometry.test.js`.
+- `src/app/jsx/grid-engine.jsx`: đọc vùng chọn và vẽ layer; các hàm `gridInspect`, `gridGenerate`, `gridClear`. Được kiểm thử với các đối tượng giả lập Illustrator trong `tests/grid-engine.test.js`.
+- `src/app/grid-panel.js`, `src/app/grid-settings.js`, `src/app/tabs.js`: giao diện tab, lưu trữ cài đặt và chuyển tab.
+- `tests/fixtures/make-grid-test-doc.jsx`: tạo và chọn một logo mẫu để kiểm tra thủ công trong Illustrator.
+
+Tính năng này là bản hiện thực độc lập được viết dựa trên mô tả hành vi. Nó không chứa mã nguồn hay đồ họa từ bất kỳ công cụ lưới nào khác.
