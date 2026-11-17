@@ -223,16 +223,42 @@ test('restore failures are reported, not swallowed', () => {
   assert.match(res.error, /kh\u00f4ng kh\u00f4i ph\u1ee5c/);
 });
 
-test('listArtboards returns names in order with the sizes from the rectangles', () => {
+test('listArtboards returns names in order with the sizes from the rectangles and reports colorSpace', () => {
   const a = makeArtboard('One', [0, 842, 595, 0]);
   const b = makeArtboard('Two', [700, 400, 900, 150]);
-  const { run } = load([a, b]);
+  const { doc, ctx, run } = load([a, b]);
+  ctx.DocumentColorSpace = { CMYK: 'CMYK', RGB: 'RGB' };
+  doc.documentColorSpace = 'CMYK';
   const res = run('listArtboards()');
   assert.strictEqual(res.ok, true, res.error);
+  assert.strictEqual(res.colorSpace, 'CMYK');
   assert.deepStrictEqual(res.artboards, [
     { index: 0, name: 'One', widthPt: 595, heightPt: 842 },
     { index: 1, name: 'Two', widthPt: 200, heightPt: 250 }
   ]);
+});
+
+test('engineSetDocumentColorSpace executes menu commands and returns actual colorSpace', () => {
+  const a = makeArtboard('One', [0, 100, 100, 0]);
+  const { doc, ctx, run } = load([a]);
+  ctx.DocumentColorSpace = { CMYK: 'CMYK', RGB: 'RGB' };
+  doc.documentColorSpace = 'RGB';
+  ctx.app.executeMenuCommand = (cmd) => {
+    if (cmd === 'doc-color-cmyk') doc.documentColorSpace = 'CMYK';
+    if (cmd === 'doc-color-rgb') doc.documentColorSpace = 'RGB';
+  };
+  const toCmyk = run('engineSetDocumentColorSpace("cmyk")');
+  assert.strictEqual(toCmyk.ok, true);
+  assert.strictEqual(toCmyk.colorSpace, 'CMYK');
+  assert.strictEqual(doc.documentColorSpace, 'CMYK');
+
+  const toRgb = run('engineSetDocumentColorSpace("RGB")');
+  assert.strictEqual(toRgb.ok, true);
+  assert.strictEqual(toRgb.colorSpace, 'RGB');
+  assert.strictEqual(doc.documentColorSpace, 'RGB');
+
+  const invalid = run('engineSetDocumentColorSpace("XYZ")');
+  assert.strictEqual(invalid.ok, false);
 });
 
 test('no document returns an error instead of throwing', () => {

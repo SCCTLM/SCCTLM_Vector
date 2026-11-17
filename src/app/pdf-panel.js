@@ -6,7 +6,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var each = function (nodes, fn) { Array.prototype.forEach.call(nodes, fn); };
 
-  var state = { tab: 'images', mode: 'print', quality: 'high', layout: 'single' };
+  var state = { tab: (document.body && document.body.dataset && document.body.dataset.tab) || 'daily', mode: 'print', quality: 'high', layout: 'single' };
   var timer = null;
   var seq = 0;
   var exporting = false;

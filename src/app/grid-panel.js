@@ -187,6 +187,7 @@
   }
 
   function init() {
+    if (!$('grid-elements')) return;
     buildElements();
     showOptions();
     bindOptions();

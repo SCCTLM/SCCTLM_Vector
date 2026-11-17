@@ -1,20 +1,25 @@
 // Artboard size and orientation block. Reads the artboards the shared list reports, shows the size of
-// the ticked ones and writes a new size (or swaps the sides) through the engine. Illustrator has no
-// orientation property, so the label is only a comparison of the two sides.
+// the ticked ones in a single pill input (e.g. "70cm x 30cm") and orientation icon buttons (Portrait,
+// Landscape, Square). Writes a new size or orientation through the engine.
 (function () {
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
   var list = [];
-  var unit = 'mm';
+  var unit = 'cm';
   var busy = false;
   var docName = '';
   var docPath = '';
 
-  function status(text) { $('status').textContent = text; }
+  function status(text) {
+    var el = $('status');
+    if (el) el.textContent = text;
+  }
 
   function selectedIndexes() {
-    return Array.prototype.map.call($('artboards').querySelectorAll('input:checked'), function (i) {
+    var box = $('artboards');
+    if (!box) return [];
+    return Array.prototype.map.call(box.querySelectorAll('input:checked'), function (i) {
       return Number(i.value);
     });
   }
@@ -26,15 +31,7 @@
 
   function dims(size) { return { width: size.widthPt, height: size.heightPt }; }
 
-  function orientationLabel(size) {
-    var orientation = artboardOrientation(size.widthPt, size.heightPt);
-    if (orientation === 'landscape') return 'Ngang';
-    if (orientation === 'portrait') return 'Dọc';
-    return 'Vuông';
-  }
-
-  // Repaints the fields from the reported sizes; never overwrites a field the user is typing in.
-  function render() {
+  function getScopeSizes() {
     var indexes = selectedIndexes();
     var scope = indexes.length ? indexes : list.map(function (a) { return a.index; });
     var sizes = [];
@@ -44,33 +41,61 @@
       if (!size) complete = false;
       else sizes.push(size);
     }
+    return { scope: scope, sizes: sizes, complete: complete };
+  }
+
+  // Repaints the input and orientation icons from the reported sizes; never overwrites while user is typing.
+  function render() {
+    var data = getScopeSizes();
+    var sizes = data.sizes;
+    var complete = data.complete;
     var uniform = complete && sizes.length > 0;
     for (var k = 1; k < sizes.length; k++) {
       if (!artboardSizesEqual(dims(sizes[0]), dims(sizes[k]))) uniform = false;
     }
     var mixed = complete && !uniform;
 
-    var w = $('doc-w');
-    var h = $('doc-h');
-    var typing = document.activeElement === w || document.activeElement === h;
-    if (!typing) {
-      w.value = uniform ? artboardFormatSize(sizes[0].widthPt, unit) : '';
-      h.value = uniform ? artboardFormatSize(sizes[0].heightPt, unit) : '';
+    var input = $('doc-size-input');
+    var btnPortrait = $('orient-portrait');
+    var btnLandscape = $('orient-landscape');
+    var btnSquare = $('orient-square');
+
+    if (input) {
+      var typing = document.activeElement === input;
+      if (!typing) {
+        if (uniform) {
+          var wStr = artboardFormatSize(sizes[0].widthPt, unit);
+          var hStr = artboardFormatSize(sizes[0].heightPt, unit);
+          input.value = wStr + unit + ' x ' + hStr + unit;
+        } else {
+          input.value = '';
+        }
+      }
+      input.placeholder = mixed ? 'Hỗn hợp' : (!complete ? '-' : '70cm x 30cm');
     }
-    w.placeholder = mixed ? 'Hỗn hợp' : '';
-    h.placeholder = mixed ? 'Hỗn hợp' : '';
-    $('doc-orient').textContent = !complete ? '-' : uniform ? orientationLabel(sizes[0]) : 'Hỗn hợp';
+
+    if (btnPortrait && btnLandscape && btnSquare) {
+      if (uniform) {
+        var orient = artboardOrientation(sizes[0].widthPt, sizes[0].heightPt);
+        btnPortrait.classList.toggle('on', orient === 'portrait');
+        btnLandscape.classList.toggle('on', orient === 'landscape');
+        btnSquare.classList.toggle('on', orient === 'square');
+      } else {
+        btnPortrait.classList.remove('on');
+        btnLandscape.classList.remove('on');
+        btnSquare.classList.remove('on');
+      }
+    }
 
     syncButtons();
   }
 
-  // Only the buttons change with the busy flag: repainting the fields here would throw away the
-  // numbers the user just typed before the engine answers.
   function syncButtons() {
     var disabled = busy || !Bridge.available || list.length === 0;
-    $('doc-apply').disabled = disabled;
-    $('doc-swap').disabled = disabled;
-    $('doc-apply').textContent = busy ? 'Đang đổi…' : 'Áp dụng';
+    ['orient-portrait', 'orient-landscape', 'orient-square'].forEach(function (id) {
+      var btn = $(id);
+      if (btn) btn.disabled = disabled;
+    });
   }
 
   function setBusy(on) {
@@ -81,9 +106,9 @@
 
   function run(job, verb) {
     var indexes = selectedIndexes();
+    if (!indexes.length) indexes = list.map(function (a) { return a.index; });
     if (!indexes.length) { status('Hãy chọn ít nhất một artboard.'); return; }
-    // Indexes are positional: send the document and the names the user saw so the engine can refuse
-    // a list that no longer matches the open document.
+
     job.artboards = indexes;
     job.count = list.length;
     job.docName = docName;
@@ -95,7 +120,6 @@
     setBusy(true);
     Bridge.resizeArtboards(job).then(function (res) {
       if (!res.ok) { status(res.error || 'Không đổi được kích thước artboard.'); return; }
-      // The panel re-reads the document, then shows this message after its own refresh cleared the line.
       document.dispatchEvent(new CustomEvent('refresh-artboards', {
         detail: { message: verb + indexes.length + ' artboard.' }
       }));
@@ -104,43 +128,87 @@
     }).then(function () { setBusy(false); });
   }
 
-  function apply() {
-    var width = artboardParseSize($('doc-w').value);
-    var height = artboardParseSize($('doc-h').value);
-    if (width === null || height === null) {
-      status('Hãy nhập chiều rộng và chiều cao lớn hơn 0.');
+  function applyCustom() {
+    var input = $('doc-size-input');
+    if (!input) return;
+    var val = input.value.trim();
+    if (!val) return;
+    var parsed = artboardParseCombinedSize(val, unit);
+    if (!parsed) {
+      status('Kích thước không hợp lệ. Ví dụ: 70cm x 30cm, 210mm x 297mm, 1920px x 1080px');
       return;
     }
-    run({ widthPt: artboardToPt(width, unit), heightPt: artboardToPt(height, unit) }, 'Đã đổi kích thước ');
+    unit = parsed.unit;
+    var wPt = artboardToPt(parsed.width, unit);
+    var hPt = artboardToPt(parsed.height, unit);
+    run({ widthPt: wPt, heightPt: hPt }, 'Đã đổi kích thước ');
   }
 
-  function swap() {
-    run({ swap: true }, 'Đã đổi hướng ');
+  function setOrientation(targetOrient) {
+    var data = getScopeSizes();
+    var sizes = data.sizes;
+    if (!sizes.length) return;
+    var s = sizes[0];
+    var currentOrient = artboardOrientation(s.widthPt, s.heightPt);
+    if (currentOrient === targetOrient) return;
+
+    if (targetOrient === 'square') {
+      var side = Math.max(s.widthPt, s.heightPt);
+      run({ widthPt: side, heightPt: side }, 'Đã đổi khổ vuông ');
+    } else if (targetOrient === 'portrait') {
+      if (currentOrient === 'landscape') {
+        run({ swap: true }, 'Đã đổi khổ dọc ');
+      } else {
+        var minSide = Math.min(s.widthPt, s.heightPt);
+        var maxSide = Math.max(s.widthPt, s.heightPt);
+        run({ widthPt: minSide, heightPt: maxSide }, 'Đã đổi khổ dọc ');
+      }
+    } else if (targetOrient === 'landscape') {
+      if (currentOrient === 'portrait') {
+        run({ swap: true }, 'Đã đổi khổ ngang ');
+      } else {
+        var minSide = Math.min(s.widthPt, s.heightPt);
+        var maxSide = Math.max(s.widthPt, s.heightPt);
+        run({ widthPt: maxSide, heightPt: minSide }, 'Đã đổi khổ ngang ');
+      }
+    }
   }
 
   function init() {
-    var sel = $('doc-unit');
-    if (!sel) return;
-    for (var i = 0; i < ARTBOARD_UNITS.length; i++) {
-      var option = document.createElement('option');
-      option.value = ARTBOARD_UNITS[i];
-      option.textContent = ARTBOARD_UNITS[i];
-      sel.appendChild(option);
+    var input = $('doc-size-input');
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyCustom();
+          input.blur();
+        }
+      });
+      input.addEventListener('change', applyCustom);
     }
-    sel.value = unit;
-    sel.onchange = function () { unit = sel.value; render(); };
-    $('doc-apply').onclick = apply;
-    $('doc-swap').onclick = swap;
+
+    var btnP = $('orient-portrait');
+    var btnL = $('orient-landscape');
+    var btnS = $('orient-square');
+    if (btnP) btnP.onclick = function () { setOrientation('portrait'); };
+    if (btnL) btnL.onclick = function () { setOrientation('landscape'); };
+    if (btnS) btnS.onclick = function () { setOrientation('square'); };
+
     document.addEventListener('artboards-changed', function (e) {
       list = (e.detail && e.detail.artboards) || [];
       docName = (e.detail && e.detail.docName) || '';
       docPath = (e.detail && e.detail.docPath) || '';
       render();
     });
-    $('artboards').addEventListener('change', render);
-    // "Tất cả" / "Bỏ chọn" set checked from script, which fires no change event.
-    $('ab-all').addEventListener('click', render);
-    $('ab-none').addEventListener('click', render);
+
+    var box = $('artboards');
+    if (box) box.addEventListener('change', render);
+
+    var abAll = $('ab-all');
+    var abNone = $('ab-none');
+    if (abAll) abAll.addEventListener('click', render);
+    if (abNone) abNone.addEventListener('click', render);
+
     render();
   }
 

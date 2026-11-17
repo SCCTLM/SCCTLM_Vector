@@ -36,9 +36,35 @@ function listArtboards() {
       var size = artboardSizeOf(doc.artboards[i].artboardRect);
       out.push({ index: i, name: doc.artboards[i].name, widthPt: size.width, heightPt: size.height });
     }
-    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), docPath: engineDocPath(doc), artboards: out });
+    var colorSpace = (typeof DocumentColorSpace !== "undefined" && doc.documentColorSpace === DocumentColorSpace.CMYK) ? "CMYK" : "RGB";
+    return JSON.stringify({ ok: true, docName: documentBaseName(doc.name), docPath: engineDocPath(doc), colorSpace: colorSpace, artboards: out });
   } catch (e) {
     return JSON.stringify({ ok: false, error: engineErrorMessage(e), artboards: [] });
+  }
+}
+
+function engineSetDocumentColorSpace(space) {
+  try {
+    if (app.documents.length === 0) {
+      return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
+    }
+    var doc = app.activeDocument;
+    var target = String(space || "").toUpperCase();
+    if (target === "RGB") {
+      if (typeof DocumentColorSpace !== "undefined" && doc.documentColorSpace !== DocumentColorSpace.RGB) {
+        app.executeMenuCommand("doc-color-rgb");
+      }
+    } else if (target === "CMYK") {
+      if (typeof DocumentColorSpace !== "undefined" && doc.documentColorSpace !== DocumentColorSpace.CMYK) {
+        app.executeMenuCommand("doc-color-cmyk");
+      }
+    } else {
+      return JSON.stringify({ ok: false, error: "H\u1ec7 m\u00e0u kh\u00f4ng h\u1ee3p l\u1ec7" });
+    }
+    var actual = (typeof DocumentColorSpace !== "undefined" && app.activeDocument.documentColorSpace === DocumentColorSpace.CMYK) ? "CMYK" : "RGB";
+    return JSON.stringify({ ok: true, colorSpace: actual });
+  } catch (e) {
+    return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
   }
 }
 

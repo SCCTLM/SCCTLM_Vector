@@ -26,6 +26,20 @@ function artboardParseSize(text) {
   return n > 0 && isFinite(n) ? n : null;
 }
 
+// Accepts "70cm x 30cm", "70 x 30 cm", "70x30", "21,5cm x 29,7cm", "1000px * 800px", etc.
+function artboardParseCombinedSize(text, defaultUnit) {
+  if (typeof text !== "string") return null;
+  var s = text.replace(/^\s+|\s+$/g, "");
+  var m = s.match(/^([0-9]+(?:[.,][0-9]+)?)\s*(cm|mm|in|pt|px)?\s*(?:[xX*×]|\s+)\s*([0-9]+(?:[.,][0-9]+)?)\s*(cm|mm|in|pt|px)?$/i);
+  if (!m) return null;
+  var w = artboardParseSize(m[1]);
+  var h = artboardParseSize(m[3]);
+  if (w === null || h === null) return null;
+  var u = (m[2] || m[4] || defaultUnit || "cm").toLowerCase();
+  if (!ARTBOARD_PT_PER_UNIT.hasOwnProperty(u)) return null;
+  return { width: w, height: h, unit: u };
+}
+
 function artboardToPt(value, unit) {
   var factor = artboardPtPerUnit(unit);
   if (factor === null || typeof value !== "number" || !isFinite(value)) return null;

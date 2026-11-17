@@ -36,6 +36,17 @@ test('parse accepts numbers, dots and a comma decimal, and trims spaces', () => 
   assert.strictEqual(call('artboardParseSize', '0,5'), 0.5);
 });
 
+test('parse combined size parses "70cm x 30cm", comma decimals, mixed spacing and units', () => {
+  assert.deepStrictEqual(call('artboardParseCombinedSize', '70cm x 30cm'), { width: 70, height: 30, unit: 'cm' });
+  assert.deepStrictEqual(call('artboardParseCombinedSize', '70 x 30 cm'), { width: 70, height: 30, unit: 'cm' });
+  assert.deepStrictEqual(call('artboardParseCombinedSize', '21,5cm x 29,7cm'), { width: 21.5, height: 29.7, unit: 'cm' });
+  assert.deepStrictEqual(call('artboardParseCombinedSize', '1920x1080', 'px'), { width: 1920, height: 1080, unit: 'px' });
+  assert.deepStrictEqual(call('artboardParseCombinedSize', '10in*8in'), { width: 10, height: 8, unit: 'in' });
+  assert.strictEqual(call('artboardParseCombinedSize', 'invalid'), null);
+  assert.strictEqual(call('artboardParseCombinedSize', '70cm x 0cm'), null);
+  assert.strictEqual(call('artboardParseCombinedSize', '70furlong x 30furlong'), null);
+});
+
 test('parse rejects zero, negatives, junk and non-strings', () => {
   for (const bad of ['', '0', '-5', '1.2.3', 'abc', '1e3', 'NaN', '1,2,3', null, {}, []]) {
     assert.strictEqual(call('artboardParseSize', bad), null, 'accepted ' + JSON.stringify(bad));
