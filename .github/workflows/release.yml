@@ -125,8 +125,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Before public launch this publishes on the private source repo for hand-installing testers.
-          # At public launch, publish to the release-only repo with a token scoped to it.
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes \
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "SCCTLM Vector $GITHUB_REF_NAME" \
             "dist/app-${GITHUB_REF_NAME}.zip" "dist/app-${GITHUB_REF_NAME}.zip.sha256" "dist/app-${GITHUB_REF_NAME}.zip.sig" \
             dist/vector-extension.zip dist/vector-extension.zip.sha256 dist/SCCTLM-Vector-Setup.exe installer/macos/install-mac.sh

@@ -9,7 +9,7 @@
 set -euo pipefail
 
 EXT_ID="vn.scctlm.vector"
-BASE_URL="${VECTOR_BASE_URL:-https://github.com/SCCTLM/SCCTLM_Vector-releases/releases/latest/download}"
+BASE_URL="${VECTOR_BASE_URL:-https://github.com/SCCTLM/SCCTLM_Vector/releases/latest/download}"
 EXT_ROOT="$HOME/Library/Application Support/Adobe/CEP/extensions"
 EXT_DIR="$EXT_ROOT/$EXT_ID"
 ZIP_NAME="vector-extension.zip"

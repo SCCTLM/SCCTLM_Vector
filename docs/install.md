@@ -15,14 +15,14 @@ The installer is a 32-bit stub; it runs on x64 and on Windows on ARM through the
 No `.pkg` yet (that needs an Apple Developer ID). Open **Terminal**, paste the command below, press Enter:
 
 ```
-curl -fsSL https://github.com/SCCTLM/SCCTLM_Vector-releases/releases/latest/download/install-mac.sh | bash
+curl -fsSL https://github.com/SCCTLM/SCCTLM_Vector/releases/latest/download/install-mac.sh | bash
 ```
 
 The script runs as you (no `sudo`), checks the SHA-256 of the download, installs into `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector`, and runs `defaults write com.adobe.CSXS.<n> PlayerDebugMode 1` for 9 to 12. It uses only tools that ship with macOS, and the package has no native code, so Rosetta is not needed on Apple Silicon.
 
 Uninstall: `bash install-mac.sh --uninstall`. Presets are kept.
 
-The release-only repository above does not exist until public launch. Until then testers download `install-mac.sh` and `vector-extension.zip` (plus its `.sha256`) from the private release and run `VECTOR_BASE_URL=file:///path/to/folder bash install-mac.sh`.
+The repository above has no release until the first tag is published. Until then testers download `install-mac.sh` and `vector-extension.zip` (plus its `.sha256`) from the private release and run `VECTOR_BASE_URL=file:///path/to/folder bash install-mac.sh`.
 
 ## Where things live
 
@@ -31,7 +31,7 @@ The release-only repository above does not exist until public launch. Until then
 | Panel files | the `extensions/vn.scctlm.vector` folder above |
 | Presets and update state | `%APPDATA%\vector-batch-export` (Windows), `~/Library/Application Support/vector-batch-export` (macOS) |
 
-Updates replace only the `app` folder inside the panel folder; presets are never touched.
+Click **Kiểm tra cập nhật** in the panel footer to check for a new version; **Cài đặt** downloads it, and it takes effect when the panel is reopened. Updates replace only the `app` folder inside the panel folder; presets are never touched.
 
 ---
 
@@ -52,14 +52,14 @@ Trình cài đặt là một stub 32-bit; nó chạy được trên x64 và Wind
 Chưa có gói `.pkg` (vì cần Apple Developer ID). Mở **Terminal**, dán lệnh bên dưới và nhấn Enter:
 
 ```
-curl -fsSL https://github.com/SCCTLM/SCCTLM_Vector-releases/releases/latest/download/install-mac.sh | bash
+curl -fsSL https://github.com/SCCTLM/SCCTLM_Vector/releases/latest/download/install-mac.sh | bash
 ```
 
 Script chạy dưới quyền người dùng của bạn (không cần `sudo`), kiểm tra mã SHA-256 của file tải về, cài đặt vào `~/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector`, và chạy `defaults write com.adobe.CSXS.<n> PlayerDebugMode 1` cho các phiên bản từ 9 đến 12. Script chỉ sử dụng các công cụ có sẵn trên macOS và gói cài đặt không có mã native, do đó không cần Rosetta trên máy Apple Silicon.
 
 Gỡ cài đặt: `bash install-mac.sh --uninstall`. Các preset được giữ lại.
 
-Kho lưu trữ chỉ dành cho release ở trên chưa tồn tại cho đến khi ra mắt công khai. Cho đến lúc đó, người thử nghiệm có thể tải `install-mac.sh` và `vector-extension.zip` (kèm file `.sha256`) từ bản phát hành nội bộ và chạy `VECTOR_BASE_URL=file:///path/to/folder bash install-mac.sh`.
+Kho lưu trữ ở trên chưa có bản phát hành nào cho đến khi tag đầu tiên được xuất bản. Cho đến lúc đó, người thử nghiệm có thể tải `install-mac.sh` và `vector-extension.zip` (kèm file `.sha256`) từ bản phát hành nội bộ và chạy `VECTOR_BASE_URL=file:///path/to/folder bash install-mac.sh`.
 
 ## Nơi lưu trữ dữ liệu
 
@@ -68,4 +68,4 @@ Kho lưu trữ chỉ dành cho release ở trên chưa tồn tại cho đến kh
 | Các file của Panel | thư mục `extensions/vn.scctlm.vector` ở trên |
 | Preset và trạng thái cập nhật | `%APPDATA%\vector-batch-export` (Windows), `~/Library/Application Support/vector-batch-export` (macOS) |
 
-Các bản cập nhật chỉ thay thế thư mục `app` bên trong thư mục panel; các preset không bao giờ bị đụng đến.
+Nhấn **Kiểm tra cập nhật** ở chân trang panel để kiểm tra phiên bản mới; **Cài đặt** sẽ tải về và có hiệu lực khi mở lại panel. Các bản cập nhật chỉ thay thế thư mục `app` bên trong thư mục panel; các preset không bao giờ bị đụng đến.
