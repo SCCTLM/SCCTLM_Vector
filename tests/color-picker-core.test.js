@@ -69,11 +69,15 @@ test('profileInfo reads v2 desc and v4 mluc tags, rejects other data', () => {
 });
 
 test('profile folders per platform', () => {
-  const win = CG.profileDirs('win32', { 'ProgramFiles(x86)': 'C:\\PF86', SystemRoot: 'C:\\Win' });
+  const win = CG.profileDirs('win32', { 'ProgramFiles(x86)': 'C:\\PF86', ProgramFiles: 'C:\\PF', APPDATA: 'C:\\Users\\x\\AppData\\Roaming', SystemRoot: 'C:\\Win' });
   assert.ok(win.includes('C:\\PF86\\Common Files\\Adobe\\Color\\Profiles\\Recommended'));
+  assert.ok(win.includes('C:\\PF\\Common Files\\Adobe\\Color\\Profiles'));
+  assert.ok(win.includes('C:\\Users\\x\\AppData\\Roaming\\Adobe\\Color\\Profiles'));
   assert.ok(win.includes('C:\\Win\\System32\\spool\\drivers\\color'));
+  assert.ok(win.every((d) => !/undefined/.test(d)), 'unset variables add no folder');
   const mac = CG.profileDirs('darwin', { HOME: '/Users/x' });
   assert.ok(mac.includes('/Library/Application Support/Adobe/Color/Profiles/Recommended'));
+  assert.ok(mac.includes('/Users/x/Library/Application Support/Adobe/Color/Profiles'));
   assert.ok(mac.includes('/Users/x/Library/ColorSync/Profiles'));
 });
 

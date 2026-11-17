@@ -245,13 +245,17 @@
 
   // ---------- gamut profile ----------
   var engine = null;
+  function appDir() {
+    var dir = decodeURIComponent(location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '').replace(/^file:\/\/\/?/, ''));
+    return /^[A-Za-z]:/.test(dir) ? dir : '/' + dir;
+  }
   function loadEngine() {
-    if (!engine) {
-      var dir = decodeURIComponent(location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '').replace(/^file:\/\/\/?/, ''));
-      if (!/^[A-Za-z]:/.test(dir)) dir = '/' + dir;
-      engine = require(path.join(dir, 'lib', 'jscolorengine', 'src', 'main.js'));
-    }
+    if (!engine) engine = require(path.join(appDir(), 'lib', 'jscolorengine', 'src', 'main.js'));
     return engine;
+  }
+  // Installed profiles win over the ones shipped in profiles/ (first file per name is kept).
+  function profileFolders() {
+    return CG.profileDirs(process.platform, process.env).concat(path.join(appDir(), 'profiles'));
   }
 
   function fillProfileSelect(names, selected, locked) {
@@ -270,13 +274,14 @@
   function setupGamut() {
     if (!hasNode) { status('Không có Node.js: tắt kiểm tra gamut'); return; }
     try {
-      if (!state.profiles) state.profiles = CG.listCmykProfiles(CG.profileDirs(process.platform, process.env));
+      if (!state.profiles) state.profiles = CG.listCmykProfiles(profileFolders());
     } catch (e) { state.profiles = []; }
     var names = state.profiles.map(function (p) { return p.name; });
     var want;
     if (state.ctx.isCmyk) {
       want = state.ctx.profileName;
       fillProfileSelect(want ? [want] : [], want, true);
+      if (!want) { useProfile('', 'Tài liệu CMYK chưa gắn profile: không kiểm tra được gamut'); return; }
     } else {
       want = settings.rgbDocProfile;
       if (!CG.findProfile(state.profiles, want)) {
@@ -284,15 +289,16 @@
         want = def ? def.name : '';
       }
       fillProfileSelect(names, want, false);
+      if (!want) { useProfile('', 'Không tìm thấy profile CMYK nào trên máy: không kiểm tra được gamut'); return; }
     }
     useProfile(want);
   }
 
-  function useProfile(name) {
+  function useProfile(name, missingText) {
     var p = CG.findProfile(state.profiles || [], name);
     if (!p) {
       state.gamut = null; state.gamutName = '';
-      status(name ? 'Không tìm thấy ICC profile “' + name + '” trên máy: không kiểm tra được gamut' : 'Tài liệu không có profile CMYK', true);
+      status(name ? 'Không tìm thấy ICC profile “' + name + '” trên máy: không kiểm tra được gamut' : (missingText || 'Không có profile CMYK'), true);
     } else if (p.name !== state.gamutName) {
       try {
         var g = CG.create(loadEngine(), fs.readFileSync(p.path));

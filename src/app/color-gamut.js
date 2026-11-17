@@ -10,24 +10,27 @@
   var THRESHOLD = 3;
   var GRID = 49;
 
-  // Folders that hold printing profiles. Adobe's come with Creative Cloud apps.
+  // Folders that hold printing profiles, most specific first. Adobe's come with Creative Cloud apps;
+  // Adobe's per-user folder is where newer installs and manually added profiles live.
   function profileDirs(platform, env) {
+    var dirs = [];
+    function add(base, tail) { if (base) dirs.push(base + tail); }
     if (platform === 'win32') {
-      var pf86 = env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
-      var win = env.SystemRoot || env.windir || 'C:\\Windows';
-      return [
-        pf86 + '\\Common Files\\Adobe\\Color\\Profiles\\Recommended',
-        pf86 + '\\Common Files\\Adobe\\Color\\Profiles',
-        win + '\\System32\\spool\\drivers\\color'
-      ];
+      var profiles = '\\Common Files\\Adobe\\Color\\Profiles';
+      [env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', env.ProgramFiles, env.ProgramW6432].forEach(function (base) {
+        add(base, profiles + '\\Recommended');
+        add(base, profiles);
+      });
+      add(env.APPDATA, '\\Adobe\\Color\\Profiles');
+      add(env.SystemRoot || env.windir || 'C:\\Windows', '\\System32\\spool\\drivers\\color');
+    } else {
+      var home = env.HOME || '';
+      dirs.push('/Library/Application Support/Adobe/Color/Profiles/Recommended',
+        '/Library/Application Support/Adobe/Color/Profiles',
+        '/Library/ColorSync/Profiles');
+      if (home) dirs.push(home + '/Library/Application Support/Adobe/Color/Profiles', home + '/Library/ColorSync/Profiles');
     }
-    var home = env.HOME || '';
-    return [
-      '/Library/Application Support/Adobe/Color/Profiles/Recommended',
-      '/Library/Application Support/Adobe/Color/Profiles',
-      '/Library/ColorSync/Profiles',
-      home + '/Library/ColorSync/Profiles'
-    ];
+    return dirs.filter(function (d, i) { return dirs.indexOf(d) === i; });
   }
 
   function ascii(bytes, start, len) {
