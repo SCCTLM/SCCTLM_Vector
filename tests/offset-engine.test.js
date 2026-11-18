@@ -227,3 +227,128 @@ test('offsetShapeFromSelection reports no shape for an empty selection', () => {
   const { run } = loadEngine({ selection: [] });
   assert.strictEqual(run('offsetShapeFromSelection()').ok, false);
 });
+
+test('offsetDetectExisting detects tagged item and reads stored parameters', () => {
+  const mockOffsetItem = {
+    typename: 'PathItem',
+    filled: true,
+    fillColor: { typename: 'RGBColor', red: 31, green: 200, blue: 255 },
+    note: 'SCCTLM_OFFSET:{"offsetPt":20,"join":0,"miterLimit":4,"mode":"sticker","colorHex":"#1FC8FF"}'
+  };
+  const doc = {
+    selection: [mockOffsetItem]
+  };
+  const { run } = loadEngine(doc);
+  const res = run('offsetDetectExisting()');
+  assert.strictEqual(res.ok, true);
+  assert.strictEqual(res.found, true);
+  assert.strictEqual(res.params.offsetPt, 20);
+  assert.strictEqual(res.params.colorHex, '#1FC8FF');
+});
+
+test('offsetDetectExisting detects offset via sibling behind source item', () => {
+  const parent = { pageItems: [] };
+  const sourceItem = {
+    typename: 'PathItem',
+    width: 80,
+    height: 100,
+    geometricBounds: [20, 120, 100, 20],
+    parent: parent
+  };
+  const offsetItem = {
+    typename: 'PathItem',
+    width: 120,
+    height: 140,
+    geometricBounds: [0, 140, 120, 0],
+    filled: true,
+    fillColor: { typename: 'RGBColor', red: 0, green: 0, blue: 0 },
+    parent: parent
+  };
+  parent.pageItems.push(sourceItem, offsetItem);
+
+  const doc = {
+    selection: [sourceItem]
+  };
+  const { run } = loadEngine(doc);
+  const res = run('offsetDetectExisting()');
+  assert.strictEqual(res.ok, true);
+  assert.strictEqual(res.found, true);
+  assert.strictEqual(res.params.offsetPt, 20); // (120 - 80) / 2 = 20
+  assert.strictEqual(res.params.colorHex, '#000000');
+});
+
+test('offsetInspectSelection returns unified shape, offset and selection key', () => {
+  const pt = (x, y) => ({ anchor: [x, y], leftDirection: [x, y], rightDirection: [x, y] });
+  const mockItem = {
+    typename: 'PathItem',
+    closed: true,
+    pathPoints: [pt(0, 0), pt(10, 0), pt(10, 20)],
+    note: 'SCCTLM_OFFSET:{"offsetPt":15,"join":2,"miterLimit":5,"mode":"standard","colorHex":"#FF0000"}'
+  };
+  const doc = {
+    selection: [mockItem]
+  };
+  const { run } = loadEngine(doc);
+  const res = run('offsetInspectSelection()');
+  assert.strictEqual(res.ok, true);
+  assert.strictEqual(res.hasSelection, true);
+  assert.ok(res.selectionKey);
+  assert.strictEqual(res.offsetInfo.found, true);
+  assert.strictEqual(res.offsetInfo.params.offsetPt, 15);
+  assert.strictEqual(res.shape.ok, true);
+});
+
+test('offsetGroupPair groups artwork with its offset and names the group', () => {
+  const named = { typename: 'GroupItem', name: '' };
+  const doc = { selection: null };
+  const { ctx } = loadEngine(doc);
+  ctx.app.executeMenuCommand = (cmd) => {
+    ctx.menuCommandLog.push(cmd);
+    if (cmd === 'group') doc.selection = [named];
+  };
+  const source = { typename: 'PathItem', selected: false, parent: { typename: 'Layer' } };
+  const result = { typename: 'PathItem', selected: false, parent: { typename: 'Layer' } };
+  ctx.__args = [doc, [source], [result]];
+  vm.runInContext('offsetGroupPair(__args[0], __args[1], __args[2])', ctx);
+  assert.ok(ctx.menuCommandLog.includes('group'));
+  assert.strictEqual(source.selected, true);
+  assert.strictEqual(result.selected, true);
+  assert.strictEqual(named.name, 'Offset Group');
+});
+
+test('offsetGroupPair leaves artwork already inside an offset group alone', () => {
+  const doc = { selection: null };
+  const { ctx } = loadEngine(doc);
+  const inGroup = { typename: 'GroupItem', name: 'Offset Group' };
+  const source = { typename: 'PathItem', selected: false, parent: inGroup };
+  const result = { typename: 'PathItem', selected: false, parent: inGroup };
+  ctx.__args = [doc, [source], [result]];
+  vm.runInContext('offsetGroupPair(__args[0], __args[1], __args[2])', ctx);
+  assert.ok(!ctx.menuCommandLog.includes('group'));
+});
+
+test('offsetDetectExisting ignores unrelated artwork that merely overlaps', () => {
+  const parent = { pageItems: [] };
+  const small = { typename: 'PathItem', width: 80, height: 80, geometricBounds: [100, -100, 180, -180], parent };
+  const big = {
+    typename: 'PathItem', width: 300, height: 200, geometricBounds: [50, -50, 350, -250],
+    filled: true, fillColor: { typename: 'RGBColor', red: 200, green: 200, blue: 0 }, parent
+  };
+  parent.pageItems.push(small, big);
+  const { run } = loadEngine({ selection: [small] });
+  const res = run('offsetDetectExisting()');
+  assert.strictEqual(res.ok, true);
+  assert.strictEqual(res.found, false);
+});
+
+test('offsetDetectExisting ignores a copied source tag with no border beside it', () => {
+  const layer = { typename: 'Layer', pageItems: [] };
+  const copy = {
+    typename: 'TextFrame', width: 100, height: 40, geometricBounds: [0, 40, 100, 0], parent: layer,
+    note: 'SCCTLM_OFFSET:{"id":"off_1","offsetPt":10,"role":"source"}'
+  };
+  layer.pageItems.push(copy);
+  const { run } = loadEngine({ selection: [copy] });
+  const res = run('offsetDetectExisting()');
+  assert.strictEqual(res.found, false);
+});

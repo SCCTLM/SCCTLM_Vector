@@ -75,6 +75,9 @@
     colorApply: function (job) { return evalScript('colorApply(' + literal(JSON.stringify(job)) + ')'); },
     offsetShape: function () { return evalScript('offsetShapeFromSelection()'); },
     offsetCreate: function (job) { return evalScript('engineOffsetPath(' + literal(JSON.stringify(job)) + ')'); },
+    offsetDetect: function () { return evalScript('offsetDetectExisting()'); },
+    offsetUpdate: function (job) { return evalScript('offsetUpdateExisting(' + literal(JSON.stringify(job)) + ')'); },
+    offsetInspect: function () { return evalScript('offsetInspectSelection()'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {
       return evalScript('(function(){var c=' + jsonText(ctx) + ';c.artboard=uniqueArtboardNames(' +

@@ -159,3 +159,77 @@ test('OffsetPanel setMode switches between sticker and standard offset', () => {
   assert.strictEqual(elements['offset-preview-outline']['clip-path'], 'url(#offset-preview-clip)');
   assert.strictEqual(elements['offset-preview-outline']['stroke-width'], 16);
 });
+
+test('OffsetPanel enterEditMode switches to edit state and updates UI and apply button', async () => {
+  const { sandbox, elements } = loadPanel();
+  let updatedJob = null;
+  sandbox.Bridge.offsetUpdate = function(job) {
+    updatedJob = job;
+    return Promise.resolve({ ok: true, message: 'Đã cập nhật' });
+  };
+
+  sandbox.OffsetPanel.enterEditMode({
+    offsetPt: 35,
+    join: 1, // bevel
+    miterLimit: 6,
+    mode: 'sticker',
+    colorHex: '#FDB716'
+  }, { rgb: [253, 183, 22] });
+
+  assert.strictEqual(sandbox.OffsetPanel.state.editing, true);
+  assert.strictEqual(sandbox.OffsetPanel.state.offset, 35);
+  assert.strictEqual(sandbox.OffsetPanel.state.join, 'bevel');
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#FDB716');
+  assert.strictEqual(elements['offset-apply'].textContent, 'Cập nhật viền');
+
+  // Triggering apply calls Bridge.offsetUpdate instead of offsetCreate
+  elements['offset-apply'].click();
+  await new Promise(r => setImmediate(r));
+
+  assert.ok(updatedJob);
+  assert.strictEqual(updatedJob.offsetPt, 35);
+  assert.strictEqual(updatedJob.join, 'bevel');
+  assert.strictEqual(updatedJob.color.hex, '#FDB716');
+
+  // Exiting edit mode restores normal state
+  sandbox.OffsetPanel.exitEditMode();
+  assert.strictEqual(sandbox.OffsetPanel.state.editing, false);
+  assert.strictEqual(elements['offset-apply'].textContent, 'Tạo viền');
+});
+
+test('OffsetPanel inspectSelection updates panel values to match the selected object', async () => {
+  const { sandbox, elements, joinMiter } = loadPanel();
+
+  // Mock inspect returning an object with 42px width, miter join, black color
+  sandbox.Bridge.offsetInspect = function() {
+    return Promise.resolve({
+      ok: true,
+      hasSelection: true,
+      selectionKey: 'item_lorem_ipsum',
+      shape: { ok: true, d: 'M0 0 L10 10 Z', x: 0, y: 0, w: 10, h: 10 },
+      offsetInfo: {
+        found: true,
+        params: {
+          offsetPt: 42,
+          join: 'miter',
+          miterLimit: 5,
+          mode: 'sticker',
+          colorHex: '#000000'
+        },
+        currentColor: { rgb: [0, 0, 0], hex: '#000000' }
+      }
+    });
+  };
+
+  sandbox.OffsetPanel.inspectSelection();
+  await new Promise(r => setImmediate(r));
+
+  assert.strictEqual(sandbox.OffsetPanel.state.offset, 42);
+  assert.strictEqual(sandbox.OffsetPanel.state.join, 'miter');
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#000000');
+  assert.strictEqual(elements['offset-width-slider'].value, 42);
+  assert.strictEqual(elements['offset-width-input'].value, 42);
+  assert.strictEqual(elements['offset-hex-input'].value, '#000000');
+  assert.strictEqual(joinMiter.classList.contains('on'), true);
+  assert.strictEqual(elements['offset-apply'].textContent, 'Cập nhật viền');
+});

@@ -164,6 +164,37 @@ body:not([data-tab="artboard"]):not([data-tab="pdf"]) .artboards-shared { displa
   padding: 14px 14px 16px;
   margin-bottom: 10px;
 }
+.offset-lab-card.offset-editing {
+  border-color: #FDB716;
+  box-shadow: 0 0 0 1px rgba(253, 183, 22, 0.25);
+}
+.offset-edit-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: rgba(253, 183, 22, 0.12);
+  border: 1px solid rgba(253, 183, 22, 0.3);
+}
+.offset-edit-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FDB716;
+  flex: none;
+  animation: offset-pulse 1.5s ease-in-out infinite;
+}
+@keyframes offset-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.offset-edit-text {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-strong);
+  color: #FDB716;
+}
 .offset-header {
   font-size: var(--fs-lg);
   font-weight: var(--fw-strong);
@@ -228,7 +259,7 @@ input[type=range].offset-slider::-webkit-slider-thumb:hover {
   display: flex;
   align-items: center;
   background: var(--control);
-  border: 1px solid var(--control-line);
+  border: 0;
   border-radius: 999px;
   padding: 0 8px;
   height: 28px;
@@ -334,7 +365,7 @@ input[type=number].offset-miter-input {
   height: 28px;
   border-radius: 999px;
   background: var(--control);
-  border: 1px solid var(--control-line);
+  border: 0;
   color: var(--fg);
   font-size: var(--fs-md);
   font-weight: var(--fw-strong);
@@ -349,9 +380,6 @@ input[type=number].offset-miter-input::-webkit-outer-spin-button,
 input[type=number].offset-miter-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-input[type=number].offset-miter-input:focus {
-  border-color: var(--select-focus);
 }
 .offset-color-row {
   display: flex;
@@ -396,7 +424,7 @@ input[type=text].offset-hex-input {
   height: 38px;
   border-radius: 999px;
   background: var(--control);
-  border: 1px solid var(--control-line);
+  border: 0;
   color: var(--fg);
   font-size: var(--fs-md);
   font-weight: var(--fw-strong);
@@ -404,10 +432,12 @@ input[type=text].offset-hex-input {
   letter-spacing: 0.03em;
   padding: 0 8px;
   outline: 0;
-  transition: border-color 0.15s;
 }
-input[type=text].offset-hex-input:focus {
-  border-color: #1FC8FF;
+input[type=text].offset-hex-input:focus,
+input[type=number].offset-miter-input:focus,
+input[type=number].offset-val-input:focus {
+  outline: 0;
+  box-shadow: none;
 }
 button.offset-eyedropper-btn {
   width: 48px;

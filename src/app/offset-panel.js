@@ -14,7 +14,10 @@
     mode: 'sticker',
     placeBehind: true,
     keepOriginal: true,
-    applyColor: true
+    applyColor: true,
+    // Edit-mode: when the selection is a tagged offset result
+    editing: false,
+    editParams: null
   };
 
   function hexToRgb(hex) {
@@ -137,7 +140,11 @@
 
     var applyBtn = $('offset-apply');
     if (applyBtn) {
-      applyBtn.textContent = state.mode === 'sticker' ? 'Tạo viền' : 'Offset Path';
+      if (state.editing) {
+        applyBtn.textContent = 'Cập nhật viền';
+      } else {
+        applyBtn.textContent = state.mode === 'sticker' ? 'Tạo viền' : 'Offset Path';
+      }
     }
 
     var miterInput = $('offset-miter-input');
@@ -155,6 +162,18 @@
     swatches.forEach(function (sw) {
       sw.classList.toggle('active', sw.dataset.color.toUpperCase() === state.color.toUpperCase());
     });
+
+    // Edit-mode badge and card highlight
+    var badge = $('offset-edit-badge');
+    var card = document.querySelector ? document.querySelector('.offset-lab-card') : null;
+    if (badge) badge.style.display = state.editing ? 'flex' : 'none';
+    if (card) card.classList.toggle('offset-editing', state.editing);
+
+    // In edit mode, hide creation-only options (behind, keep, mode toggle)
+    var optionsRow = document.querySelector ? document.querySelector('.offset-options-row') : null;
+    if (optionsRow) optionsRow.style.display = state.editing ? 'none' : '';
+    var modeToggle = $('offset-mode-toggle');
+    if (modeToggle) modeToggle.style.display = state.editing ? 'none' : '';
 
     updatePreview();
   }
@@ -176,21 +195,145 @@
   }
 
   var shapeBusy = false;
+  var detectBusy = false;
+  var inspectBusy = false;
+
+  var joinNames = { 0: 'round', 1: 'bevel', 2: 'miter', 'round': 'round', 'bevel': 'bevel', 'miter': 'miter' };
+
+  function enterEditMode(params, currentColor) {
+    var newOffset = Number(params.offsetPt !== undefined ? params.offsetPt : 20);
+    var newJoin = joinNames[params.join] || params.join || 'round';
+    var newMiter = Number(params.miterLimit !== undefined ? params.miterLimit : 4);
+    var newMode = params.mode || 'sticker';
+
+    var newColor = state.color;
+    var newRgb = state.rgb;
+
+    if (currentColor && currentColor.hex) {
+      newColor = currentColor.hex.toUpperCase();
+      newRgb = currentColor.rgb || hexToRgb(newColor);
+    } else if (params.colorHex) {
+      newColor = params.colorHex.toUpperCase();
+      newRgb = params.colorRgb || hexToRgb(newColor);
+    }
+
+    // Already editing this same offset: keep the user's pending changes instead of
+    // overwriting them with the values stored on the object.
+    if (state.editing && state.editParams &&
+        (state.editParams.id || '') === (params.id || '')) {
+      return;
+    }
+
+    var changed = !state.editing ||
+      state.offset !== newOffset ||
+      state.join !== newJoin ||
+      state.miterLimit !== newMiter ||
+      state.mode !== newMode ||
+      state.color !== newColor;
+
+    if (!changed) return;
+
+    state.editing = true;
+    state.editParams = params;
+    state.offset = newOffset;
+    state.join = newJoin;
+    state.miterLimit = newMiter;
+    state.mode = newMode;
+    state.color = newColor;
+    state.rgb = newRgb;
+
+    updateUI();
+  }
+
+  function exitEditMode() {
+    if (!state.editing) return;
+    state.editing = false;
+    state.editParams = null;
+    updateUI();
+  }
+
+  // Detects whether the selection is a tagged offset result and enters edit mode.
+  function detectExisting() {
+    if (detectBusy || !global.Bridge || !global.Bridge.offsetDetect) return;
+    var card = $('offset-preview-svg');
+    if (card && card.offsetParent === null) return;
+    detectBusy = true;
+    global.Bridge.offsetDetect().then(function (res) {
+      detectBusy = false;
+      if (res && res.found && res.params) {
+        enterEditMode(res.params, res.currentColor);
+      } else {
+        exitEditMode();
+      }
+    }).catch(function () {
+      detectBusy = false;
+      exitEditMode();
+    });
+  }
+
+  // Unified inspector: inspects the selection and updates preview and offset controls.
+  function inspectSelection() {
+    if (inspectBusy || !global.Bridge) return;
+    var card = $('offset-preview-svg');
+    if (card && card.offsetParent === null) return;
+
+    if (global.Bridge.offsetInspect) {
+      inspectBusy = true;
+      global.Bridge.offsetInspect().then(function (res) {
+        inspectBusy = false;
+        if (!res || !res.ok) return;
+
+        if (!res.hasSelection) {
+          if (state.editing) exitEditMode();
+          if (shapeKey !== 'sample') {
+            shapeKey = 'sample';
+            applyShape(sample);
+            updatePreview();
+          }
+          return;
+        }
+
+        // 1. Process offset detection
+        if (res.offsetInfo && res.offsetInfo.found && res.offsetInfo.params) {
+          enterEditMode(res.offsetInfo.params, res.offsetInfo.currentColor);
+        } else if (state.editing) {
+          exitEditMode();
+        }
+
+        // 2. Process preview shape
+        var next = res.shape && res.shape.ok ? res.shape : sample;
+        var key = next === sample ? 'sample' : next.d;
+        if (key !== shapeKey) {
+          shapeKey = key;
+          applyShape(next);
+          updatePreview();
+        }
+      }).catch(function () {
+        inspectBusy = false;
+      });
+      return;
+    }
+
+    refreshShape();
+    detectExisting();
+  }
 
   // Mirrors the Illustrator selection into the preview; falls back to the sample glyph.
   function refreshShape() {
     if (shapeBusy || !global.Bridge || !global.Bridge.offsetShape) return;
     var card = $('offset-preview-svg');
-    if (card && card.offsetParent === null) return; // pane hidden
+    if (card && card.offsetParent === null) return;
     shapeBusy = true;
     global.Bridge.offsetShape().then(function (res) {
       shapeBusy = false;
       var next = res && res.ok ? res : sample;
       var key = next === sample ? 'sample' : next.d;
-      if (key === shapeKey) return;
-      shapeKey = key;
-      applyShape(next);
-      updatePreview();
+      if (key !== shapeKey) {
+        shapeKey = key;
+        applyShape(next);
+        updatePreview();
+      }
+      detectExisting();
     }).catch(function () { shapeBusy = false; });
   }
 
@@ -334,12 +477,43 @@
     var applyBtn = $('offset-apply');
     if (applyBtn) {
       applyBtn.onclick = function () {
-        if (!global.Bridge || !global.Bridge.offsetCreate) {
+        if (!global.Bridge) {
           notify('Mất kết nối Illustrator');
           return;
         }
 
         applyBtn.disabled = true;
+
+        if (state.editing) {
+          // Edit mode: update the existing offset in-place
+          notify('Đang cập nhật viền…');
+          global.Bridge.offsetUpdate({
+            color: { rgb: state.rgb, hex: state.color },
+            join: state.join,
+            miterLimit: state.miterLimit,
+            offsetPt: state.offset,
+            rebuild: true
+          }).then(function (res) {
+            applyBtn.disabled = false;
+            if (res && res.ok) {
+              notify(res.message || 'Đã cập nhật viền');
+            } else {
+              notify('Lỗi: ' + (res && res.error ? res.error : 'Thất bại'));
+            }
+          }).catch(function (err) {
+            applyBtn.disabled = false;
+            notify('Lỗi: ' + err.message);
+          });
+          return;
+        }
+
+        // Create mode
+        if (!global.Bridge.offsetCreate) {
+          notify('Mất kết nối Illustrator');
+          applyBtn.disabled = false;
+          return;
+        }
+
         var actName = state.mode === 'sticker' ? 'Đang tạo viền' : 'Đang offset';
         notify(actName + ' ' + state.offset + 'px…');
 
@@ -372,9 +546,9 @@
 
     var outlinePath = $('offset-preview-outline-path');
     sample.d = outlinePath && outlinePath.getAttribute ? outlinePath.getAttribute('d') : null;
-    refreshShape();
-    if (typeof global.addEventListener === 'function') global.addEventListener('focus', refreshShape);
-    if (typeof setInterval === 'function') setInterval(refreshShape, 1500);
+    inspectSelection();
+    if (typeof global.addEventListener === 'function') global.addEventListener('focus', inspectSelection);
+    if (typeof setInterval === 'function') setInterval(inspectSelection, 800);
 
     updateUI();
   }
@@ -393,6 +567,9 @@
     setJoin: function (join) { state.join = join; updateUI(); },
     updateUI: updateUI,
     hexToRgb: hexToRgb,
-    rgbToHex: rgbToHex
+    rgbToHex: rgbToHex,
+    enterEditMode: enterEditMode,
+    exitEditMode: exitEditMode,
+    inspectSelection: inspectSelection
   };
 }(window));
