@@ -32,9 +32,9 @@ test('bad values fall back or are clamped, good ones are kept', () => {
     circles: { complexity: '70', mode: 'random', n: 0 }
   }));
   assert.strictEqual(s.elements.anchors, false);
-  assert.strictEqual(s.elements.handles, true);
+  assert.strictEqual(s.elements.handles, g.DEFAULTS.elements.handles);
   assert.strictEqual(s.style.anchors.size, 100);
-  assert.strictEqual(s.style.anchors.fill, '#ffffff');
+  assert.strictEqual(s.style.anchors.fill, g.DEFAULTS.style.anchors.fill);
   assert.strictEqual(s.style.anchors.stroke, '#abcdef');
   assert.strictEqual(s.style.outlines.fill, 'none');
   assert.deepStrictEqual(s.gridlines, { sensitivity: 100, margin: 0 });

@@ -11,13 +11,13 @@
 
   // Mirrors the engine defaults in grid-engine.jsx; sizes and widths are points.
   var DEFAULTS = {
-    elements: { anchors: true, handles: true, outlines: true, gridlines: true, circles: true },
+    elements: { anchors: true, handles: false, outlines: false, gridlines: false, circles: false },
     style: {
-      anchors: { size: 4, fill: '#ffffff', stroke: '#0a84ff', strokeWidth: 0.5 },
-      handles: { size: 3, fill: '#0a84ff', stroke: 'none', strokeWidth: 0.5 },
+      anchors: { size: 10, fill: '#378ef0', stroke: '#ffffff', strokeWidth: 4 },
+      handles: { size: 20, fill: '#378ef0', stroke: 'none', strokeWidth: 1 },
       outlines: { fill: 'none', stroke: '#ff2d55', strokeWidth: 0.5 },
-      gridlines: { stroke: '#8e8e93', strokeWidth: 0.25 },
-      circles: { fill: 'none', stroke: '#ff9500', strokeWidth: 0.5 }
+      gridlines: { stroke: '#8e8e93', strokeWidth: 4 },
+      circles: { fill: 'none', stroke: '#ff9500', strokeWidth: 4 }
     },
     gridlines: { sensitivity: 50, margin: 20 },
     circles: { complexity: 30, mode: 'all', n: 2 }

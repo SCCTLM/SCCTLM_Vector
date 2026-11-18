@@ -11,11 +11,11 @@ var GRID_MAX_DEPTH = 6;
 
 // Sizes and stroke widths are in points.
 var GRID_DEFAULT_STYLE = {
-  anchors: { size: 4, fill: "#ffffff", stroke: "#0a84ff", strokeWidth: 0.5 },
-  handles: { size: 3, fill: "#0a84ff", stroke: "none", strokeWidth: 0.5 },
+  anchors: { size: 10, fill: "#378ef0", stroke: "#ffffff", strokeWidth: 4 },
+  handles: { size: 20, fill: "#378ef0", stroke: "none", strokeWidth: 1 },
   outlines: { fill: "none", stroke: "#ff2d55", strokeWidth: 0.5 },
-  gridlines: { stroke: "#8e8e93", strokeWidth: 0.25 },
-  circles: { fill: "none", stroke: "#ff9500", strokeWidth: 0.5 }
+  gridlines: { stroke: "#8e8e93", strokeWidth: 4 },
+  circles: { fill: "none", stroke: "#ff9500", strokeWidth: 4 }
 };
 
 function gridFindLayer(doc) {
