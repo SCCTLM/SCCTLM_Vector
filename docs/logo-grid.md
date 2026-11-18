@@ -1,14 +1,14 @@
-# Grid tab: logo construction grid
+# Logo Lab: logo construction grid
 
-The Grid tab draws a construction grid over the selected vector artwork. It never changes the artwork itself; everything goes on a layer named `SCCTLM Grid` at the top of the document.
+The **Logo Lab** card in the **Daily** tab draws a construction grid over the selected vector artwork. It never changes the artwork itself; everything goes on a layer named `SCCTLM Grid` at the top of the document.
 
 ## Use
 
 1. Select the logo: paths, compound paths and groups (groups are searched inside). Outline text first; text, placed images, clipping masks, hidden items (including everything inside a hidden group) and other items are skipped and counted in the status line.
-2. Open the **Lưới** (Grid) tab, turn on the elements you want and press **Tạo lưới** (Generate).
+2. In Logo Lab, switch on the elements you want (anchors, handles, circles, gridlines), adjust the marker style, sizes and stroke widths, and press **Tạo lưới** (Generate). The preview above the controls updates live. Outlines are not drawn: the artwork is already on the page.
 3. Press **Tạo lưới** again after changing options: the previous grid layer is replaced, even if it was locked or hidden. **Xoá lưới** (Clear) removes it. If drawing fails, the previous grid stays and the partly drawn one is removed.
 
-**Tạo tất cả** (Generate all) draws every element for that run without changing your toggles. When the anchor points plus the circles to draw exceed 2,000, the panel asks before running, because Illustrator stops responding while it draws. High circle complexity can produce many more circles than anchors.
+Marker **Fill**, **Stroke** and stroke width (the × button turns one off) are shared by anchors and handles; the **Anchors** and **Handles** sliders set marker sizes; **Vòng tròn** and **Đường lưới** set the stroke width of circles and gridlines. Values are labelled px but applied as points, as in Offset Lab. When the anchor points plus the circles to draw exceed 2,000, the panel asks before running, because Illustrator stops responding while it draws. High circle complexity can produce many more circles than anchors.
 
 Illustrator may record the drawing as many undo steps, so use **Xoá lưới** to remove a grid rather than Undo.
 
@@ -37,24 +37,24 @@ Settings are saved in `grid-settings.json` next to `presets.json` in the per-use
 
 - `src/app/jsx/grid-geometry.jsx`: maths only (segments, inflections, circle fitting, line clipping and merging), unit tested in `tests/grid-geometry.test.js`.
 - `src/app/jsx/grid-engine.jsx`: reads the selection and draws the layer; `gridInspect`, `gridGenerate`, `gridClear`. Tested against stand-in Illustrator objects in `tests/grid-engine.test.js`.
-- `src/app/grid-panel.js`, `src/app/grid-settings.js`, `src/app/tabs.js`: tab UI, saved settings and tab switching.
+- `src/app/logo-lab-panel.js`, `src/app/grid-settings.js`: Logo Lab card, preview and saved settings. Gridline merge, margin and circle options keep their saved values; the card does not expose them.
 - `tests/fixtures/make-grid-test-doc.jsx`: builds and selects a sample logo for a manual check in Illustrator.
 
 This feature is an original implementation written from a description of the behaviour. It contains no code or artwork from other grid tools.
 
 ---
 
-# Tab Lưới: lưới cấu trúc logo (logo construction grid)
+# Logo Lab: lưới cấu trúc logo (logo construction grid)
 
-Tab Lưới vẽ lưới cấu trúc lên trên đối tượng đồ họa vector được chọn. Nó không bao giờ thay đổi bản thân tác phẩm; mọi thứ đều được đưa vào một layer có tên `SCCTLM Grid` ở trên cùng của tài liệu.
+Card **Logo Lab** trong tab **Daily** vẽ lưới cấu trúc lên trên đối tượng đồ họa vector được chọn. Nó không bao giờ thay đổi bản thân tác phẩm; mọi thứ đều được đưa vào một layer có tên `SCCTLM Grid` ở trên cùng của tài liệu.
 
 ## Cách sử dụng
 
 1. Chọn logo: các path, compound path và group (các group sẽ được tìm kiếm bên trong). Cần outline văn bản trước; text, hình ảnh đặt vào (placed image), clipping mask, các mục bị ẩn (bao gồm mọi thứ bên trong group ẩn) và các đối tượng khác sẽ bị bỏ qua và được thống kê trong dòng trạng thái.
-2. Mở tab **Lưới**, bật các thành phần bạn muốn và nhấn **Tạo lưới**.
+2. Trong Logo Lab, bật các thành phần muốn vẽ (điểm neo, tay nắm, vòng tròn, đường lưới), chỉnh kiểu, kích thước và độ dày nét rồi nhấn **Tạo lưới**. Bản xem trước phía trên cập nhật trực tiếp. Đường viền (outline) không được vẽ vì tác phẩm đã có sẵn trên trang.
 3. Nhấn **Tạo lưới** lần nữa sau khi thay đổi tùy chọn: layer lưới trước đó sẽ được thay thế, ngay cả khi nó bị khóa hoặc ẩn. Nhấn **Xoá lưới** để xóa layer này. Nếu quá trình vẽ gặp lỗi, lưới trước đó vẫn được giữ nguyên và phần đang vẽ dở sẽ bị xóa bỏ.
 
-**Tạo tất cả** sẽ vẽ tất cả các thành phần cho lượt chạy đó mà không làm thay đổi các nút bật/tắt bạn đã chọn. Khi tổng số điểm neo (anchor point) cộng với các đường tròn cần vẽ vượt quá 2.000, panel sẽ hỏi xác nhận trước khi chạy, vì Illustrator sẽ tạm dừng phản hồi trong khi vẽ. Độ phức tạp vòng tròn cao có thể tạo ra nhiều vòng tròn hơn rất nhiều so với số điểm neo.
+**Fill**, **Stroke** và độ dày nét của điểm neo và tay nắm dùng chung (nút × để tắt); thanh trượt **Anchors** và **Handles** chỉnh kích thước; **Vòng tròn** và **Đường lưới** chỉnh độ dày nét. Giá trị ghi px nhưng áp dụng theo point, giống Offset Lab. Khi tổng số điểm neo (anchor point) cộng với các đường tròn cần vẽ vượt quá 2.000, panel sẽ hỏi xác nhận trước khi chạy, vì Illustrator sẽ tạm dừng phản hồi trong khi vẽ. Độ phức tạp vòng tròn cao có thể tạo ra nhiều vòng tròn hơn rất nhiều so với số điểm neo.
 
 Illustrator có thể ghi nhận quá trình vẽ thành nhiều bước Undo, vì vậy hãy sử dụng nút **Xoá lưới** để xóa lưới thay vì bấm Undo.
 
@@ -83,7 +83,7 @@ Các cài đặt được lưu trong `grid-settings.json` bên cạnh `presets.j
 
 - `src/app/jsx/grid-geometry.jsx`: chỉ xử lý toán học (các đoạn, điểm uốn, khớp đường tròn, cắt và gộp đường thẳng), được unit test trong `tests/grid-geometry.test.js`.
 - `src/app/jsx/grid-engine.jsx`: đọc vùng chọn và vẽ layer; các hàm `gridInspect`, `gridGenerate`, `gridClear`. Được kiểm thử với các đối tượng giả lập Illustrator trong `tests/grid-engine.test.js`.
-- `src/app/grid-panel.js`, `src/app/grid-settings.js`, `src/app/tabs.js`: giao diện tab, lưu trữ cài đặt và chuyển tab.
+- `src/app/logo-lab-panel.js`, `src/app/grid-settings.js`: card Logo Lab, bản xem trước và lưu cài đặt. Các tùy chọn gộp đường lưới, lề và vòng tròn giữ giá trị đã lưu, card không hiển thị chúng.
 - `tests/fixtures/make-grid-test-doc.jsx`: tạo và chọn một logo mẫu để kiểm tra thủ công trong Illustrator.
 
 Tính năng này là bản hiện thực độc lập được viết dựa trên mô tả hành vi. Nó không chứa mã nguồn hay đồ họa từ bất kỳ công cụ lưới nào khác.
