@@ -7,6 +7,7 @@
 #include "grid-engine.jsx"
 #include "color-engine.jsx"
 #include "artboard-size.jsx"
+#include "offset-engine.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },

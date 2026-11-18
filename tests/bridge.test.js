@@ -17,3 +17,7 @@ test('literal round-trips quotes, backslashes, newlines and line separators', ()
   assert.ok(text.indexOf(String.fromCharCode(0x2029)) < 0, 'U+2029 must be escaped');
   assert.strictEqual(vm.runInNewContext(text), raw);
 });
+
+test('Bridge exposes offsetCreate method', () => {
+  assert.strictEqual(typeof sandbox.Bridge.offsetCreate, 'function');
+});

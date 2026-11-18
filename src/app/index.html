@@ -32,6 +32,97 @@
     <div class="muted">Kiểm tra và cảnh báo dải màu (gamut) CMYK trực tiếp theo profile ICC của tài liệu khi chọn màu.</div>
   </section>
 
+  <section data-pane="daily" class="offset-lab-card">
+    <div class="offset-header">Offset Lab</div>
+    <div class="offset-preview-box">
+      <svg id="offset-preview-svg" viewBox="0 0 160 140" class="offset-preview-svg" aria-label="Bản xem trước đường viền">
+        <defs>
+          <clipPath id="offset-preview-clip"><path id="offset-preview-clip-path" d="M 46 5 L 33 38 L 34 39 L 45 33 L 56 34 L 59 36 L 62 41 L 62 48 L 63 49 L 73 44 L 75 49 L 80 54 L 84 55 L 84 59 L 79 60 L 61 104 L 55 110 L 50 113 L 35 114 L 31 112 L 33 105 L 37 106 L 47 105 L 53 99 L 58 88 L 57 87 L 47 87 L 46 82 L 42 75 L 35 69 L 30 68 L 33 62 L 43 60 L 51 54 L 52 46 L 50 44 L 40 43 L 34 46 L 26 55 L 13 87 L 3 87 L 3 86 L 35 6 L 36 5 L 45 5 Z M 62 50 L 57 58 L 53 61 L 43 65 L 53 76 L 58 86 L 68 61 L 78 59 L 69 55 L 63 49 Z" fill-rule="evenodd" /></clipPath>
+        </defs>
+        <g id="offset-preview-outline" class="offset-preview-outline" stroke="#1FC8FF" stroke-width="36" stroke-linejoin="round" stroke-linecap="round" fill="#1FC8FF" fill-rule="evenodd" transform="translate(37, 12)">
+          <path id="offset-preview-outline-path" d="M 46 5 L 33 38 L 34 39 L 45 33 L 56 34 L 59 36 L 62 41 L 62 48 L 63 49 L 73 44 L 75 49 L 80 54 L 84 55 L 84 59 L 79 60 L 61 104 L 55 110 L 50 113 L 35 114 L 31 112 L 33 105 L 37 106 L 47 105 L 53 99 L 58 88 L 57 87 L 47 87 L 46 82 L 42 75 L 35 69 L 30 68 L 33 62 L 43 60 L 51 54 L 52 46 L 50 44 L 40 43 L 34 46 L 26 55 L 13 87 L 3 87 L 3 86 L 35 6 L 36 5 L 45 5 Z M 62 50 L 57 58 L 53 61 L 43 65 L 53 76 L 58 86 L 68 61 L 78 59 L 69 55 L 63 49 Z" />
+        </g>
+        <g id="offset-preview-fg" class="offset-preview-fg" fill-rule="evenodd" transform="translate(37, 12)">
+          <path id="offset-preview-fg-path" d="M 46 5 L 33 38 L 34 39 L 45 33 L 56 34 L 59 36 L 62 41 L 62 48 L 63 49 L 73 44 L 75 49 L 80 54 L 84 55 L 84 59 L 79 60 L 61 104 L 55 110 L 50 113 L 35 114 L 31 112 L 33 105 L 37 106 L 47 105 L 53 99 L 58 88 L 57 87 L 47 87 L 46 82 L 42 75 L 35 69 L 30 68 L 33 62 L 43 60 L 51 54 L 52 46 L 50 44 L 40 43 L 34 46 L 26 55 L 13 87 L 3 87 L 3 86 L 35 6 L 36 5 L 45 5 Z M 62 50 L 57 58 L 53 61 L 43 65 L 53 76 L 58 86 L 68 61 L 78 59 L 69 55 L 63 49 Z" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="offset-slider-row">
+      <span class="offset-label">Độ rộng</span>
+      <input type="range" id="offset-width-slider" class="offset-slider" min="-50" max="100" value="20" aria-label="Độ rộng viền">
+      <div class="offset-val-box">
+        <input type="number" id="offset-width-input" class="offset-val-input" value="20" step="any" aria-label="Giá trị độ rộng viền">
+        <span class="offset-unit">px</span>
+      </div>
+      <span id="offset-width-val" class="offset-val" style="display:none;">20px</span>
+    </div>
+
+    <div class="offset-joins-toggle" id="offset-joins-toggle" role="radiogroup" aria-label="Kiểu bo góc">
+      <button type="button" class="offset-join-btn on" data-join="round" id="offset-join-round" role="radio" aria-checked="true">Bo tròn</button>
+      <button type="button" class="offset-join-btn" data-join="miter" id="offset-join-miter" role="radio" aria-checked="false">Góc nhọn</button>
+      <button type="button" class="offset-join-btn" data-join="bevel" id="offset-join-bevel" role="radio" aria-checked="false">Vát góc</button>
+    </div>
+
+    <div class="offset-miter-row">
+      <label for="offset-miter-input" class="offset-miter-label">Giới hạn nhọn</label>
+      <input type="number" id="offset-miter-input" class="offset-miter-input" value="4" min="1" max="50">
+    </div>
+
+    <div class="offset-color-row">
+      <button type="button" id="offset-color-btn" class="offset-color-btn" title="Chọn màu viền">
+        <svg class="offset-palette-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+        </svg>
+      </button>
+      <input type="color" id="offset-color-native" style="display:none;" value="#1FC8FF">
+      <div class="offset-hex-wrap">
+        <input type="text" id="offset-hex-input" class="offset-hex-input" value="#1FC8FF" maxlength="7" spellcheck="false" title="Mã màu HEX">
+      </div>
+      <button type="button" id="offset-eyedropper-btn" class="offset-eyedropper-btn" title="Hút màu">
+        <svg class="offset-eyedropper-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m12 9-8.414 8.414A2 2 0 0 0 3 18.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 3.828 21h1.344a2 2 0 0 0 1.414-.586L15 12"/>
+          <path d="m18 9 .4.4a1 1 0 1 1-3 3l-3.8-3.8a1 1 0 1 1 3-3l.4.4 3.4-3.4a1 1 0 1 1 3 3z"/>
+          <path d="m2 22 .414-.414"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="offset-swatches-row" aria-label="Màu nhanh">
+      <button type="button" class="offset-swatch" data-color="#4295D1" style="background:#4295D1;" title="#4295D1"></button>
+      <button type="button" class="offset-swatch" data-color="#5EC093" style="background:#5EC093;" title="#5EC093"></button>
+      <button type="button" class="offset-swatch" data-color="#8EC642" style="background:#8EC642;" title="#8EC642"></button>
+      <button type="button" class="offset-swatch" data-color="#F2EC20" style="background:#F2EC20;" title="#F2EC20"></button>
+      <button type="button" class="offset-swatch" data-color="#FDB716" style="background:#FDB716;" title="#FDB716"></button>
+      <button type="button" class="offset-swatch" data-color="#F15A41" style="background:#F15A41;" title="#F15A41"></button>
+      <button type="button" class="offset-swatch" data-color="#9F58A3" style="background:#9F58A3;" title="#9F58A3"></button>
+      <button type="button" class="offset-swatch" data-color="#7464AC" style="background:#7464AC;" title="#7464AC"></button>
+    </div>
+
+    <div class="offset-mode-toggle" id="offset-mode-toggle" role="radiogroup" aria-label="Chế độ offset">
+      <button type="button" class="offset-mode-btn on" data-mode="sticker" id="offset-mode-sticker" role="radio" aria-checked="true">Sticker</button>
+      <button type="button" class="offset-mode-btn" data-mode="standard" id="offset-mode-standard" role="radio" aria-checked="false">Offset Path</button>
+    </div>
+
+    <div class="offset-options-row">
+      <label class="offset-opt-label" title="Đặt viền phía sau hình">
+        <input type="checkbox" id="offset-opt-behind" checked> Phía sau
+      </label>
+      <label class="offset-opt-label" title="Giữ hình gốc, không thay thế">
+        <input type="checkbox" id="offset-opt-keep" checked> Giữ gốc
+      </label>
+      <label class="offset-opt-label" title="Tô màu cho viền">
+        <input type="checkbox" id="offset-opt-color" checked> Đổi màu
+      </label>
+    </div>
+
+    <button type="button" id="offset-apply" class="primary offset-apply-btn">Tạo viền</button>
+  </section>
+
   <section class="artboards-shared">
     <h4 class="doc-size-title">Artboard</h4>
     <div class="row">
@@ -174,5 +265,6 @@
   <script src="grid-panel.js"></script>
   <script src="tabs.js"></script>
   <script src="color-picker-launcher.js"></script>
+  <script src="offset-panel.js"></script>
 </body>
 </html>
