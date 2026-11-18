@@ -52,7 +52,7 @@ The panel shows the Illustrator version and `process.arch`. Test results are tra
 | `src/loader*.js` | Fixed shell: applies updates, rolls back on failure |
 | `installer/` | Windows (Inno Setup) and macOS (shell script) installers |
 | `scripts/` | Packaging, signing and native-code scan |
-| `docs/` | Project documentation |
+| `docs/` | Project documentation, including the UI standard in [docs/DESIGN.md](docs/DESIGN.md) |
 
 ## License
 
