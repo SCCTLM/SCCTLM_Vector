@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 136" fill="none" aria-hidden="true">
+  <path d="M 36.32 43.63 L 36.32 14.39 L 99.68 14.39 L 99.68 43.63" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 34.94 94.8 L 16.83 94.8 C 11.44 94.8 7.08 90.44 7.08 85.06 L 7.08 55.82 C 7.08 49.09 12.54 43.63 19.26 43.63 L 116.74 43.63 C 123.47 43.63 128.92 49.09 128.92 55.82 L 128.92 85.06 C 128.92 90.44 124.56 94.8 119.17 94.8 L 99.68 94.8" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="36.32" y="77.75" width="63.36" height="43.86" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 50.94 92.37 L 85.06 92.37 M 50.94 104.55 L 75.31 104.55" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="107.29" cy="62.76" r="6.46" fill="var(--green-accent, #35c779)"/>
+</svg>
