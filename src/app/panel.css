@@ -2,7 +2,7 @@
 :root {
   --bg: #323232; --fg: #ddd; --muted: rgba(238,238,238,.8); --field: #232323; --btn: #4a4a4a;
   --green: #15C671; --green-ink: #04301a; --red: #F50008; --grey: #D3D3D7;
-  --accent: var(--green); --err: #ff7378; --green-text: #3ee690;
+  --accent: var(--green); --err: #ff7378; --green-text: #3ee690; --green-accent: #35c779;
   --line: rgba(128,128,128,.28); --surface: rgba(128,128,128,.10); --surface-hover: rgba(128,128,128,.20);
   --radius: 10px; --radius-sm: 7px;
 }

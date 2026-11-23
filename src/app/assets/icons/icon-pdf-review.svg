@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 136" fill="none" aria-hidden="true">
+  <path d="M 16.83 18.05 L 119.17 18.05 C 124.56 18.05 128.92 22.41 128.92 27.79 L 128.92 91.15 C 128.92 96.53 124.56 100.9 119.17 100.9 L 16.83 100.9 C 11.44 100.9 7.08 96.53 7.08 91.15 L 7.08 27.79 C 7.08 22.41 11.44 18.05 16.83 18.05 Z" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 68 100.9 V 117.95 M 50.94 117.95 H 85.06" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 29.01 37.54 L 72.87 37.54 C 75.56 37.54 77.75 39.72 77.75 42.41 L 77.75 74.09 C 77.75 76.78 75.56 78.97 72.87 78.97 L 29.01 78.97 C 26.32 78.97 24.14 76.78 24.14 74.09 L 24.14 42.41 C 24.14 39.72 26.32 37.54 29.01 37.54 Z" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="41.2" cy="49.72" r="4.87" fill="currentColor"/>
+  <path d="M 26.57 74.09 L 43.63 59.47 L 55.82 69.22 L 65.56 59.47 L 77.75 71.65" stroke="currentColor" stroke-width="6.34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 89.66 59.47 L 99.4 69.22 L 116.46 49.72" stroke="var(--green-accent, #35c779)" stroke-width="7.31" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
