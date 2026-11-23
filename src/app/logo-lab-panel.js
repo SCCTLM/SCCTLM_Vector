@@ -54,8 +54,12 @@
   var pending = null;
 
   function notify(msg) {
-    if (global.NoticeWindow && global.NoticeWindow.show) global.NoticeWindow.show(msg);
-    else $('status').textContent = msg;
+    if (global.Notice && global.Notice.show) {
+      global.Notice.show(msg);
+    } else {
+      var s = $('status');
+      if (s) s.textContent = msg;
+    }
   }
 
   function save() {
