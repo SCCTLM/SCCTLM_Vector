@@ -398,12 +398,16 @@
         <button type="button" class="pdf-seg-btn on" data-compression="20" role="radio" aria-checked="true">Cao</button>
       </div>
       <div class="pdf-slider-row">
-        <span class="pdf-small">Tỉ lệ nén</span>
-        <input type="range" id="pdf-compression" class="pdf-slider" min="0" max="100" value="20" aria-label="Tỉ lệ nén" title="Càng cao file càng nhẹ, ảnh càng kém nét.">
-        <span id="pdf-compression-val" class="pdf-slider-val">20%</span>
+        <span class="pdf-label">Tỉ lệ nén</span>
+        <input type="range" id="pdf-compression" class="offset-slider" min="0" max="100" value="20" aria-label="Tỉ lệ nén" title="Càng cao file càng nhẹ, ảnh càng kém nét.">
+        <div class="offset-val-box">
+          <input type="number" id="pdf-compression-input" class="offset-val-input" value="20" min="0" max="100" aria-label="Giá trị tỉ lệ nén">
+          <span class="offset-unit">%</span>
+        </div>
+        <span id="pdf-compression-val" class="offset-val" style="display:none;">20%</span>
       </div>
       <div class="pdf-size-row">
-        <span class="pdf-small">Dung lượng dự đoán</span>
+        <span class="pdf-label">Dung lượng dự đoán</span>
         <span class="pdf-pill" id="pdf-size">-</span>
         <button type="button" id="pdf-recalc" class="pdf-pill pdf-pill-btn" title="Lưu thử một PDF để đo dung lượng. Illustrator có thể tạm dừng trong lúc đo.">Tính toán</button>
       </div>
@@ -411,9 +415,9 @@
     </div>
 
     <div class="offset-header pdf-sub">Bố cục</div>
-    <div id="pdf-layout" class="pdf-layout">
-      <button type="button" class="pdf-layout-btn on" data-layout="single">Gộp nhiều trang</button>
-      <button type="button" class="pdf-layout-btn" data-layout="separate">Lẻ từng trang</button>
+    <div id="pdf-layout" class="pdf-layout" role="radiogroup" aria-label="Bố cục">
+      <button type="button" class="pdf-layout-btn on" data-layout="single" role="radio" aria-checked="true">Gộp nhiều trang</button>
+      <button type="button" class="pdf-layout-btn" data-layout="separate" role="radio" aria-checked="false">Lẻ từng trang</button>
     </div>
 
     <div class="pdf-box pdf-folder">

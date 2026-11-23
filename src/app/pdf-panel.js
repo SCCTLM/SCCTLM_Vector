@@ -109,7 +109,9 @@
   function pick(container, attr, key, value) {
     state[key] = value;
     each(container.querySelectorAll('[' + attr + ']'), function (b) {
-      b.classList.toggle('on', b.getAttribute(attr) === value);
+      var on = b.getAttribute(attr) === value;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
     });
   }
 
@@ -118,9 +120,18 @@
   function setCompression(value) {
     state.compression = value;
     var slider = $('pdf-compression');
-    slider.value = value;
-    slider.style.setProperty('--p', value + '%');
-    $('pdf-compression-val').textContent = value + '%';
+    if (slider) {
+      slider.value = value;
+      slider.style.setProperty('--p', value + '%');
+    }
+    var valInput = $('pdf-compression-input');
+    if (valInput && document.activeElement !== valInput) {
+      valInput.value = value;
+    }
+    var valDisplay = $('pdf-compression-val');
+    if (valDisplay) {
+      valDisplay.textContent = value + '%';
+    }
     each($('pdf-quality-row').querySelectorAll('[data-compression]'), function (b) {
       var on = Number(b.getAttribute('data-compression')) === value;
       b.classList.toggle('on', on);
@@ -152,6 +163,21 @@
       setCompression(Number(this.value));
       schedule();
     });
+    var compInput = $('pdf-compression-input');
+    if (compInput) {
+      compInput.addEventListener('input', function () {
+        var num = parseInt(this.value, 10);
+        if (!isNaN(num)) {
+          if (num < 0) num = 0;
+          if (num > 100) num = 100;
+          setCompression(num);
+          schedule();
+        }
+      });
+      compInput.addEventListener('blur', function () {
+        this.value = state.compression;
+      });
+    }
     setCompression(state.compression);
     $('pdf-layout').onclick = function (e) {
       var l = e.target.dataset && e.target.dataset.layout;
