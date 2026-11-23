@@ -128,7 +128,7 @@
   </section>
 
   <section class="artboards-shared">
-    <h4 class="doc-size-title">Artboard</h4>
+    <h4 class="doc-size-title"><span data-pane="artboard">Artboard</span><span data-pane="pdf">Danh sách trang</span></h4>
     <div class="row">
       <button id="ab-all">Tất cả</button>
       <button id="ab-none">Bỏ chọn</button>
@@ -196,46 +196,54 @@
     </div>
   </section>
 
-  <section data-pane="pdf">
-    <h4>Chế độ</h4>
-    <div id="pdf-modes" class="cards">
-      <button class="card on" data-mode="print">
-        <b>In ấn</b>
-        <span class="muted">Ảnh giữ nguyên độ phân giải (không giảm mẫu), JPEG chất lượng tối đa.</span>
-        <span class="size" id="pdf-size-print">-</span>
+  <section data-pane="pdf" class="pdf-card">
+    <div class="offset-header">Chế độ</div>
+    <div id="pdf-modes" class="pdf-modes">
+      <button type="button" class="pdf-mode on" data-mode="print" title="Ảnh giữ nguyên độ phân giải (không giảm mẫu).">
+        <svg class="pdf-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/><circle cx="18" cy="12" r=".6" fill="currentColor"/></svg>
+        <span>Xuất In</span>
       </button>
-      <button class="card" data-mode="review">
-        <b>Duyệt</b>
-        <span class="muted">Ảnh trên 225 ppi được giảm xuống 150 ppi, chất lượng JPEG chọn bên dưới. Dùng để gửi email hoặc chat.</span>
-        <span class="size" id="pdf-size-review">-</span>
+      <button type="button" class="pdf-mode" data-mode="review" title="Ảnh trên 225 ppi được giảm xuống 150 ppi. Dùng để gửi email hoặc chat.">
+        <svg class="pdf-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><rect x="5" y="6" width="8" height="8" rx="1"/><circle cx="7.5" cy="8.5" r=".8"/><path d="m5.5 13 2.5-2.5 2 2 1-1 2 1.5"/><path d="m15 10.5 2 2 3.5-4"/></svg>
+        <span>Xuất Duyệt</span>
       </button>
     </div>
-    <div id="pdf-quality-row" class="row">
-      <span class="muted">Chất lượng ảnh (Duyệt)</span>
-      <button class="chip on" data-quality="high">Cao</button>
-      <button class="chip" data-quality="medium">Trung bình</button>
-    </div>
-    <h4>Bố cục</h4>
-    <div id="pdf-layout" class="row">
-      <button class="chip on" data-layout="single">Một PDF nhiều trang</button>
-      <button class="chip" data-layout="separate">Mỗi artboard một PDF</button>
-    </div>
-    <div class="row">
-      <span class="muted" id="pdf-estimate-note"></span>
-      <button id="pdf-recalc">Tính dung lượng</button>
-    </div>
-    <div class="muted">Dữ liệu chỉnh sửa luôn bị loại bỏ, nên chỉ mở PDF trong Illustrator để xem. Hãy giữ lại tệp .ai.</div>
-  </section>
 
-  <section data-pane="pdf">
-    <h4>Thư mục xuất</h4>
-    <div class="row">
-      <input id="outdir" type="text" spellcheck="false">
-      <button id="browse">Chọn…</button>
+    <div class="pdf-box">
+      <div id="pdf-quality-row" class="pdf-seg" role="radiogroup" aria-label="Chất lượng">
+        <button type="button" class="pdf-seg-btn" data-compression="80" role="radio" aria-checked="false">Thấp</button>
+        <button type="button" class="pdf-seg-btn" data-compression="50" role="radio" aria-checked="false">Trung bình</button>
+        <button type="button" class="pdf-seg-btn on" data-compression="20" role="radio" aria-checked="true">Cao</button>
+      </div>
+      <div class="pdf-slider-row">
+        <span class="pdf-small">Tỉ lệ nén</span>
+        <input type="range" id="pdf-compression" class="pdf-slider" min="0" max="100" value="20" aria-label="Tỉ lệ nén" title="Càng cao file càng nhẹ, ảnh càng kém nét.">
+        <span id="pdf-compression-val" class="pdf-slider-val">20%</span>
+      </div>
+      <div class="pdf-size-row">
+        <span class="pdf-small">Dung lượng dự đoán</span>
+        <span class="pdf-pill" id="pdf-size">-</span>
+        <button type="button" id="pdf-recalc" class="pdf-pill pdf-pill-btn" title="Lưu thử một PDF để đo dung lượng. Illustrator có thể tạm dừng trong lúc đo.">Tính toán</button>
+      </div>
+      <div class="pdf-note" id="pdf-estimate-note"></div>
     </div>
-  </section>
 
-  <button id="pdf-export" class="primary" data-pane="pdf">Xuất PDF</button>
+    <div class="offset-header pdf-sub">Bố cục</div>
+    <div id="pdf-layout" class="pdf-layout">
+      <button type="button" class="pdf-layout-btn on" data-layout="single">Gộp nhiều trang</button>
+      <button type="button" class="pdf-layout-btn" data-layout="separate">Lẻ từng trang</button>
+    </div>
+
+    <div class="pdf-box pdf-folder">
+      <div class="offset-header">Thư mục xuất</div>
+      <div class="pdf-folder-row">
+        <input id="outdir" type="text" spellcheck="false" aria-label="Thư mục xuất">
+        <button type="button" id="browse" class="pdf-pill pdf-pill-btn">Chọn</button>
+      </div>
+    </div>
+
+    <button type="button" id="pdf-export" class="primary offset-apply-btn" title="Dữ liệu chỉnh sửa luôn bị loại bỏ, nên chỉ mở PDF trong Illustrator để xem. Hãy giữ lại tệp .ai.">Xuất PDF</button>
+  </section>
 
   <section data-pane="explore">
     <h4>Khám phá</h4>

@@ -152,11 +152,11 @@ rather than fixed so each can be adopted deliberately.
    dark-theme literals, so they ignore the Illustrator light theme that `--bg` / `--field` follow.
    Other tabs still hard-code `#378EF0` (doc size, orientation, colour mode). Derive the tokens from
    the host theme, then migrate those tabs.
-3. **Other tabs still use their own sizes.** Grid, Colour, PDF and the export tabs use the older
+3. **Other tabs still use their own sizes.** Grid, Colour and the export tabs use the older
    `10 / 11 / 12 / 13 / 13.5 / 16px` sizes and 500/600/700 weights. They should migrate to the type
    scale above.
 4. **Older controls use `--radius-sm` (7px) and `--btn` / `--field` fills** rather than pills.
-   Align when those tabs are reworked.
+   Align when those tabs are reworked (the PDF tab already follows the pill standard).
 5. **Offset width is labelled px but applied in pt** (see `offset-lab.md`); equal only when the
    document uses px.
 
