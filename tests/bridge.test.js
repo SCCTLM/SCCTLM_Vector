@@ -18,6 +18,7 @@ test('literal round-trips quotes, backslashes, newlines and line separators', ()
   assert.strictEqual(vm.runInNewContext(text), raw);
 });
 
-test('Bridge exposes offsetCreate method', () => {
+test('Bridge exposes offsetCreate and gridRestyle methods', () => {
   assert.strictEqual(typeof sandbox.Bridge.offsetCreate, 'function');
+  assert.strictEqual(typeof sandbox.Bridge.gridRestyle, 'function');
 });
