@@ -39,7 +39,8 @@ test('the preview sample has anchors, handles, four gridlines and one circle', (
   assert.ok(/^M .* Z$/.test(m.d));
 });
 
-function loadInteractiveLab(initialSettings) {
+function loadInteractiveLab(initialSettings, options) {
+  options = options || {};
   const elements = {};
   const toggles = [];
   let savedCount = 0;
@@ -125,7 +126,10 @@ function loadInteractiveLab(initialSettings) {
     Presets: { dataDir: () => '' },
     document: {
       activeElement: null,
-      getElementById(id) { return elements[id] || null; },
+      getElementById(id) {
+        if (options.removeStatus && id === 'status') return null;
+        return elements[id] || null;
+      },
       querySelectorAll(sel) { return sel === '.ll-toggle' ? toggles : []; },
       createElement(tag) { return { tag, value: '', textContent: '' }; },
       createElementNS(ns, tag) {
@@ -149,6 +153,9 @@ function loadInteractiveLab(initialSettings) {
       gridClear() { return Promise.resolve({ ok: true, removed: true }); }
     }
   };
+  if (options.notice !== undefined) {
+    sandbox.Notice = options.notice;
+  }
   sandbox.window = sandbox;
   vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/app/grid-settings.js'), 'utf8'), sandbox);
@@ -244,4 +251,26 @@ test('Generate All runs all 5 elements without mutating saved toggles; Restyle i
   await new Promise((r) => setImmediate(r));
   assert.strictEqual(elements['ll-confirm'].hidden, false, 'confirm dialog shown for handles-only > 2000 anchors');
   assert.strictEqual(sandbox.Bridge.lastGenerateJob, null, 'draw deferred until user confirms');
+});
+
+test('notify invokes Notice.show when available and falls back safely to #status when absent', async () => {
+  const notices = [];
+  const { elements: withNotice } = loadInteractiveLab({}, {
+    notice: { show(msg) { notices.push(msg); } }
+  });
+  withNotice['ll-restyle'].onclick();
+  await new Promise((r) => setImmediate(r));
+  assert.deepStrictEqual(notices, ['Đang cập nhật kiểu dáng…', 'Đã cập nhật kiểu dáng lưới.']);
+  assert.strictEqual(withNotice['status'].textContent, '', '#status remains untouched when Notice.show handles the notification');
+
+  const { elements: withoutNotice } = loadInteractiveLab();
+  withoutNotice['ll-restyle'].onclick();
+  await new Promise((r) => setImmediate(r));
+  assert.strictEqual(withoutNotice['status'].textContent, 'Đã cập nhật kiểu dáng lưới.');
+
+  const { elements: missingStatus } = loadInteractiveLab({}, { removeStatus: true });
+  assert.doesNotThrow(() => {
+    missingStatus['ll-restyle'].onclick();
+  });
+  await new Promise((r) => setImmediate(r));
 });
