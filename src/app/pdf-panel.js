@@ -1,4 +1,4 @@
-// PDF tab: mode, layout, predicted size and export. Shares the artboard list, output folder and status
+// PDF tab: mode, compression, layout, predicted size and export. Shares the artboard list, output folder and status
 // line with the Images tab through the DOM; panel.js fires "artboards-changed" when the list is rebuilt.
 (function () {
   'use strict';
@@ -6,7 +6,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var each = function (nodes, fn) { Array.prototype.forEach.call(nodes, fn); };
 
-  var state = { tab: (document.body && document.body.dataset && document.body.dataset.tab) || 'daily', mode: 'print', quality: 'high', layout: 'single' };
+  var state = { tab: (document.body && document.body.dataset && document.body.dataset.tab) || 'daily', mode: 'print', compression: 20, layout: 'single' };
   var timer = null;
   var seq = 0;
   var exporting = false;
@@ -35,39 +35,37 @@
     syncButtons();
   }
 
-  function showSize(mode, result) {
-    var el = $('pdf-size-' + mode);
+  function showSize(result) {
+    var el = $('pdf-size');
     if (!result) { el.textContent = '-'; el.title = ''; el.classList.remove('fail'); return; }
     el.classList.toggle('fail', !result.ok);
     el.textContent = result.ok ? (result.approx ? '≈ ' : '') + PdfFormat.formatBytes(result.bytes) : 'không rõ';
     el.title = result.ok ? '' : result.error;
   }
 
-  // Both modes are measured in one engine call (one temporary copy); stale results are dropped.
+  // Only the selected mode is measured (one temporary copy, one trial save); stale results are dropped.
   function recalc() {
     clearTimeout(timer);
     var id = ++seq;
     var note = $('pdf-estimate-note');
     if (state.tab !== 'pdf' || exporting || estimating) return;
-    showSize('print', null);
-    showSize('review', null);
+    showSize(null);
     if (!Bridge.available || !selectedArtboards().length) {
       note.textContent = Bridge.available ? 'Hãy chọn ít nhất một artboard.' : '';
       return;
     }
     note.textContent = 'Đang tính… Illustrator có thể tạm dừng cho đến khi xong.';
     setEstimating(true);
-    Bridge.estimatePdf({ artboards: selectedArtboards(), quality: state.quality, modes: ['print', 'review'] }).then(function (r) {
+    var mode = state.mode;
+    Bridge.estimatePdf({ artboards: selectedArtboards(), compression: state.compression, modes: [mode] }).then(function (r) {
       if (id !== seq) return;
       if (!r.ok) {
-        showSize('print', r);
-        showSize('review', r);
+        showSize(r);
         note.textContent = r.error;
         return;
       }
-      showSize('print', { ok: true, bytes: r.sizes.print, approx: r.approx });
-      showSize('review', { ok: true, bytes: r.sizes.review, approx: r.approx });
-      note.textContent = r.approx ? 'Gần đúng: ước tính từ một artboard đại diện.' : 'Đo từ một lần xuất thử.';
+      showSize({ ok: true, bytes: r.sizes[mode], approx: r.approx });
+      note.textContent = r.approx ? 'Gần đúng: ước tính từ một artboard đại diện.' : '';
     }).catch(function (e) {
       if (id === seq) note.textContent = e.message;
     }).then(function () { setEstimating(false); });
@@ -79,9 +77,8 @@
     clearTimeout(timer);
     seq++;
     if (state.tab !== 'pdf' || exporting) return;
-    showSize('print', null);
-    showSize('review', null);
-    $('pdf-estimate-note').textContent = 'Lựa chọn hoặc chất lượng đã thay đổi. Nhấn Tính dung lượng để xem dung lượng dự kiến.';
+    showSize(null);
+    $('pdf-estimate-note').textContent = 'Lựa chọn đã thay đổi. Nhấn Tính toán để cập nhật dung lượng.';
   }
 
   function runExport() {
@@ -95,7 +92,7 @@
     setExporting(true);
     status('Đang xuất… Illustrator có thể không phản hồi cho đến khi xong.');
     $('results').textContent = '';
-    var payload = { artboards: artboards, mode: state.mode, quality: state.quality, layout: state.layout, outputDir: outputDir };
+    var payload = { artboards: artboards, mode: state.mode, compression: state.compression, layout: state.layout, outputDir: outputDir };
     Bridge.runPdfJob(payload).then(function (r) {
       var files = r.files || [];
       var okCount = files.filter(function (f) { return f.ok; }).length;
@@ -116,25 +113,46 @@
     });
   }
 
+  // The slider is the source of truth; the Thấp / Trung bình / Cao chips are presets that light up when the
+  // slider sits exactly on one of them.
+  function setCompression(value) {
+    state.compression = value;
+    var slider = $('pdf-compression');
+    slider.value = value;
+    slider.style.setProperty('--p', value + '%');
+    $('pdf-compression-val').textContent = value + '%';
+    each($('pdf-quality-row').querySelectorAll('[data-compression]'), function (b) {
+      var on = Number(b.getAttribute('data-compression')) === value;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
   function init() {
     document.addEventListener('tab-changed', function (e) {
       var tab = e.detail;
       state.tab = tab;
       seq++;
       clearTimeout(timer);
-      if (tab === 'pdf') $('pdf-estimate-note').textContent = 'Nhấn Tính dung lượng để xem dung lượng dự kiến.';
+      if (tab === 'pdf') $('pdf-estimate-note').textContent = '';
     });
     $('pdf-modes').onclick = function (e) {
-      var card = e.target.closest ? e.target.closest('.card') : null;
-      if (!card) return;
+      var card = e.target.closest ? e.target.closest('.pdf-mode') : null;
+      if (!card || card.dataset.mode === state.mode) return;
       pick($('pdf-modes'), 'data-mode', 'mode', card.dataset.mode);
-    };
-    $('pdf-quality-row').onclick = function (e) {
-      var q = e.target.dataset && e.target.dataset.quality;
-      if (!q || q === state.quality) return;
-      pick($('pdf-quality-row'), 'data-quality', 'quality', q);
       schedule();
     };
+    $('pdf-quality-row').onclick = function (e) {
+      var c = e.target.dataset && e.target.dataset.compression;
+      if (!c) return;
+      setCompression(Number(c));
+      schedule();
+    };
+    $('pdf-compression').addEventListener('input', function () {
+      setCompression(Number(this.value));
+      schedule();
+    });
+    setCompression(state.compression);
     $('pdf-layout').onclick = function (e) {
       var l = e.target.dataset && e.target.dataset.layout;
       if (l) pick($('pdf-layout'), 'data-layout', 'layout', l);

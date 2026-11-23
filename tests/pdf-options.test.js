@@ -11,18 +11,25 @@ const run = (code) => vm.runInContext(code, ctx);
 const json = (code) => JSON.parse(run('JSON.stringify(' + code + ')'));
 
 test('print mode keeps preset resolution and drops editing data', () => {
-  assert.deepStrictEqual(json('pdfModeDescriptor("print")'), {
+  assert.deepStrictEqual(json('pdfModeDescriptor("print", 10)'), {
     mode: 'print', preset: '[High Quality Print]', preserveEditability: false, downsample: null, jpegQuality: 'maximum'
   });
+  assert.strictEqual(json('pdfModeDescriptor("print", 90)').downsample, null);
 });
 
-test('review mode downsamples to 150 ppi with JPEG high, or medium on request', () => {
-  const high = json('pdfModeDescriptor("review", "high")');
-  assert.deepStrictEqual(high.downsample, { ppi: 150, threshold: 225 });
-  assert.strictEqual(high.jpegQuality, 'high');
-  assert.strictEqual(high.preserveEditability, false);
-  assert.strictEqual(json('pdfModeDescriptor("review", "medium")').jpegQuality, 'medium');
-  assert.strictEqual(json('pdfModeDescriptor("review")').jpegQuality, 'high');
+test('review mode downsamples to 150 ppi and follows the compression ratio', () => {
+  const d = json('pdfModeDescriptor("review", 30)');
+  assert.deepStrictEqual(d.downsample, { ppi: 150, threshold: 225 });
+  assert.strictEqual(d.jpegQuality, 'high');
+  assert.strictEqual(d.preserveEditability, false);
+});
+
+test('compression ratio maps to a JPEG level, defaulting to medium', () => {
+  const lv = (c) => run('pdfJpegLevel(' + c + ')');
+  assert.deepStrictEqual([0, 20, 21, 40].map(lv), ['maximum', 'maximum', 'high', 'high']);
+  assert.deepStrictEqual([41, 50, 60, 61, 80].map(lv), ['medium', 'medium', 'medium', 'low', 'low']);
+  assert.deepStrictEqual([81, 100].map(lv), ['minimum', 'minimum']);
+  assert.strictEqual(run('pdfJpegLevel()'), 'medium');
 });
 
 test('unknown mode throws', () => {

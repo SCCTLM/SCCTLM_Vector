@@ -13,7 +13,8 @@ function pdfTrySet(opts, name, value, skipped) {
 }
 
 function pdfJpegConstant(level) {
-  var key = level === "maximum" ? "JPEGMAXIMUM" : level === "medium" ? "JPEGMEDIUM" : "JPEGHIGH";
+  var keys = { maximum: "JPEGMAXIMUM", high: "JPEGHIGH", medium: "JPEGMEDIUM", low: "JPEGLOW", minimum: "JPEGMINIMUM" };
+  var key = keys[level] || "JPEGMEDIUM";
   return CompressionQuality[key];
 }
 
@@ -103,7 +104,7 @@ function engineArtboardArea(ab) {
   return Math.abs((r[2] - r[0]) * (r[1] - r[3]));
 }
 
-// job: { artboards, quality, modes: ["print", "review"] }. Saves real trial PDFs into a temp folder and measures them.
+// job: { artboards, compression, modes: ["print", "review"] }. Saves real trial PDFs into a temp folder and measures them.
 // returns JSON: { ok, approx?, sizes?: { print: bytes, review: bytes }, error? }
 function estimatePdf(jobJson) {
   var tempRoot = null;
@@ -125,7 +126,7 @@ function estimatePdf(jobJson) {
       var out = {};
       for (var m = 0; m < modes.length; m++) {
         var target = new File(tempRoot.fsName + "/estimate_" + modes[m] + ".pdf");
-        enginePdfSave(copyDoc, sample, pdfModeDescriptor(modes[m], p.job.quality), target);
+        enginePdfSave(copyDoc, sample, pdfModeDescriptor(modes[m], p.job.compression), target);
         out[modes[m]] = approx ? pdfScaleEstimate(target.length, sample.length, p.indexes.length) : target.length;
       }
       return out;
@@ -141,14 +142,14 @@ function estimatePdf(jobJson) {
   }
 }
 
-// job: { artboards, mode, quality, layout: "single"|"separate", outputDir }
+// job: { artboards, mode, compression, layout: "single"|"separate", outputDir }
 // returns JSON: { ok, error?, files: [{path, ok, error}] }
 function runPdfExport(jobJson) {
   var files = [];
   try {
     if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o", files: files });
     var p = enginePdfJob(jobJson);
-    var descriptor = pdfModeDescriptor(p.job.mode, p.job.quality);
+    var descriptor = pdfModeDescriptor(p.job.mode, p.job.compression);
     var outDir = new Folder(p.job.outputDir);
     if (!outDir.exists && !outDir.create()) {
       return JSON.stringify({ ok: false, error: "Kh\u00f4ng t\u1ea1o \u0111\u01b0\u1ee3c th\u01b0 m\u1ee5c xu\u1ea5t: " + p.job.outputDir, files: files });

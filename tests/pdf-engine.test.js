@@ -10,7 +10,7 @@ const vm = require('node:vm');
 function load(overrides) {
   const assigned = [];
   const ctx = {
-    CompressionQuality: { JPEGMAXIMUM: 'jpeg-max', JPEGHIGH: 'jpeg-high', JPEGMEDIUM: 'jpeg-medium' },
+    CompressionQuality: { JPEGMAXIMUM: 'jpeg-max', JPEGHIGH: 'jpeg-high', JPEGMEDIUM: 'jpeg-medium', JPEGLOW: 'jpeg-low', JPEGMINIMUM: 'jpeg-min' },
     DownsampleMethod: { BICUBICDOWNSAMPLE: 'bicubic' },
     UserInteractionLevel: { DONTDISPLAYALERTS: 'quiet' },
     SaveOptions: { DONOTSAVECHANGES: 'dont-save' },
@@ -36,7 +36,7 @@ const names = (assigned) => assigned.map((a) => a[0]);
 
 test('compression is assigned after downsampling', () => {
   const { assigned, run } = load();
-  run('enginePdfOptions(pdfModeDescriptor("review", "medium"), "1-3")');
+  run('enginePdfOptions(pdfModeDescriptor("review", 50), "1-3")');
   const order = names(assigned);
   assert.ok(order.indexOf('colorCompression') > order.lastIndexOf('colorDownsamplingMethod'));
   assert.ok(order.indexOf('grayscaleCompression') > order.lastIndexOf('grayscaleDownsamplingMethod'));
@@ -44,7 +44,7 @@ test('compression is assigned after downsampling', () => {
 
 test('review mode sets 150 ppi / 225 threshold bicubic and the chosen JPEG level', () => {
   const { assigned, run } = load();
-  run('enginePdfOptions(pdfModeDescriptor("review", "medium"), "1-3")');
+  run('enginePdfOptions(pdfModeDescriptor("review", 50), "1-3")');
   const get = (k) => assigned.find((a) => a[0] === k)[1];
   assert.strictEqual(get('colorDownsampling'), 150);
   assert.strictEqual(get('colorDownsamplingImageThreshold'), 225);
@@ -56,7 +56,7 @@ test('review mode sets 150 ppi / 225 threshold bicubic and the chosen JPEG level
 
 test('print mode sets no downsampling and JPEG maximum', () => {
   const { assigned, run } = load();
-  run('enginePdfOptions(pdfModeDescriptor("print"), "2")');
+  run('enginePdfOptions(pdfModeDescriptor("print", 10), "2")');
   assert.ok(!names(assigned).some((n) => /Downsampling/.test(n)));
   assert.strictEqual(assigned.find((a) => a[0] === 'colorCompression')[1], 'jpeg-max');
   assert.strictEqual(assigned.find((a) => a[0] === 'preserveEditability')[1], false);
@@ -64,7 +64,7 @@ test('print mode sets no downsampling and JPEG maximum', () => {
 
 test('a property that throws is reported and does not stop the others', () => {
   const { run } = load({ throwOn: 'saveMultipleArtboards' });
-  const skipped = JSON.parse(run('JSON.stringify(enginePdfOptions(pdfModeDescriptor("print"), "1").skipped)'));
+  const skipped = JSON.parse(run('JSON.stringify(enginePdfOptions(pdfModeDescriptor("print", 10), "1").skipped)'));
   assert.deepStrictEqual(skipped, ['saveMultipleArtboards']);
 });
 

@@ -3,15 +3,27 @@
 // More artboards than this are estimated from one representative artboard instead of all of them.
 var PDF_SAMPLE_LIMIT = 20;
 
+// Compression ratio (0-100, higher = smaller file) -> JPEG level. 50 is the default and maps to medium.
+function pdfJpegLevel(compression) {
+  var c = Number(compression);
+  if (!(c >= 0)) c = 50;
+  if (c <= 20) return "maximum";
+  if (c <= 40) return "high";
+  if (c <= 60) return "medium";
+  if (c <= 80) return "low";
+  return "minimum";
+}
+
 // Descriptor for one export mode. The engine turns it into a PDFSaveOptions; keeping it plain data
 // means the trial save behind the size estimate and the real export always use the same settings.
-//   print:  no downsampling at all (images keep their resolution), JPEG maximum. Setting the preset name alone
+//   print:  no downsampling at all (images keep their resolution). Setting the preset name alone
 //           does not fill in downsampling or compression values (measured), so none are implied by it.
-//   review: images above 225 ppi are downsampled to 150 ppi, JPEG high (or medium).
-// Both modes drop Illustrator editing data, the main source of oversized PDFs.
-function pdfModeDescriptor(mode, quality) {
+//   review: images above 225 ppi are downsampled to 150 ppi.
+// Both modes take their JPEG level from the compression ratio and drop Illustrator editing data,
+// the main source of oversized PDFs.
+function pdfModeDescriptor(mode, compression) {
   if (mode === "print") {
-    return { mode: "print", preset: "[High Quality Print]", preserveEditability: false, downsample: null, jpegQuality: "maximum" };
+    return { mode: "print", preset: "[High Quality Print]", preserveEditability: false, downsample: null, jpegQuality: pdfJpegLevel(compression) };
   }
   if (mode === "review") {
     return {
@@ -19,10 +31,10 @@ function pdfModeDescriptor(mode, quality) {
       preset: "[High Quality Print]",
       preserveEditability: false,
       downsample: { ppi: 150, threshold: 225 },
-      jpegQuality: quality === "medium" ? "medium" : "high"
+      jpegQuality: pdfJpegLevel(compression)
     };
   }
-  throw new Error("Ch\u1ebf \u0111\u1ed9 PDF kh\u00f4ng h\u1ee3p l\u1ec7: " + mode);
+  throw new Error("Chế độ PDF không hợp lệ: " + mode);
 }
 
 // Suffix that keeps the two modes from overwriting each other when exported into the same folder.
