@@ -427,10 +427,49 @@
     <button type="button" id="pdf-export" class="primary offset-apply-btn" title="Dữ liệu chỉnh sửa luôn bị loại bỏ, nên chỉ mở PDF trong Illustrator để xem. Hãy giữ lại tệp .ai.">Xuất PDF</button>
   </section>
 
-  <section data-pane="explore">
-    <h4>Khám phá</h4>
-    <div class="muted" style="text-align: center; padding: 24px 8px;">Chưa có nội dung.</div>
-  </section>
+  <div data-pane="explore" class="explore">
+    <section class="explore-card">
+      <h4 class="explore-title">
+        <svg class="explore-brand explore-brand-fb" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M13.2 19v-6h2l.4-2.4h-2.4V9.2c0-.7.3-1.2 1.3-1.2h1.2V5.9c-.2 0-1-.1-1.8-.1-1.8 0-3 1.1-3 3.1v1.7H8.9V13h2v6z" fill="#fff"/></svg>
+        Mới từ cộng đồng <span class="explore-badge">Mới</span>
+      </h4>
+      <div class="explore-feature">
+        <img class="explore-logo" src="assets/logo.svg" alt="SCCTLM">
+        <div class="explore-feature-text">
+          <div class="explore-feature-title">Cập nhật từ group SCCTLM</div>
+          <div class="explore-feature-sub">Tin cộng đồng · Nội dung minh họa</div>
+          <button type="button" class="explore-pill explore-ext" data-url="https://www.facebook.com/groups/sangchoichutoilammau">Xem trên Facebook <svg class="explore-ext-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="explore-card">
+      <h4 class="explore-title">
+        <svg class="explore-brand explore-brand-yt" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4.5" width="22" height="15" rx="4.5" fill="#fff"/><path d="M10 9l5 3-5 3z" fill="#1c1c1c"/></svg>
+        Học cùng SCCTLM
+      </h4>
+      <div class="explore-channel">
+        <img class="explore-avatar" src="assets/logo.svg" alt="">
+        <div class="explore-channel-text">
+          <div class="explore-channel-name">SCCTLM</div>
+          <div class="explore-channel-handle">@scctlm</div>
+        </div>
+        <button type="button" class="explore-pill explore-ext" data-url="https://www.youtube.com/@scctlm">Xem kênh <svg class="explore-ext-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
+      </div>
+      <div class="explore-playlist">
+        <div class="explore-playlist-info">
+          <div class="explore-playlist-title">Bài hướng dẫn thiết kế</div>
+          <div class="explore-playlist-sub">Hướng dẫn miễn phí</div>
+        </div>
+        <button type="button" id="explore-playlist" class="explore-play" data-url="https://www.youtube.com/@scctlm/playlists">&#9654; Mở playlist trên YouTube</button>
+      </div>
+      <input id="explore-search" class="explore-search" type="text" spellcheck="false" placeholder="Tìm bài hướng dẫn…" aria-label="Tìm bài hướng dẫn">
+      <div id="explore-chips" class="explore-chips" role="radiogroup" aria-label="Lọc theo chủ đề"></div>
+      <ul id="explore-videos" class="explore-videos"></ul>
+      <div class="explore-note">Video mở bằng trình duyệt của bạn.</div>
+      <button type="button" class="explore-pill explore-all explore-ext" data-url="https://www.youtube.com/@scctlm/videos">Xem tất cả hướng dẫn <svg class="explore-ext-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
+    </section>
+  </div>
 
   <div id="status" class="muted"></div>
   <ul id="results" class="list"></ul>
@@ -460,5 +499,6 @@
   <script src="tabs.js"></script>
   <script src="color-picker-launcher.js"></script>
   <script src="offset-panel.js"></script>
+  <script src="explore-panel.js"></script>
 </body>
 </html>
