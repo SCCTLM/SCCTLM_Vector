@@ -19,7 +19,7 @@
       gridlines: { stroke: '#8e8e93', strokeWidth: 4 },
       circles: { fill: 'none', stroke: '#ff9500', strokeWidth: 4 }
     },
-    gridlines: { sensitivity: 50, margin: 20 },
+    gridlines: { sensitivity: 50, margin: 20, scope: 'selection' },
     circles: { complexity: 30, mode: 'all', n: 2 }
   };
 
@@ -33,8 +33,9 @@
     return Math.max(min, Math.min(max, n));
   }
 
-  function color(v, fallback) {
-    return v === 'none' || (typeof v === 'string' && HEX.test(v)) ? v.toLowerCase() : fallback;
+  function color(v, fallback, allowNone) {
+    if (allowNone !== false && v === 'none') return 'none';
+    return typeof v === 'string' && HEX.test(v) ? v.toLowerCase() : fallback;
   }
 
   // Any stored or UI shape becomes a complete, valid settings object; never throws. Missing or empty values
@@ -51,12 +52,16 @@
       Object.keys(base).forEach(function (p) {
         if (p === 'size') base.size = num(given.size, 0.5, 100, base.size);
         else if (p === 'strokeWidth') base.strokeWidth = num(given.strokeWidth, 0.05, 20, base.strokeWidth);
-        else base[p] = color(given[p], base[p]);
+        else {
+          var allowNone = !(p === 'stroke' && (k === 'gridlines' || k === 'circles'));
+          base[p] = color(given[p], base[p], allowNone);
+        }
       });
     });
     var g = s.gridlines || {};
     out.gridlines.sensitivity = Math.round(num(g.sensitivity, 0, 100, out.gridlines.sensitivity));
     out.gridlines.margin = num(g.margin, 0, 10000, out.gridlines.margin);
+    out.gridlines.scope = (g.scope === 'artboard' || g.scope === 'selection') ? g.scope : out.gridlines.scope;
     var c = s.circles || {};
     out.circles.complexity = Math.round(num(c.complexity, 0, 100, out.circles.complexity));
     out.circles.mode = CIRCLE_MODES.indexOf(c.mode) >= 0 ? c.mode : out.circles.mode;

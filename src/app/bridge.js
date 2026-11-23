@@ -69,6 +69,7 @@
     estimatePdf: function (job) { return evalScript('estimatePdf(' + literal(JSON.stringify(job)) + ')'); },
     gridInspect: function (job) { return evalScript('gridInspect(' + literal(JSON.stringify(job || {})) + ')'); },
     gridGenerate: function (job) { return evalScript('gridGenerate(' + literal(JSON.stringify(job)) + ')'); },
+    gridRestyle: function (job) { return evalScript('gridRestyle(' + literal(JSON.stringify(job || {})) + ')'); },
     gridClear: function () { return evalScript('gridClear()'); },
     colorContext: function () { return evalScript('colorPickerContext()'); },
     colorConvert: function (job) { return evalScript('colorConvert(' + literal(JSON.stringify(job)) + ')'); },

@@ -32,6 +32,19 @@ function gridUnlock(layer) {
   for (var i = 0; i < layer.layers.length; i++) gridUnlock(layer.layers[i]);
 }
 
+// Locked and visible flags of a layer tree, so a restyle can put them back after unlocking.
+function gridLayerState(layer) {
+  var state = { layer: layer, locked: layer.locked, visible: layer.visible, subs: [] };
+  for (var i = 0; i < layer.layers.length; i++) state.subs.push(gridLayerState(layer.layers[i]));
+  return state;
+}
+
+function gridRestoreLayerState(state) {
+  for (var i = 0; i < state.subs.length; i++) gridRestoreLayerState(state.subs[i]);
+  state.layer.visible = state.visible;
+  state.layer.locked = state.locked;
+}
+
 // Illustrator refuses to remove a document's last layer, so an empty one is added first when needed.
 function gridRemoveLayer(doc, layer) {
   if (!layer) return false;
@@ -317,8 +330,22 @@ function gridGenerate(jobJson) {
 
     if (el.gridlines) {
       var g = job.gridlines || {};
-      var margin = Math.max(0, Number(g.margin) >= 0 ? Number(g.margin) : 20);
-      var area = { left: bounds.left - margin, top: bounds.top + margin, right: bounds.right + margin, bottom: bounds.bottom - margin };
+      var rawMargin = g.margin !== undefined && g.margin !== null && g.margin !== "" && !isNaN(Number(g.margin)) ? Number(g.margin) : 20;
+      var margin = Math.max(0, rawMargin);
+      var area;
+      if (g.scope === "artboard" && doc.artboards && doc.artboards.length) {
+        var abIdx = (typeof doc.artboards.getActiveArtboardIndex === "function") ? doc.artboards.getActiveArtboardIndex() : 0;
+        if (!(abIdx >= 0 && abIdx < doc.artboards.length)) abIdx = 0;
+        var ab = doc.artboards[abIdx];
+        var r = ab.artboardRect;
+        var abX1 = Math.min(r[0], r[2]);
+        var abX2 = Math.max(r[0], r[2]);
+        var abY1 = Math.max(r[1], r[3]);
+        var abY2 = Math.min(r[1], r[3]);
+        area = { left: abX1 - margin, top: abY1 + margin, right: abX2 + margin, bottom: abY2 - margin };
+      } else {
+        area = { left: bounds.left - margin, top: bounds.top + margin, right: bounds.right + margin, bottom: bounds.bottom - margin };
+      }
       var gStyle = gridStyle(job, "gridlines");
       var lines = gridLines(paths, g.sensitivity, size);
       for (i = 0; i < lines.length; i++) {
@@ -385,6 +412,114 @@ function gridGenerate(jobJson) {
   } catch (e) {
     if (layers) { try { gridRemoveLayer(doc, layers.top); } catch (ignore) {} }
     if (doc) gridRestoreState(doc, activeLayer, selected);
+    return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
+  }
+}
+
+// Restyles the existing SCCTLM Grid layer without recalculating geometry.
+// Updates fill, stroke, strokeWidth, and marker sizes for whatever elements are present.
+function gridRestyle(jobJson) {
+  var layerState = null;
+  try {
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
+    var doc = app.activeDocument;
+    var top = gridFindLayer(doc);
+    if (!top) return JSON.stringify({ ok: false, missing: true, error: "T\u00e0i li\u1ec7u n\u00e0y kh\u00f4ng c\u00f3 layer l\u01b0\u1edbi" });
+    layerState = gridLayerState(top);
+    gridUnlock(top);
+    var job = jobJson ? JSON.parse(jobJson) : {};
+    var isCmyk = doc.documentColorSpace === DocumentColorSpace.CMYK;
+
+    var subs = {};
+    for (var i = 0; i < top.layers.length; i++) {
+      subs[top.layers[i].name] = top.layers[i];
+    }
+
+    function resizeMarker(item, newSize) {
+      if (!item || newSize === undefined || newSize === null) return;
+      var sz = Math.max(0.1, Number(newSize) || 1);
+      if (typeof item.width === "number" && typeof item.height === "number") {
+        var gb = item.geometricBounds;
+        var pos = item.position;
+        var cx, cy;
+        if (gb && gb.length === 4) {
+          cx = (gb[0] + gb[2]) / 2;
+          cy = (gb[1] + gb[3]) / 2;
+        } else if (pos && typeof pos[0] === "number" && typeof pos[1] === "number") {
+          cx = pos[0] + (item.width || sz) / 2;
+          cy = pos[1] - (item.height || sz) / 2;
+        } else {
+          return;
+        }
+        // Turn stroke off before resizing so Preview Bounds and Scale Strokes & Effects cannot skew width/position/strokeWidth.
+        item.stroked = false;
+        item.width = sz;
+        item.height = sz;
+        item.position = [cx - sz / 2, cy + sz / 2];
+        if (gb && gb.length === 4) {
+          item.geometricBounds = [cx - sz / 2, cy + sz / 2, cx + sz / 2, cy - sz / 2];
+        }
+      }
+    }
+
+    function eachPathItem(subLayer, fn) {
+      if (!subLayer || !subLayer.pageItems) return;
+      var items = subLayer.pageItems;
+      for (var idx = 0; idx < items.length; idx++) {
+        var it = items[idx];
+        if (!it || (it.typename && it.typename !== "PathItem")) continue;
+        var wasLocked = !!it.locked;
+        if (wasLocked) it.locked = false;
+        try { fn(it); } finally { if (wasLocked) it.locked = true; }
+      }
+    }
+
+    if (subs["Anchors"]) {
+      var aStyle = gridStyle(job, "anchors");
+      eachPathItem(subs["Anchors"], function (aItem) {
+        resizeMarker(aItem, aStyle.size);
+        gridPaint(aItem, aStyle, isCmyk);
+      });
+    }
+
+    if (subs["Handles"]) {
+      var hStyle = gridStyle(job, "handles");
+      var lineStyle = { stroke: hStyle.stroke !== "none" ? hStyle.stroke : hStyle.fill, strokeWidth: hStyle.strokeWidth };
+      eachPathItem(subs["Handles"], function (hItem) {
+        if (hItem.pathPoints && hItem.pathPoints.length === 2) {
+          gridPaint(hItem, lineStyle, isCmyk);
+        } else {
+          resizeMarker(hItem, hStyle.size);
+          gridPaint(hItem, hStyle, isCmyk);
+        }
+      });
+    }
+
+    if (subs["Outlines"]) {
+      var oStyle = gridStyle(job, "outlines");
+      eachPathItem(subs["Outlines"], function (oItem) {
+        gridPaint(oItem, oStyle, isCmyk);
+      });
+    }
+
+    if (subs["Gridlines"]) {
+      var gStyle = gridStyle(job, "gridlines");
+      eachPathItem(subs["Gridlines"], function (gItem) {
+        gridPaint(gItem, gStyle, isCmyk);
+      });
+    }
+
+    if (subs["Circles"]) {
+      var cStyle = gridStyle(job, "circles");
+      eachPathItem(subs["Circles"], function (cItem) {
+        gridPaint(cItem, cStyle, isCmyk);
+      });
+    }
+
+    gridRestoreLayerState(layerState);
+    return JSON.stringify({ ok: true, restyled: true });
+  } catch (e) {
+    if (layerState) { try { gridRestoreLayerState(layerState); } catch (ignore) {} }
     return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
   }
 }

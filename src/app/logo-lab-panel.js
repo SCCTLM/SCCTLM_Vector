@@ -1,18 +1,17 @@
 // Logo Lab card (Daily tab): element toggles, marker style, sizes and stroke widths, live preview, Generate / Clear.
-// It drives the same grid engine and saved grid settings as before; outlines are never drawn here because the
-// artwork is already on the page. Settings are saved on every change; messages go to the notice window.
+// Drives the grid engine and saved grid settings. Settings are saved on every change; messages go to the notice window.
 (function (global) {
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
-  var ELEMENTS = ['anchors', 'handles', 'circles', 'gridlines'];
-  var LABELS = { anchors: 'điểm neo', handles: 'tay nắm', circles: 'vòng tròn', gridlines: 'đường lưới' };
+  var ELEMENTS = ['anchors', 'handles', 'outlines', 'circles', 'gridlines'];
+  var LABELS = { anchors: 'điểm neo', handles: 'tay nắm', outlines: 'đường viền', circles: 'vòng tròn', gridlines: 'đường lưới' };
   // Above this many anchors plus circles the run can freeze Illustrator for a while, so the panel asks first.
   var CONFIRM_ITEMS = 2000;
 
-  // The grid engine job for the current settings. Outlines are always off in Logo Lab.
+  // The grid engine job for the current settings.
   function buildJob(settings) {
-    var elements = { outlines: false };
+    var elements = {};
     ELEMENTS.forEach(function (k) { elements[k] = !!settings.elements[k]; });
     return { elements: elements, style: settings.style, gridlines: settings.gridlines, circles: settings.circles };
   }
@@ -75,32 +74,48 @@
 
   function clearNode(id) {
     var n = $(id);
+    if (!n) return null;
     while (n.firstChild) n.removeChild(n.firstChild);
     return n;
   }
 
   // Real stroke widths would swamp the small preview, so they are kept thin there.
-  function previewStroke(w) { return Math.max(0.75, Math.min(2, w)); }
+  function previewStroke(w) { return Math.max(0.75, Math.min(2.5, Number(w) || 1)); }
 
   function drawPreview() {
     var m = previewModel();
     var st = settings.style;
     var on = settings.elements;
     var shape = $('ll-pv-shape');
-    shape.setAttribute('d', m.d);
+    if (shape) shape.setAttribute('d', m.d);
+
+    var outlines = $('ll-pv-outlines');
+    if (outlines) {
+      if (on.outlines) {
+        outlines.setAttribute('d', m.d);
+        outlines.setAttribute('fill', st.outlines.fill === 'none' ? 'none' : st.outlines.fill);
+        outlines.setAttribute('stroke', st.outlines.stroke === 'none' ? 'none' : st.outlines.stroke);
+        outlines.setAttribute('stroke-width', previewStroke(st.outlines.strokeWidth));
+        outlines.style.display = '';
+      } else {
+        outlines.style.display = 'none';
+      }
+    }
 
     var lines = clearNode('ll-pv-gridlines');
-    if (on.gridlines) {
+    if (lines && on.gridlines) {
       m.lines.forEach(function (l) {
-        svg('line', { x1: l[0], y1: l[1], x2: l[2], y2: l[3], stroke: st.gridlines.stroke, 'stroke-width': Math.max(0.75, st.gridlines.strokeWidth) }, lines);
+        svg('line', { x1: l[0], y1: l[1], x2: l[2], y2: l[3], stroke: st.gridlines.stroke, 'stroke-width': Math.max(0.75, previewStroke(st.gridlines.strokeWidth)) }, lines);
       });
     }
+
     var circles = clearNode('ll-pv-circles');
-    if (on.circles) {
-      svg('circle', { cx: m.circle.cx, cy: m.circle.cy, r: m.circle.r, fill: 'none', stroke: st.circles.stroke, 'stroke-width': Math.max(0.75, st.circles.strokeWidth) }, circles);
+    if (circles && on.circles) {
+      svg('circle', { cx: m.circle.cx, cy: m.circle.cy, r: m.circle.r, fill: 'none', stroke: st.circles.stroke, 'stroke-width': Math.max(0.75, previewStroke(st.circles.strokeWidth)) }, circles);
     }
+
     var handles = clearNode('ll-pv-handles');
-    if (on.handles) {
+    if (handles && on.handles) {
       var h = st.handles;
       var line = h.stroke !== 'none' ? h.stroke : h.fill;
       var r = Math.max(1, h.size * 0.25);
@@ -111,8 +126,9 @@
         svg('circle', { cx: p[0], cy: p[1], r: r, fill: h.fill, stroke: h.stroke, 'stroke-width': previewStroke(h.strokeWidth) }, handles);
       });
     }
+
     var anchors = clearNode('ll-pv-anchors');
-    if (on.anchors) {
+    if (anchors && on.anchors) {
       var a = st.anchors;
       var s = Math.max(2, a.size * 1.5);
       m.anchors.forEach(function (p) {
@@ -122,22 +138,29 @@
   }
 
   function sliderFill(slider) {
+    if (!slider) return;
     var min = Number(slider.min), max = Number(slider.max);
     var pct = Math.max(0, Math.min(100, ((Number(slider.value) - min) / (max - min)) * 100));
     slider.style.background = 'linear-gradient(to right, var(--commit) 0%, var(--commit) ' + pct + '%, var(--control-hover) ' + pct + '%, var(--control-hover) 100%)';
   }
 
-  function showColor(prop, value) {
-    var picker = $('ll-' + prop);
-    var none = $('ll-' + prop + '-none');
+  function showColor(prefix, prop, value) {
+    var picker = $(prefix + '-' + prop);
+    if (!picker) return;
+    var none = $(prefix + '-' + prop + '-none');
     var isNone = value === 'none';
-    if (picker.value !== (isNone ? '#000000' : value)) picker.value = isNone ? '#000000' : value;
-    picker.disabled = isNone;
-    var chip = $('ll-' + prop + '-chip');
-    chip.classList.toggle('is-none', isNone);
-    if (!isNone) chip.style.setProperty('--c', value);
-    none.classList.toggle('on', isNone);
-    none.setAttribute('aria-pressed', isNone ? 'true' : 'false');
+    if (!isNone && picker.value !== value) picker.value = value;
+    picker.disabled = false;
+    var chip = $(prefix + '-' + prop + '-chip');
+    if (chip) {
+      chip.classList.toggle('is-none', isNone);
+      if (!isNone) chip.style.setProperty('--c', value);
+    }
+    if (none) {
+      none.classList.toggle('on', isNone);
+      none.setAttribute('aria-pressed', isNone ? 'true' : 'false');
+      none.title = isNone ? 'Bật lại màu' : (prop === 'fill' ? 'Không tô' : 'Không nét');
+    }
   }
 
   function show() {
@@ -147,25 +170,80 @@
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
-    showColor('fill', st.anchors.fill);
-    showColor('stroke', st.anchors.stroke);
+
+    // Anchors & handles
+    showColor('ll', 'fill', st.anchors.fill);
+    showColor('ll', 'stroke', st.anchors.stroke);
     setValue('ll-stroke-width', st.anchors.strokeWidth);
     setValue('ll-anchor-size', st.anchors.size);
     setValue('ll-anchor-size-val', st.anchors.size);
     setValue('ll-handle-size', st.handles.size);
     setValue('ll-handle-size-val', st.handles.size);
-    setValue('ll-circle-width', st.circles.strokeWidth);
-    setValue('ll-grid-width', st.gridlines.strokeWidth);
     sliderFill($('ll-anchor-size'));
     sliderFill($('ll-handle-size'));
+
+    // Circles
+    showColor('ll-circle', 'stroke', st.circles.stroke);
+    setValue('ll-circle-width', st.circles.strokeWidth);
+    var cMode = $('ll-circle-mode');
+    if (cMode) cMode.value = settings.circles.mode || 'all';
+    var cNWrap = $('ll-circle-n-wrap');
+    if (cNWrap) cNWrap.style.display = (settings.circles.mode === 'all') ? 'none' : '';
+    setValue('ll-circle-n', settings.circles.n || 2);
+    var comp = typeof settings.circles.complexity === 'number' ? settings.circles.complexity : 30;
+    setValue('ll-circle-complexity', comp);
+    var cCompVal = $('ll-circle-complexity-val');
+    if (cCompVal) cCompVal.textContent = comp;
+    sliderFill($('ll-circle-complexity'));
+
+    // Gridlines
+    showColor('ll-grid', 'stroke', st.gridlines.stroke);
+    setValue('ll-grid-width', st.gridlines.strokeWidth);
+    var gSens = $('ll-grid-sensitivity');
+    if (gSens) {
+      var sv = String(settings.gridlines.sensitivity);
+      var has = Array.prototype.some.call(gSens.options, function (o) { return o.value === sv; });
+      if (!has) {
+        var extra = document.createElement('option');
+        extra.value = sv;
+        extra.textContent = 'Tùy chỉnh (' + sv + ')';
+        gSens.appendChild(extra);
+      }
+      gSens.value = sv;
+    }
+    var gScope = $('ll-grid-scope');
+    if (gScope) gScope.value = settings.gridlines.scope || 'selection';
+    setValue('ll-grid-margin', settings.gridlines.margin);
+
+    // Outlines
+    showColor('ll-outline', 'stroke', st.outlines.stroke);
+    showColor('ll-outline', 'fill', st.outlines.fill);
+    setValue('ll-outline-width', st.outlines.strokeWidth);
+
     drawPreview();
+  }
+
+  var AUTO_WIDTH_IDS = {
+    'll-anchor-size-val': true,
+    'll-handle-size-val': true,
+    'll-circle-width': true,
+    'll-grid-width': true,
+    'll-grid-margin': true,
+    'll-outline-width': true
+  };
+
+  function syncInputWidth(el) {
+    if (el && AUTO_WIDTH_IDS[el.id]) {
+      el.style.width = (String(el.value).length + 0.4) + 'ch';
+    }
   }
 
   // Leaves the field being typed in alone so a half-typed number is not overwritten.
   function setValue(id, value) {
     var el = $(id);
+    if (!el) return;
     if (document.activeElement !== el) el.value = value;
-    el.style.width = (String(el.value).length + 0.4) + 'ch';
+    syncInputWidth(el);
   }
 
   // Anchors and handles share one fill, stroke and stroke width.
@@ -177,35 +255,113 @@
 
   function bindNumber(id, apply, blurRefresh) {
     var el = $(id);
-    el.oninput = function () { if (el.value !== '' && !isNaN(Number(el.value))) apply(el.value); };
-    el.onchange = function () { apply(el.value); el.blur(); if (blurRefresh) show(); };
+    if (!el) return;
+    el.oninput = function () {
+      if (el.value !== '' && !isNaN(Number(el.value))) {
+        syncInputWidth(el);
+        apply(el.value);
+      }
+    };
+    el.onchange = function () { apply(el.value); if (el.blur) el.blur(); if (blurRefresh) show(); };
+  }
+
+  function bindSlider(sliderId, valId, apply) {
+    var slider = $(sliderId);
+    if (!slider) return;
+    slider.oninput = function () {
+      var v = Number(this.value);
+      apply(v);
+      setValue(valId, v);
+      sliderFill(this);
+      drawPreview();
+    };
+    slider.onchange = function () {
+      apply(Number(this.value));
+      save();
+    };
   }
 
   function bind() {
     Array.prototype.forEach.call(document.querySelectorAll('.ll-toggle'), function (b) {
       b.onclick = function () { settings.elements[b.dataset.el] = !settings.elements[b.dataset.el]; save(); };
     });
-    $('ll-fill').oninput = function () { setMarker('fill', this.value); };
-    $('ll-stroke').oninput = function () { setMarker('stroke', this.value); };
-    $('ll-fill-none').onclick = function () { setMarker('fill', settings.style.anchors.fill === 'none' ? $('ll-fill').value : 'none'); };
-    $('ll-stroke-none').onclick = function () { setMarker('stroke', settings.style.anchors.stroke === 'none' ? $('ll-stroke').value : 'none'); };
+
+    // Anchors & handles
+    $('ll-fill').oninput = $('ll-fill').onchange = function () { setMarker('fill', this.value); };
+    $('ll-stroke').oninput = $('ll-stroke').onchange = function () { setMarker('stroke', this.value); };
+    $('ll-fill-none').onclick = function () { setMarker('fill', settings.style.anchors.fill === 'none' ? ($('ll-fill').value || '#378ef0') : 'none'); };
+    $('ll-stroke-none').onclick = function () { setMarker('stroke', settings.style.anchors.stroke === 'none' ? ($('ll-stroke').value || '#ffffff') : 'none'); };
+    var swapBtn = $('ll-swap');
+    if (swapBtn) {
+      swapBtn.onclick = function () {
+        var f = settings.style.anchors.fill;
+        var s = settings.style.anchors.stroke;
+        settings.style.anchors.fill = s;
+        settings.style.anchors.stroke = f;
+        settings.style.handles.fill = s;
+        settings.style.handles.stroke = f;
+        settings.style.handles.strokeWidth = settings.style.anchors.strokeWidth;
+        save();
+      };
+    }
     bindNumber('ll-stroke-width', function (v) { setMarker('strokeWidth', v); }, true);
-    ['ll-anchor-size', 'll-anchor-size-val'].forEach(function (id) {
-      bindNumber(id, function (v) { settings.style.anchors.size = v; save(); }, true);
-    });
-    ['ll-handle-size', 'll-handle-size-val'].forEach(function (id) {
-      bindNumber(id, function (v) { settings.style.handles.size = v; save(); }, true);
-    });
+    bindSlider('ll-anchor-size', 'll-anchor-size-val', function (v) { settings.style.anchors.size = v; });
+    bindNumber('ll-anchor-size-val', function (v) { settings.style.anchors.size = v; save(); }, true);
+    bindSlider('ll-handle-size', 'll-handle-size-val', function (v) { settings.style.handles.size = v; });
+    bindNumber('ll-handle-size-val', function (v) { settings.style.handles.size = v; save(); }, true);
+
+    // Circles
+    var cStroke = $('ll-circle-stroke');
+    if (cStroke) cStroke.oninput = cStroke.onchange = function () { settings.style.circles.stroke = this.value; save(); };
     bindNumber('ll-circle-width', function (v) { settings.style.circles.strokeWidth = v; save(); }, true);
+    var cMode = $('ll-circle-mode');
+    if (cMode) cMode.onchange = function () { settings.circles.mode = this.value; save(); };
+    bindNumber('ll-circle-n', function (v) { settings.circles.n = v; save(); }, true);
+    var cComp = $('ll-circle-complexity');
+    if (cComp) {
+      cComp.oninput = function () {
+        settings.circles.complexity = Number(this.value);
+        var valEl = $('ll-circle-complexity-val');
+        if (valEl) valEl.textContent = this.value;
+        sliderFill(this);
+        drawPreview();
+      };
+      cComp.onchange = function () { save(); };
+    }
+
+    // Gridlines
+    var gStroke = $('ll-grid-stroke');
+    if (gStroke) gStroke.oninput = gStroke.onchange = function () { settings.style.gridlines.stroke = this.value; save(); };
     bindNumber('ll-grid-width', function (v) { settings.style.gridlines.strokeWidth = v; save(); }, true);
+    var gSens = $('ll-grid-sensitivity');
+    if (gSens) gSens.onchange = function () { settings.gridlines.sensitivity = Number(this.value); save(); };
+    var gScope = $('ll-grid-scope');
+    if (gScope) gScope.onchange = function () { settings.gridlines.scope = this.value; save(); };
+    bindNumber('ll-grid-margin', function (v) { settings.gridlines.margin = v; save(); }, true);
+
+    // Outlines
+    var oStroke = $('ll-outline-stroke');
+    if (oStroke) oStroke.oninput = oStroke.onchange = function () { settings.style.outlines.stroke = this.value; save(); };
+    var oStrokeNone = $('ll-outline-stroke-none');
+    if (oStrokeNone) oStrokeNone.onclick = function () { settings.style.outlines.stroke = settings.style.outlines.stroke === 'none' ? ($('ll-outline-stroke').value || '#ff2d55') : 'none'; save(); };
+    var oFill = $('ll-outline-fill');
+    if (oFill) oFill.oninput = oFill.onchange = function () { settings.style.outlines.fill = this.value; save(); };
+    var oFillNone = $('ll-outline-fill-none');
+    if (oFillNone) oFillNone.onclick = function () { settings.style.outlines.fill = settings.style.outlines.fill === 'none' ? ($('ll-outline-fill').value || '#378ef0') : 'none'; save(); };
+    bindNumber('ll-outline-width', function (v) { settings.style.outlines.strokeWidth = v; save(); }, true);
   }
 
   function setRunning(on) {
     running = on;
     if (global.PanelReload) global.PanelReload.setBusy('grid', on);
-    $('ll-generate').disabled = on;
-    $('ll-clear').disabled = on;
-    $('ll-generate').textContent = on ? 'Đang xử lý…' : 'Tạo lưới';
+    var gen = $('ll-generate');
+    if (gen) { gen.disabled = on; gen.textContent = on ? 'Đang xử lý…' : 'Tạo lưới'; }
+    var genAll = $('ll-generate-all');
+    if (genAll) genAll.disabled = on;
+    var restyle = $('ll-restyle');
+    if (restyle) restyle.disabled = on;
+    var clr = $('ll-clear');
+    if (clr) clr.disabled = on;
   }
 
   function hideConfirm() { pending = null; $('ll-confirm').hidden = true; }
@@ -234,19 +390,26 @@
     }).then(function () { setRunning(false); });
   }
 
-  function generate() {
+  function generate(allElements) {
     if (running) return;
     hideConfirm();
     var job = buildJob(settings);
+    if (allElements === true) ELEMENTS.forEach(function (k) { job.elements[k] = true; });
     if (!ELEMENTS.some(function (k) { return job.elements[k]; })) { notify('Hãy bật ít nhất một thành phần để vẽ.'); return; }
     setRunning(true);
     global.Bridge.gridInspect(job).then(function (info) {
       setRunning(false);
       if (!info.ok) { notify(info.error); return; }
       if (!info.paths) { notify('Hãy chọn các path vector trước (outline văn bản nếu có).' + skippedNote(info.skipped)); return; }
-      if (info.anchors + (info.circles || 0) > CONFIRM_ITEMS) {
+      var anchorCount = (job.elements.anchors || job.elements.handles) ? info.anchors : 0;
+      var circleCount = job.elements.circles ? (info.circles || 0) : 0;
+      if (anchorCount + circleCount > CONFIRM_ITEMS) {
         pending = job;
-        $('ll-confirm-text').textContent = 'Cần vẽ ' + info.anchors + ' điểm neo' + (info.circles ? ' và ' + info.circles + ' vòng tròn' : '') +
+        var parts = [];
+        if (job.elements.anchors && info.anchors) parts.push(info.anchors + ' điểm neo');
+        if (job.elements.handles && info.anchors) parts.push('tay nắm của ' + info.anchors + ' điểm neo');
+        if (circleCount) parts.push(circleCount + ' vòng tròn');
+        $('ll-confirm-text').textContent = 'Cần vẽ ' + parts.join(' và ') +
           '. Illustrator có thể ngừng phản hồi một lúc.';
         $('ll-confirm').hidden = false;
         return;
@@ -256,6 +419,23 @@
       setRunning(false);
       notify('Tạo lưới thất bại: ' + e.message);
     });
+  }
+
+  function restyle() {
+    if (running) return;
+    hideConfirm();
+    var job = buildJob(settings);
+    setRunning(true);
+    notify('Đang cập nhật kiểu dáng…');
+    global.Bridge.gridRestyle(job).then(function (res) {
+      if (res.ok) {
+        notify('Đã cập nhật kiểu dáng lưới.');
+      } else {
+        notify(res.error || 'Cập nhật thất bại.');
+      }
+    }).catch(function (e) {
+      notify('Cập nhật thất bại: ' + e.message);
+    }).then(function () { setRunning(false); });
   }
 
   function clear() {
@@ -275,8 +455,19 @@
     var open = $('ll-more').hidden;
     $('ll-more').hidden = !open;
     this.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      sliderFill($('ll-circle-complexity'));
+    }
   };
-  $('ll-generate').onclick = generate;
+  $('ll-generate').onclick = function () { generate(); };
+  var genAllBtn = $('ll-generate-all');
+  if (genAllBtn) {
+    genAllBtn.onclick = function () {
+      generate(true);
+    };
+  }
+  var restyleBtn = $('ll-restyle');
+  if (restyleBtn) restyleBtn.onclick = restyle;
   $('ll-clear').onclick = clear;
   $('ll-confirm-ok').onclick = function () { var job = pending; hideConfirm(); if (job) draw(job); };
   $('ll-confirm-cancel').onclick = function () { hideConfirm(); notify('Đã huỷ.'); };

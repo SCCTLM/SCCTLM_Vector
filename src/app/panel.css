@@ -612,16 +612,16 @@ button.offset-apply-btn:active:not(:disabled) {
   padding: 14px 14px 16px;
   margin-bottom: 10px;
 }
-.ll-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; align-items: center; margin: 6px 0 14px; }
-.ll-preview-box { height: 140px; display: flex; align-items: center; justify-content: center; }
+.ll-top { display: grid; grid-template-columns: minmax(76px, 0.72fr) minmax(0, 1.4fr); gap: 10px; align-items: center; margin: 6px 0 14px; }
+.ll-preview-box { height: 132px; display: flex; align-items: center; justify-content: center; }
 .ll-preview-svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .ll-pv-shape { fill: #ffffff; }
-.ll-controls { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
-.ll-toggles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; justify-items: center; margin: 0; }
+.ll-controls { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.ll-toggles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; justify-items: center; margin: 0; }
 button.ll-toggle {
   flex: none;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -633,12 +633,39 @@ button.ll-toggle {
   outline: 0;
   transition: background-color .15s, border-color .15s, transform .05s;
 }
-button.ll-toggle svg { width: 22px; height: 22px; display: block; pointer-events: none; }
-button.ll-toggle:hover:not(.on) { background: rgba(255, 255, 255, .08); border-color: #ffffff; }
+button.ll-toggle svg { width: 18px; height: 18px; display: block; pointer-events: none; }
+button.ll-toggle:hover:not(.on) { background: rgba(255, 255, 255, .08); border-color: var(--fg); }
 button.ll-toggle.on, button.ll-toggle.on:hover { background: #5d6d8b; border-color: #d6d6d6; }
 button.ll-toggle:active { transform: translateY(1px); }
 button.ll-toggle:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, 0.5); }
-.ll-style-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; justify-items: center; align-items: end; }
+.ll-style-row { display: grid; grid-template-columns: auto auto auto minmax(38px, 1fr); gap: 4px; justify-items: center; align-items: end; }
+@media (max-width: 300px) {
+  .ll-top { grid-template-columns: 1fr; }
+  .ll-preview-box { height: 104px; }
+}
+button.ll-swap {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 2px;
+  outline: 0;
+  transition: all .15s ease;
+}
+button.ll-swap:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+  background: var(--surface-hover);
+}
 .ll-color-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .ll-cap { font-size: var(--fs-md); font-weight: var(--fw-strong); color: var(--fg); line-height: 1.2; }
 .ll-color { position: relative; display: inline-flex; width: 26px; height: 26px; --c: #378ef0; }
@@ -709,7 +736,7 @@ button.ll-none.on { background: var(--select); color: #ffffff; }
 .ll-pill-sm { width: 100%; max-width: 46px; justify-content: center; align-self: end; }
 .ll-pill-sm input { width: 100%; text-align: center; }
 .ll-pill-wide { padding: 0 12px; gap: 4px; }
-.ll-pill-wide input { width: 1.4ch; text-align: left; }
+.ll-pill-wide input { min-width: 2ch; text-align: left; }
 .ll-pill-wide span { color: var(--fg); }
 .ll-slider-row { display: flex; align-items: center; gap: 10px; min-height: 38px; margin: 0 0 6px; }
 .ll-ico { flex: none; width: 28px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 1.5px solid #c9c9c9; border-radius: 7px; }
@@ -746,25 +773,75 @@ button.ll-expand:hover { opacity: .85; background: transparent; border-color: tr
 button.ll-expand[aria-expanded="true"] { opacity: 1; }
 button.ll-expand[aria-expanded="true"] img { transform: none; }
 button.ll-expand:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, 0.4); border-radius: 6px; }
-.ll-more { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0 0 14px; }
-.ll-more-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.ll-more-head { height: 30px; display: flex; align-items: center; gap: 6px; font-size: var(--fs-md); font-weight: var(--fw-strong); color: var(--fg); }
-
-.ll-confirm { margin: 0 0 12px; }
-.ll-confirm-actions { display: flex; gap: 8px; margin-top: 6px; }
-button.ll-clear {
-  width: 100%;
-  margin-top: 8px;
-  height: 30px;
-  border: 0;
+.ll-more { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; }
+.ll-more-group { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0, 0, 0, .14); border-radius: 8px; border: 1px solid rgba(255, 255, 255, .07); }
+.ll-more-head { height: 26px; display: flex; align-items: center; gap: 8px; font-size: var(--fs-md); font-weight: var(--fw-strong); color: var(--fg); }
+.ll-more-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ll-more-sublabel { font-size: var(--fs-sm); color: var(--muted); flex: none; }
+.ll-select { flex: 1 1 84px; width: auto; min-width: 76px; height: 26px; padding: 0 6px; font-size: var(--fs-sm); font-weight: var(--fw-regular); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 6px; outline: 0; cursor: pointer; }
+.ll-actions { display: flex; flex-direction: column; gap: 6px; }
+.ll-btn-row { display: flex; gap: 8px; }
+.ll-btn-row button { flex: 1; margin: 0; }
+button.ll-main-btn {
+  height: 40px;
   border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
   font-size: var(--fs-md);
   font-weight: var(--fw-strong);
   cursor: pointer;
   outline: 0;
-  transition: background .15s, color .15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s, color .15s;
 }
-button.ll-clear:hover:not(:disabled) { background: var(--surface-hover); color: var(--fg); border-color: transparent; }
-button.ll-clear:disabled { opacity: .35; cursor: default; }
+button.ll-main-btn.primary {
+  border: 0;
+  background: var(--commit);
+  color: var(--commit-ink);
+}
+button.ll-main-btn.primary:hover:not(:disabled) {
+  background: var(--commit-hover);
+}
+button.ll-main-btn.primary:disabled,
+button.ll-main-btn.primary:disabled:hover {
+  opacity: 1;
+  background: #0b7d46;
+  border-color: #0b7d46;
+  color: #ffffff;
+}
+button.ll-main-btn.secondary {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+}
+button.ll-main-btn.secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--fg);
+}
+.ll-sub-btn-row { display: flex; gap: 8px; }
+button.ll-sub-btn {
+  flex: 1;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-strong);
+  cursor: pointer;
+  margin: 0;
+  outline: 0;
+  transition: background .15s, color .15s, border-color .15s;
+}
+button.ll-sub-btn:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--fg);
+  background: var(--surface-hover);
+}
+button.ll-sub-btn:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.ll-confirm { margin: 0 0 12px; }
+.ll-confirm-actions { display: flex; gap: 8px; margin-top: 6px; }
