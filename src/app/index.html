@@ -127,6 +127,188 @@
     <button type="button" id="offset-apply" class="primary offset-apply-btn">Tạo viền</button>
   </section>
 
+  <section data-pane="daily" class="logo-lab-card">
+    <div class="offset-header">Logo Lab</div>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <symbol id="ll-i-anchors" viewBox="0 0 24 24"><rect x="7.5" y="7.5" width="9" height="9" rx="1" fill="#378ef0" stroke="#ffffff" stroke-width="1.6"/></symbol>
+      <symbol id="ll-i-handles" viewBox="0 0 24 24"><path d="M4 19a8 8 0 0 1 16 0" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11.5h12" stroke="#378ef0" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="5.5" cy="11.5" r="2" fill="#378ef0"/><circle cx="18.5" cy="11.5" r="2" fill="#378ef0"/></symbol>
+      <symbol id="ll-i-outlines" viewBox="0 0 24 24"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="none" stroke="#ff2d55" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 2"/></symbol>
+      <symbol id="ll-i-circles" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="ll-i-gridlines" viewBox="0 0 24 24"><path d="M9.5 3.5l-3 17M17.5 3.5l-3 17M3.5 9h17M3.5 15h17" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    </svg>
+
+    <div class="ll-top">
+      <div class="ll-preview-box">
+        <svg id="ll-preview" viewBox="-12 -12 193 188" class="ll-preview-svg" aria-label="Bản xem trước lưới logo">
+          <g id="ll-pv-gridlines"></g>
+          <g id="ll-pv-circles"></g>
+          <path id="ll-pv-shape" class="ll-pv-shape" fill-rule="evenodd" d=""/>
+          <path id="ll-pv-outlines" class="ll-pv-outlines" fill="none" stroke="none" fill-rule="evenodd" d=""/>
+          <g id="ll-pv-handles"></g>
+          <g id="ll-pv-anchors"></g>
+        </svg>
+      </div>
+
+      <div class="ll-controls">
+        <div class="ll-toggles" role="group" aria-label="Thành phần lưới">
+          <button type="button" class="ll-toggle on" data-el="anchors" aria-pressed="true" title="Điểm neo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-anchors"/></svg>
+          </button>
+          <button type="button" class="ll-toggle" data-el="handles" aria-pressed="false" title="Tay nắm">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-handles"/></svg>
+          </button>
+          <button type="button" class="ll-toggle" data-el="outlines" aria-pressed="false" title="Đường viền">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-outlines"/></svg>
+          </button>
+          <button type="button" class="ll-toggle" data-el="circles" aria-pressed="false" title="Vòng tròn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-circles"/></svg>
+          </button>
+          <button type="button" class="ll-toggle" data-el="gridlines" aria-pressed="false" title="Đường lưới">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-gridlines"/></svg>
+          </button>
+        </div>
+
+        <div class="ll-style-row">
+          <div class="ll-color-col">
+            <span class="ll-cap">Fill</span>
+            <span class="ll-color" id="ll-fill-chip"><input type="color" id="ll-fill" aria-label="Màu tô"><button type="button" class="ll-none" id="ll-fill-none" title="Không tô" aria-pressed="false">&times;</button></span>
+          </div>
+          <button type="button" class="ll-swap" id="ll-swap" title="Hoán đổi Fill và Stroke" aria-label="Hoán đổi Fill và Stroke">&#8644;</button>
+          <div class="ll-color-col">
+            <span class="ll-cap">Stroke</span>
+            <span class="ll-color ll-ring" id="ll-stroke-chip"><input type="color" id="ll-stroke" aria-label="Màu nét"><button type="button" class="ll-none" id="ll-stroke-none" title="Không nét" aria-pressed="false">&times;</button></span>
+          </div>
+          <div class="ll-pill ll-pill-sm" title="Độ dày nét điểm neo và tay nắm">
+            <input type="number" id="ll-stroke-width" min="0.05" max="20" step="0.25" aria-label="Độ dày nét">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ll-slider-row">
+      <span class="ll-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-anchors"/></svg></span>
+      <span class="ll-slider-name">Anchors</span>
+      <input type="range" id="ll-anchor-size" class="offset-slider" min="1" max="40" step="0.5" aria-label="Kích thước điểm neo">
+      <span class="ll-val"><input type="number" id="ll-anchor-size-val" min="0.5" max="100" step="0.5" aria-label="Kích thước điểm neo">px</span>
+    </div>
+    <div class="ll-slider-row">
+      <span class="ll-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-handles"/></svg></span>
+      <span class="ll-slider-name">Handles</span>
+      <input type="range" id="ll-handle-size" class="offset-slider" min="1" max="40" step="0.5" aria-label="Kích thước tay nắm">
+      <span class="ll-val"><input type="number" id="ll-handle-size-val" min="0.5" max="100" step="0.5" aria-label="Kích thước tay nắm">px</span>
+    </div>
+
+    <button type="button" id="ll-expand" class="ll-expand" aria-expanded="false" aria-controls="ll-more" title="Thêm tùy chọn">
+      <img src="assets/icons/logo-lab-chevron.svg" alt="" draggable="false">
+    </button>
+
+    <div class="ll-more" id="ll-more" hidden>
+      <!-- Section: Vòng tròn -->
+      <div class="ll-more-group">
+        <span class="ll-more-head">
+          <span class="ll-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-circles"/></svg></span>
+          <span>Vòng tròn</span>
+        </span>
+        <div class="ll-more-row">
+          <span class="ll-more-sublabel">Nét</span>
+          <span class="ll-color ll-ring" id="ll-circle-stroke-chip" title="Màu nét vòng tròn">
+            <input type="color" id="ll-circle-stroke" aria-label="Màu nét vòng tròn">
+          </span>
+          <div class="ll-pill ll-pill-wide" title="Độ dày nét vòng tròn">
+            <input type="number" id="ll-circle-width" min="0.05" max="20" step="0.25" aria-label="Độ dày nét vòng tròn"><span>px</span>
+          </div>
+          <select id="ll-circle-mode" class="ll-select" title="Chế độ chọn vòng tròn" aria-label="Chế độ vòng tròn">
+            <option value="all">Tất cả</option>
+            <option value="longest">Dài nhất</option>
+            <option value="first">Đầu tiên</option>
+          </select>
+          <div class="ll-pill ll-pill-sm" id="ll-circle-n-wrap" title="Số vòng tròn mỗi đoạn">
+            <input type="number" id="ll-circle-n" min="1" max="99" step="1" aria-label="Số vòng tròn">
+          </div>
+        </div>
+        <div class="ll-more-row">
+          <span class="ll-more-sublabel">Độ chi tiết</span>
+          <input type="range" id="ll-circle-complexity" class="offset-slider" min="0" max="100" step="5" aria-label="Độ phức tạp vòng tròn">
+          <span class="ll-val" id="ll-circle-complexity-val">30</span>
+        </div>
+      </div>
+
+      <!-- Section: Đường lưới -->
+      <div class="ll-more-group">
+        <span class="ll-more-head">
+          <span class="ll-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-gridlines"/></svg></span>
+          <span>Đường lưới</span>
+        </span>
+        <div class="ll-more-row">
+          <span class="ll-more-sublabel">Nét</span>
+          <span class="ll-color ll-ring" id="ll-grid-stroke-chip" title="Màu nét đường lưới">
+            <input type="color" id="ll-grid-stroke" aria-label="Màu nét đường lưới">
+          </span>
+          <div class="ll-pill ll-pill-wide" title="Độ dày nét đường lưới">
+            <input type="number" id="ll-grid-width" min="0.05" max="20" step="0.25" aria-label="Độ dày nét đường lưới"><span>px</span>
+          </div>
+          <select id="ll-grid-sensitivity" class="ll-select" title="Độ nhạy gộp đường dóng" aria-label="Độ nhạy gộp đường dóng">
+            <option value="0">Tách (0)</option>
+            <option value="50">Chuẩn (50)</option>
+            <option value="100">Gộp (100)</option>
+          </select>
+        </div>
+        <div class="ll-more-row">
+          <select id="ll-grid-scope" class="ll-select" title="Phạm vi dóng lưới" aria-label="Phạm vi dóng lưới">
+            <option value="selection">Theo logo + lề</option>
+            <option value="artboard">Toàn Artboard</option>
+          </select>
+          <div class="ll-pill ll-pill-wide" title="Khoảng cách lề (pt)">
+            <input type="number" id="ll-grid-margin" min="0" max="10000" step="5" aria-label="Khoảng cách lề"><span>pt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Đường viền (Outlines) -->
+      <div class="ll-more-group">
+        <span class="ll-more-head">
+          <span class="ll-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ll-i-outlines"/></svg></span>
+          <span>Đường viền (Outlines)</span>
+        </span>
+        <div class="ll-more-row">
+          <span class="ll-more-sublabel">Nét</span>
+          <span class="ll-color ll-ring" id="ll-outline-stroke-chip" title="Màu nét viền">
+            <input type="color" id="ll-outline-stroke" aria-label="Màu nét viền">
+            <button type="button" class="ll-none" id="ll-outline-stroke-none" title="Không nét">&times;</button>
+          </span>
+          <div class="ll-pill ll-pill-wide" title="Độ dày nét viền">
+            <input type="number" id="ll-outline-width" min="0.05" max="20" step="0.25" aria-label="Độ dày nét viền"><span>px</span>
+          </div>
+          <span class="ll-more-sublabel" style="margin-left: 6px;">Tô</span>
+          <span class="ll-color" id="ll-outline-fill-chip" title="Màu tô viền">
+            <input type="color" id="ll-outline-fill" aria-label="Màu tô viền">
+            <button type="button" class="ll-none" id="ll-outline-fill-none" title="Không tô">&times;</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ll-confirm" id="ll-confirm" hidden>
+      <span id="ll-confirm-text" class="muted"></span>
+      <div class="ll-confirm-actions">
+        <button type="button" id="ll-confirm-ok">Tiếp tục</button>
+        <button type="button" id="ll-confirm-cancel">Huỷ</button>
+      </div>
+    </div>
+
+    <div class="ll-actions">
+      <div class="ll-btn-row">
+        <button type="button" id="ll-generate" class="primary ll-main-btn" title="Vẽ các thành phần đã bật">Tạo lưới</button>
+        <button type="button" id="ll-generate-all" class="secondary ll-main-btn" title="Vẽ tất cả 5 thành phần trong một lần chạy">Tạo tất cả</button>
+      </div>
+      <div class="ll-sub-btn-row">
+        <button type="button" id="ll-restyle" class="ll-sub-btn" title="Cập nhật nhanh màu sắc và kích thước lên layer lưới đang có">Áp dụng kiểu</button>
+        <button type="button" id="ll-clear" class="ll-sub-btn ll-clear" title="Xoá layer SCCTLM Grid">Xoá lưới</button>
+      </div>
+    </div>
+  </section>
+
+
   <section class="artboards-shared">
     <h4 class="doc-size-title"><span data-pane="artboard">Artboard</span><span data-pane="pdf">Danh sách trang</span></h4>
     <div class="row">
@@ -274,7 +456,7 @@
   <script src="color-mode.js"></script>
   <script src="pdf-panel.js"></script>
   <script src="grid-settings.js"></script>
-  <script src="grid-panel.js"></script>
+  <script src="logo-lab-panel.js"></script>
   <script src="tabs.js"></script>
   <script src="color-picker-launcher.js"></script>
   <script src="offset-panel.js"></script>

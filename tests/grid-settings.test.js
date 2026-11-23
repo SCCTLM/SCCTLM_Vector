@@ -32,12 +32,12 @@ test('bad values fall back or are clamped, good ones are kept', () => {
     circles: { complexity: '70', mode: 'random', n: 0 }
   }));
   assert.strictEqual(s.elements.anchors, false);
-  assert.strictEqual(s.elements.handles, true);
+  assert.strictEqual(s.elements.handles, g.DEFAULTS.elements.handles);
   assert.strictEqual(s.style.anchors.size, 100);
-  assert.strictEqual(s.style.anchors.fill, '#ffffff');
+  assert.strictEqual(s.style.anchors.fill, g.DEFAULTS.style.anchors.fill);
   assert.strictEqual(s.style.anchors.stroke, '#abcdef');
   assert.strictEqual(s.style.outlines.fill, 'none');
-  assert.deepStrictEqual(s.gridlines, { sensitivity: 100, margin: 0 });
+  assert.deepStrictEqual(s.gridlines, { sensitivity: 100, margin: 0, scope: 'selection' });
   assert.deepStrictEqual(s.circles, { complexity: 70, mode: 'all', n: 1 });
   assert.deepStrictEqual(plain(g.normalize('garbage')), plain(g.DEFAULTS));
 });
@@ -58,13 +58,34 @@ test('an emptied number field keeps the previous value instead of saving the min
   const prev = plain(g.DEFAULTS);
   prev.style.anchors.size = 7;
   prev.gridlines.margin = 33;
+  prev.gridlines.scope = 'artboard';
   prev.circles.n = 5;
   const s = g.normalize(prev);
   s.style.anchors.size = '';
   s.gridlines.margin = '';
+  delete s.gridlines.scope;
   s.circles.n = '  ';
   const out = plain(g.normalize(s, prev));
   assert.strictEqual(out.style.anchors.size, 7);
   assert.strictEqual(out.gridlines.margin, 33);
+  assert.strictEqual(out.gridlines.scope, 'artboard');
   assert.strictEqual(out.circles.n, 5);
+});
+
+test('gridlines.scope accepts artboard/selection and circles/gridlines strokes disallow none', () => {
+  const g = loadSettings(os.tmpdir());
+  const s = plain(g.normalize({
+    style: {
+      circles: { stroke: 'none', strokeWidth: 3 },
+      gridlines: { stroke: 'none', strokeWidth: 2 },
+      outlines: { stroke: 'none', fill: '#112233', strokeWidth: 1.5 }
+    },
+    gridlines: { scope: 'artboard' }
+  }));
+  assert.strictEqual(s.gridlines.scope, 'artboard');
+  assert.strictEqual(s.style.circles.stroke, g.DEFAULTS.style.circles.stroke);
+  assert.strictEqual(s.style.gridlines.stroke, g.DEFAULTS.style.gridlines.stroke);
+  assert.strictEqual(s.style.outlines.stroke, 'none');
+  assert.strictEqual(s.style.outlines.fill, '#112233');
+  assert.strictEqual(s.style.outlines.strokeWidth, 1.5);
 });
