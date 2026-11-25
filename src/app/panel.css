@@ -1120,16 +1120,6 @@ button.align-btn:hover:not(:disabled) {
 button.align-btn:active:not(:disabled) { transform: translateY(1px); }
 button.align-btn:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }
 button.align-btn:disabled { opacity: .45; cursor: default; }
-button.align-btn-center {
-  background: rgba(55, 142, 240, .18);
-  border-color: rgba(55, 142, 240, .45);
-  color: var(--select);
-}
-button.align-btn-center:hover:not(:disabled) {
-  background: var(--select);
-  border-color: var(--select);
-  color: #ffffff;
-}
 .align-bottom {
   display: flex;
   align-items: flex-end;
