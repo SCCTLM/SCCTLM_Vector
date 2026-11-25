@@ -1058,3 +1058,151 @@ button.explore-video:focus-visible, .explore-video:focus-visible { box-shadow: 0
 .explore-note { text-align: center; color: var(--muted); font-size: var(--fs-sm); margin-bottom: 8px; }
 .explore-all,
 button.explore-all { width: 100%; height: 34px; }
+
+/* Align card (bottom of Daily tab) */
+.align-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 14px 14px;
+  margin-bottom: 10px;
+}
+.align-group { margin-bottom: 10px; }
+.align-group:last-child { margin-bottom: 0; }
+.align-label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-strong);
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.align-row {
+  display: grid;
+  gap: 4px;
+}
+.align-row-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.align-row-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+button.align-btn {
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--control);
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  cursor: pointer;
+  outline: 0;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .05s;
+}
+button.align-btn svg { width: 17px; height: 17px; display: block; pointer-events: none; }
+button.align-btn:hover:not(:disabled) {
+  background: var(--control-hover);
+  border-color: rgba(128, 128, 128, .45);
+  color: var(--fg);
+}
+button.align-btn:active:not(:disabled) { transform: translateY(1px); }
+button.align-btn:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }
+button.align-btn:disabled { opacity: .45; cursor: default; }
+button.align-btn-center {
+  background: rgba(55, 142, 240, .18);
+  border-color: rgba(55, 142, 240, .45);
+  color: var(--select);
+}
+button.align-btn-center:hover:not(:disabled) {
+  background: var(--select);
+  border-color: var(--select);
+  color: #ffffff;
+}
+.align-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.align-spacing-group { flex: 1; min-width: 0; margin-bottom: 0; }
+.align-to-group { flex: none; margin-bottom: 0; }
+.align-spacing-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.align-spacing-row button.align-btn { width: 30px; flex: none; }
+.align-spacing-box {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 58px;
+  max-width: 82px;
+  height: 30px;
+  padding: 0 7px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.align-spacing-box:focus-within {
+  border-color: var(--select-focus);
+}
+input[type=number].align-spacing-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--fg);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-strong);
+  text-align: right;
+  outline: 0;
+  -moz-appearance: textfield;
+}
+input[type=number].align-spacing-input::-webkit-outer-spin-button,
+input[type=number].align-spacing-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.align-spacing-unit {
+  margin-left: 3px;
+  font-size: 10.5px;
+  color: var(--muted);
+  flex: none;
+}
+.align-to-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+button.align-to-btn {
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  cursor: pointer;
+  outline: 0;
+  transition: background-color .15s ease, color .15s ease, transform .05s;
+}
+button.align-to-btn svg { width: 16px; height: 16px; display: block; pointer-events: none; }
+button.align-to-btn:hover:not(:disabled):not(.on) {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--fg);
+}
+button.align-to-btn.on,
+button.align-to-btn.on:hover:not(:disabled) {
+  background: var(--select);
+  border-color: transparent;
+  color: #ffffff;
+}
+button.align-to-btn:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }

@@ -8,6 +8,8 @@
 #include "color-engine.jsx"
 #include "artboard-size.jsx"
 #include "offset-engine.jsx"
+#include "align-math.jsx"
+#include "align-engine.jsx"
 
 var ENGINE_FORMATS = {
   png: { ext: "png", raster: true, typeConst: "SE_PNG24" },

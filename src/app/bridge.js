@@ -79,6 +79,7 @@
     offsetDetect: function () { return evalScript('offsetDetectExisting()'); },
     offsetUpdate: function (job) { return evalScript('offsetUpdateExisting(' + literal(JSON.stringify(job)) + ')'); },
     offsetInspect: function () { return evalScript('offsetInspectSelection()'); },
+    alignObjects: function (job) { return evalScript('engineAlignObjects(' + literal(JSON.stringify(job || {})) + ')'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {
       return evalScript('(function(){var c=' + jsonText(ctx) + ';c.artboard=uniqueArtboardNames(' +
