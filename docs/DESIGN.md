@@ -75,23 +75,22 @@ Still literal in Offset Lab: `#1FC8FF` (default offset colour and HEX focus bord
 
 ## Shape and spacing
 
-- Cards: `--radius` (10px), `1px --line` border, `14px 14px 16px` padding, `10px` between cards.
+- Cards: `--radius` (10px), `1px --line` border, `10px 12px 11px` padding (`10px 12px` for Align), `7px` between cards.
 - Controls: fully rounded (`999px`); checkbox `5px`; swatch circle.
-- Vertical rhythm between rows: `12px` (`10px` before the primary button group, `14–16px` before
-  the primary button). Gap between controls in a row: `8–10px`; between segments: `3px`.
-- Heights: input / value pill `28px`; colour and HEX row `38px`; segmented join `34px`;
-  segmented mode `32px`; primary button `46px`.
-- Toggle track: `--field` background, `1px --line` border, `3px` padding.
+- Vertical rhythm between rows: `7px` (`9px` after swatches, `8px` before the primary button). Gap between controls in a row: `8–10px`; between segments: `3px`.
+- Heights: input / value pill `26px`; colour and HEX row `32px`; segmented join `29px`;
+  segmented mode `28px`; primary button `38px`.
+- Toggle track: `--field` background, `1px --line` border, `2px` padding.
 
 ## Components
 
-**Section title.** `--fs-lg`, `--fw-strong`, `--fg`, `0 0 10px` margin. One per card.
+**Section title.** `--fs-lg`, `--fw-strong`, `--fg`, `0 0 6px` margin. One per card.
 
 **Label.** `--fs-md`, `--fw-strong` for field names; `--fw-regular` for descriptive labels.
 No trailing colon.
 
 **Slider with value pill.** 4px track `#4a4a4a`, 15px white thumb with soft shadow, hover scale
-1.15. The value is an editable number in a `28px` pill with its unit (`--fs-sm`, `--muted`).
+1.15. The value is an editable number in a `26px` pill with its unit (`--fs-sm`, `--muted`).
 Number inputs hide the browser spin buttons; the slider is the stepper.
 
 **Segmented toggle** (`.offset-joins-toggle`, `.offset-mode-toggle`). Track in `--field`, pill
@@ -107,17 +106,17 @@ with `role="radio"` and `aria-checked`. Use it for 2–3 mutually exclusive opti
 
 **Icons.** Inline SVG, `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`,
 `stroke-width="1.75"`, round caps and joins, `aria-hidden="true"`. Size is set in CSS, not in the
-element: 22px inside a 38px button, 20px in an icon-only button. Source set: the
+element: 19px inside a 32px button, 18px in an icon-only button. Source set: the
 `SCCTLM_Foto_Icons` pack (`controls/`, `retouch/` folders).
 
-**Colour swatch.** 24px circle. Hover scale 1.22. Active: `0 0 0 2px --bg, 0 0 0 4px #fff` ring
+**Colour swatch.** 22px circle. Hover scale 1.22. Active: `0 0 0 2px --bg, 0 0 0 4px #fff` ring
 and scale 1.15.
 
 **Checkbox.** Custom: 16px, `5px` radius, `#3f3f3f` with `.14` white border; checked `#44BA76`
 with a white 3.5px round-cap tick (inline data-URI SVG). Label `--fs-sm` / `--fw-regular`,
 `--muted`, becoming `--fg` on hover or when checked. Keyboard focus: `2px` green ring at 50%.
 
-**Primary button.** Full width, `46px`, pill, `#44BA76`, `#04301a` text, `--fs-lg` /
+**Primary button.** Full width, `38px`, pill, `#44BA76`, `#04301a` text, `--fs-lg` /
 `--fw-bold`. One per card. Disabled while its action runs.
 
 **Preview box.** No background or border; the artwork sits directly on the card. Artwork uses
