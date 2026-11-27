@@ -3,6 +3,8 @@
   'use strict';
 
   var READY_TIMEOUT_MS = 15000;
+  var ROLLBACK_UNLOAD_DELAY_MS = 300;
+  var CLOSE_EVENT = 'vn.scctlm.close';
   var frame = document.getElementById('app');
 
   function localPath(href) {
@@ -11,10 +13,39 @@
     return p;
   }
 
-  function boot() {
-    var core, path, os, extDir, dataDir;
+  function broadcastClose() {
     try {
-      path = require('path'); os = require('os');
+      if (window.__adobe_cep__ && typeof window.__adobe_cep__.dispatchEvent === 'function') {
+        window.__adobe_cep__.dispatchEvent({
+          type: CLOSE_EVENT,
+          scope: 'APPLICATION',
+          appId: '',
+          extensionId: '',
+          data: ''
+        });
+      }
+    } catch (e) { /* best effort */ }
+  }
+
+  function safeRollback(core, extDir, dataDir) {
+    broadcastClose();
+    // Unload the iframe first so Windows/Chromium releases file handles inside app/ before renaming.
+    frame.src = 'about:blank';
+    setTimeout(function () {
+      try {
+        if (core.rollback(extDir, dataDir).rolledBack) {
+          frame.src = 'app/index.html?rolledback=1';
+          return;
+        }
+      } catch (e) { /* fall through and reload the current app */ }
+      frame.src = 'app/index.html';
+    }, ROLLBACK_UNLOAD_DELAY_MS);
+  }
+
+  function boot() {
+    var core, fs, path, os, extDir, dataDir;
+    try {
+      fs = require('fs'); path = require('path'); os = require('os');
       extDir = path.dirname(localPath(window.location.href));
       core = require(path.join(extDir, 'loader-core.js'));
       dataDir = path.join(process.platform === 'win32'
@@ -26,6 +57,9 @@
     }
 
     try {
+      if (fs.existsSync(path.join(extDir, 'app.staging', '.ready'))) {
+        broadcastClose();
+      }
       core.applyPending(extDir, dataDir);
       core.checkBootHealth(extDir, dataDir);
     } catch (e) { /* never block the panel on update bookkeeping */ }
@@ -35,9 +69,7 @@
     try {
       if (core.hasPending(dataDir)) {
         timer = setTimeout(function () {
-          try {
-            if (core.rollback(extDir, dataDir).rolledBack) frame.src = 'app/index.html?rolledback=1';
-          } catch (e) { /* leave the current app loaded */ }
+          safeRollback(core, extDir, dataDir);
         }, READY_TIMEOUT_MS);
       }
     } catch (e) { /* no probation timer */ }

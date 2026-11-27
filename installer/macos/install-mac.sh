@@ -47,9 +47,27 @@ rm -rf "$EXT_DIR"
 mv "$WORK/ext" "$EXT_DIR"
 
 # Let Illustrator load unsigned CEP panels.
-for n in 9 10 11 12; do
+for n in 9 10 11 12 13 14; do
   defaults write "com.adobe.CSXS.$n" PlayerDebugMode 1
 done
 killall cfprefsd >/dev/null 2>&1 || true
+
+SYS_EXT_DIR="/Library/Application Support/Adobe/CEP/extensions/$EXT_ID"
+if [ -e "$SYS_EXT_DIR" ]; then
+  cat >&2 <<'EOF'
+
+===========================================================================
+WARNING: Duplicate system-wide SCCTLM Vector installation detected!
+Path: /Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector
+
+Having both a user and system-wide copy of vn.scctlm.vector can cause CEP
+crashes and update conflicts in Adobe Illustrator.
+Please close Illustrator and remove the duplicate system copy by running:
+
+  sudo rm -rf "/Library/Application Support/Adobe/CEP/extensions/vn.scctlm.vector"
+===========================================================================
+
+EOF
+fi
 
 echo "Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Vector."

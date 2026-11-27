@@ -233,3 +233,22 @@ test('OffsetPanel inspectSelection updates panel values to match the selected ob
   assert.strictEqual(joinMiter.classList.contains('on'), true);
   assert.strictEqual(elements['offset-apply'].textContent, 'Cập nhật viền');
 });
+
+test('OffsetPanel inspectSelection skips polling when document.hidden is true', async () => {
+  const { sandbox } = loadPanel();
+  let inspectCalls = 0;
+  sandbox.Bridge.offsetInspect = function () {
+    inspectCalls++;
+    return Promise.resolve({ ok: true, hasSelection: false });
+  };
+
+  sandbox.document.hidden = true;
+  sandbox.OffsetPanel.inspectSelection();
+  await new Promise(r => setImmediate(r));
+  assert.strictEqual(inspectCalls, 0, 'must not poll Illustrator when panel is hidden');
+
+  sandbox.document.hidden = false;
+  sandbox.OffsetPanel.inspectSelection();
+  await new Promise(r => setImmediate(r));
+  assert.strictEqual(inspectCalls, 1, 'resumes polling when panel is visible');
+});

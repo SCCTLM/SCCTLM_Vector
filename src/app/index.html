@@ -560,6 +560,25 @@
     <button id="update-check" class="link" hidden>Kiểm tra cập nhật</button>
   </div>
 
+  <div id="notice-toast" class="notice-toast" role="status" aria-live="polite" hidden>
+    <span id="notice-toast-text" class="notice-toast-text"></span>
+    <button type="button" id="notice-toast-close" class="notice-toast-close" aria-label="Đóng thông báo">&times;</button>
+  </div>
+
+  <div id="notice-modal" class="notice-backdrop" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title" hidden>
+    <div id="notice-dialog" class="notice-dialog">
+      <div class="notice-dialog-head">
+        <span id="notice-modal-title" class="notice-dialog-title">Thông báo</span>
+        <button type="button" id="notice-modal-x" class="notice-toast-close" aria-label="Đóng">&times;</button>
+      </div>
+      <div id="notice-modal-body" class="notice-dialog-body"></div>
+      <div class="notice-dialog-foot">
+        <button type="button" id="notice-modal-close" class="notice-btn-secondary">Đóng</button>
+        <button type="button" id="notice-modal-action" class="notice-btn-primary" hidden></button>
+      </div>
+    </div>
+  </div>
+
   <script src="lib/CSInterface.js"></script>
   <script src="bridge.js"></script>
   <script src="reload.js"></script>

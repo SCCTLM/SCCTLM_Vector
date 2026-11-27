@@ -5,6 +5,7 @@
   'use strict';
 
   var fs = require('fs');
+  var os = require('os');
   var path = require('path');
   var crypto = require('crypto');
   var zlib = require('zlib');
@@ -269,6 +270,54 @@
     fs.writeFileSync(stateFile, JSON.stringify(s), 'utf8');
   }
 
+  // ---------- duplicate installation detection ----------
+  function normalizeInstallPath(p, platform) {
+    var resolved = platform === 'win32'
+      ? path.win32.resolve(p).replace(/[\\\/]+$/, '').toLowerCase()
+      : path.posix.resolve(p).replace(/\/+$/, '');
+    return resolved;
+  }
+
+  // Returns any existing alternate CEP extension paths for the same bundle ID (excluding extDir).
+  function findDuplicateInstall(extDir, opts) {
+    opts = opts || {};
+    var platform = opts.platform || process.platform;
+    var env = opts.env || process.env;
+    var homedir = opts.homedir || os.homedir();
+    var existsSync = opts.existsSync || fs.existsSync;
+    var extId = opts.extId || 'vn.scctlm.vector';
+    var pmod = platform === 'win32' ? path.win32 : path.posix;
+    var candidates = [];
+
+    if (platform === 'win32') {
+      var appData = env.APPDATA || pmod.join(homedir, 'AppData', 'Roaming');
+      var cf32 = env['CommonProgramFiles(x86)'] || 'C:\\Program Files (x86)\\Common Files';
+      var cf64 = env.CommonProgramFiles || 'C:\\Program Files\\Common Files';
+      candidates.push(pmod.join(appData, 'Adobe', 'CEP', 'extensions', extId));
+      candidates.push(pmod.join(cf32, 'Adobe', 'CEP', 'extensions', extId));
+      candidates.push(pmod.join(cf64, 'Adobe', 'CEP', 'extensions', extId));
+    } else if (platform === 'darwin') {
+      candidates.push(pmod.join(homedir, 'Library', 'Application Support', 'Adobe', 'CEP', 'extensions', extId));
+      candidates.push(pmod.join('/Library/Application Support/Adobe/CEP/extensions', extId));
+    } else {
+      return [];
+    }
+
+    var currentNorm = extDir ? normalizeInstallPath(extDir, platform) : '';
+    var seen = {};
+    var duplicates = [];
+    for (var i = 0; i < candidates.length; i++) {
+      var cand = candidates[i];
+      var norm = normalizeInstallPath(cand, platform);
+      if (norm === currentNorm || seen[norm]) continue;
+      seen[norm] = true;
+      try {
+        if (existsSync(cand)) duplicates.push(cand);
+      } catch (e) { /* ignore unreadable path */ }
+    }
+    return duplicates;
+  }
+
   global.Updater = {
     compareVersions: compareVersions,
     checkForUpdate: checkForUpdate,
@@ -278,6 +327,7 @@
     stageUpdate: stageUpdate,
     dueForCheck: dueForCheck,
     recordCheck: recordCheck,
+    findDuplicateInstall: findDuplicateInstall,
     rmrf: rmrf
   };
 }(window));

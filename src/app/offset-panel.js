@@ -273,7 +273,7 @@
 
   // Unified inspector: inspects the selection and updates preview and offset controls.
   function inspectSelection() {
-    if (inspectBusy || !global.Bridge) return;
+    if (document.hidden || inspectBusy || !global.Bridge) return;
     var card = $('offset-preview-svg');
     if (card && card.offsetParent === null) return;
 
@@ -338,8 +338,8 @@
   }
 
   function notify(msg) {
-    if (global.NoticeWindow && global.NoticeWindow.show) {
-      global.NoticeWindow.show(msg);
+    if (global.Notice && global.Notice.show) {
+      global.Notice.show(msg);
     } else {
       var s = $('status');
       if (s) s.textContent = msg;

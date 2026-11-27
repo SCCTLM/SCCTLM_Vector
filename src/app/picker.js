@@ -8,6 +8,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var CM = ColorMath, CF = ColorField, CG = ColorGamut;
   var REFRESH_EVENT = 'vn.scctlm.picker.refresh';
+  var CLOSE_EVENT = 'vn.scctlm.close';
   var DEFAULT_RGB_DOC_PROFILE = /FOGRA39/i;
   var hasNode = typeof require === 'function' && typeof process === 'object';
   var fs = hasNode ? require('fs') : null;
@@ -389,7 +390,10 @@
       else if (e.key === 'Enter' && !/^(SELECT|BUTTON)$/.test(e.target.tagName) && !$('ok').disabled) apply();
     });
 
-    if (Bridge.cs) Bridge.cs.addEventListener(REFRESH_EVENT, function () { loadContext(); });
+    if (Bridge.cs) {
+      Bridge.cs.addEventListener(REFRESH_EVENT, function () { loadContext(); });
+      Bridge.cs.addEventListener(CLOSE_EVENT, close);
+    }
     setColor('rgb', state.rgb);
     loadContext();
   }
