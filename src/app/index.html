@@ -484,9 +484,17 @@
         <span id="pdf-compression-val" class="offset-val" style="display:none;">20%</span>
       </div>
       <div class="pdf-size-row">
-        <span class="pdf-label">Dung lượng dự đoán</span>
-        <span class="pdf-pill" id="pdf-size">-</span>
-        <button type="button" id="pdf-recalc" class="pdf-pill pdf-pill-btn" title="Lưu thử một PDF để đo dung lượng. Illustrator có thể tạm dừng trong lúc đo.">Tính toán</button>
+        <div class="pdf-size-meta">
+          <span class="pdf-size-label">Dung lượng dự đoán</span>
+          <span class="pdf-size-val is-empty" id="pdf-size">—</span>
+        </div>
+        <button type="button" id="pdf-recalc" class="pdf-recalc-btn" title="Ước tính nhanh dung lượng PDF từ tài liệu hiện tại (không ghi tệp tạm). Nhấn lại sau khi chỉnh sửa artwork.">
+          <svg class="pdf-recalc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+            <path d="M21 3v6h-6"/>
+          </svg>
+          <span class="pdf-recalc-label">Tính toán</span>
+        </button>
       </div>
       <div class="pdf-note" id="pdf-estimate-note"></div>
     </div>
@@ -586,6 +594,7 @@
   <script src="theme.js"></script>
   <script src="presets.js"></script>
   <script src="pdf-format.js"></script>
+  <script src="pdf-estimate.js"></script>
   <script src="config.js"></script>
   <script src="notice-launcher.js"></script>
   <script src="updater.js"></script>

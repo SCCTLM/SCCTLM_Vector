@@ -99,46 +99,179 @@ function enginePdfAssertUntouched(p) {
   }
 }
 
+var PDF_IMAGE_SCAN_LIMIT = 200;
+
 function engineArtboardArea(ab) {
   var r = ab.artboardRect; // left, top, right, bottom
   return Math.abs((r[2] - r[0]) * (r[1] - r[3]));
 }
 
-// job: { artboards, compression, modes: ["print", "review"] }. Saves real trial PDFs into a temp folder and measures them.
-// returns JSON: { ok, approx?, sizes?: { print: bytes, review: bytes }, error? }
+function pdfSafeLength(collection) {
+  try { return collection ? collection.length : 0; } catch (ignore) { return 0; }
+}
+
+// Estimates uncompressed pixel bytes for a RasterItem or PlacedItem at full resolution (print)
+// and downsampled to 150 ppi when effective PPI exceeds 225 ppi (review).
+function pdfMeasureImageBytes(item, defaultChannels) {
+  var wPt = 0;
+  var hPt = 0;
+  try {
+    wPt = Math.abs(Number(item.width) || 0);
+    hPt = Math.abs(Number(item.height) || 0);
+  } catch (ignore) {}
+  if (!(wPt > 0 && hPt > 0)) return { printRaw: 0, reviewRaw: 0 };
+
+  var channels = defaultChannels || 3;
+  try {
+    if (typeof ImageColorSpace !== "undefined" && item.imageColorSpace !== undefined) {
+      if (item.imageColorSpace === ImageColorSpace.GrayScale) channels = 1;
+      else if (item.imageColorSpace === ImageColorSpace.CMYK) channels = 4;
+      else if (item.imageColorSpace === ImageColorSpace.RGB) channels = 3;
+    }
+  } catch (ignore) {}
+
+  var ppi = 300;
+  try {
+    var m = item.matrix;
+    if (m) {
+      var sx = Math.sqrt(m.mValueA * m.mValueA + m.mValueB * m.mValueB);
+      var sy = Math.sqrt(m.mValueC * m.mValueC + m.mValueD * m.mValueD);
+      var scale = Math.min(sx, sy);
+      if (isFinite(scale) && scale > 0.01) {
+        ppi = 72 / scale;
+        if (ppi < 72) ppi = 72;
+        if (ppi > 1200) ppi = 1200;
+      }
+    }
+  } catch (ignore) {}
+
+  var pxW = wPt * (ppi / 72);
+  var pxH = hPt * (ppi / 72);
+  var printRaw = pxW * pxH * channels;
+  var reviewRaw = printRaw;
+  if (ppi > 225) {
+    var downScale = 150 / ppi;
+    reviewRaw = printRaw * downScale * downScale;
+  }
+  return { printRaw: printRaw, reviewRaw: reviewRaw };
+}
+
+// Fast, read-only document profiler: zero disk writes, zero temp copy, O(1) counts + bounded image scan.
+function pdfCollectDocProfile(doc) {
+  var areas = [];
+  var totalArtboards = pdfSafeLength(doc.artboards);
+  var i;
+  for (i = 0; i < totalArtboards; i++) {
+    try { areas.push(engineArtboardArea(doc.artboards[i])); }
+    catch (ignore) { areas.push(0); }
+  }
+
+  var colorSpace = "RGB";
+  try {
+    if (typeof DocumentColorSpace !== "undefined" && doc.documentColorSpace === DocumentColorSpace.CMYK) {
+      colorSpace = "CMYK";
+    }
+  } catch (ignore) {}
+  var defaultChannels = colorSpace === "CMYK" ? 4 : 3;
+
+  var rasterTotal = pdfSafeLength(doc.rasterItems);
+  var rasterLimit = rasterTotal < PDF_IMAGE_SCAN_LIMIT ? rasterTotal : PDF_IMAGE_SCAN_LIMIT;
+  var rasterRaw = 0;
+  var rasterReviewRaw = 0;
+  for (i = 0; i < rasterLimit; i++) {
+    try {
+      var rBytes = pdfMeasureImageBytes(doc.rasterItems[i], defaultChannels);
+      rasterRaw += rBytes.printRaw;
+      rasterReviewRaw += rBytes.reviewRaw;
+    } catch (ignore) {}
+  }
+  if (rasterLimit > 0 && rasterTotal > rasterLimit) {
+    var rScale = rasterTotal / rasterLimit;
+    rasterRaw *= rScale;
+    rasterReviewRaw *= rScale;
+  }
+
+  var placedTotal = pdfSafeLength(doc.placedItems);
+  var placedLimit = placedTotal < PDF_IMAGE_SCAN_LIMIT ? placedTotal : PDF_IMAGE_SCAN_LIMIT;
+  var placedRaw = 0;
+  var placedReviewRaw = 0;
+  var linkedFileBytes = 0;
+  for (i = 0; i < placedLimit; i++) {
+    try {
+      var placed = doc.placedItems[i];
+      var pBytes = pdfMeasureImageBytes(placed, defaultChannels);
+      placedRaw += pBytes.printRaw;
+      placedReviewRaw += pBytes.reviewRaw;
+      try {
+        if (placed.file && placed.file.exists && placed.file.length > 0) {
+          linkedFileBytes += placed.file.length;
+        }
+      } catch (ignoreFile) {}
+    } catch (ignore) {}
+  }
+  if (placedLimit > 0 && placedTotal > placedLimit) {
+    var pScale = placedTotal / placedLimit;
+    placedRaw *= pScale;
+    placedReviewRaw *= pScale;
+    linkedFileBytes *= pScale;
+  }
+
+  var sourceFileBytes = 0;
+  try {
+    var src = doc.fullName;
+    if (src && src.exists && src.length > 0) sourceFileBytes = src.length;
+  } catch (ignore) {}
+
+  return {
+    docIdentity: pdfDocIdentity(doc),
+    totalArtboards: totalArtboards,
+    artboardAreas: areas,
+    colorSpace: colorSpace,
+    pathCount: pdfSafeLength(doc.pathItems),
+    textCount: pdfSafeLength(doc.textFrames),
+    meshCount: pdfSafeLength(doc.meshItems),
+    symbolCount: pdfSafeLength(doc.symbolItems),
+    rasterTotalCount: rasterTotal,
+    rasterRawBytes: Math.round(rasterRaw),
+    rasterReviewRawBytes: Math.round(rasterReviewRaw),
+    placedTotalCount: placedTotal,
+    placedRawBytes: Math.round(placedRaw),
+    placedReviewRawBytes: Math.round(placedReviewRaw),
+    linkedFileBytes: Math.round(linkedFileBytes),
+    sourceFileBytes: Math.round(sourceFileBytes),
+    docSaved: !!doc.saved
+  };
+}
+
+// Read-only document profile entry point for instant client-side PDF estimation.
+// returns JSON: { ok, profile?, error? }
+function profilePdfDoc() {
+  try {
+    if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
+    var doc = app.activeDocument;
+    return JSON.stringify({ ok: true, profile: pdfCollectDocProfile(doc) });
+  } catch (e) {
+    return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
+  }
+}
+
+// job: { artboards, compression, layout?, modes?: ["print", "review"] }.
+// Fast read-only analytical estimate (no temp copy, no saveAs, no Illustrator freeze).
+// returns JSON: { ok, approx: true, profile?, sizes?: { print: bytes, review: bytes }, error? }
 function estimatePdf(jobJson) {
-  var tempRoot = null;
   try {
     if (app.documents.length === 0) return JSON.stringify({ ok: false, error: "Ch\u01b0a m\u1edf t\u00e0i li\u1ec7u n\u00e0o" });
     var p = enginePdfJob(jobJson);
     var modes = p.job.modes || ["print", "review"];
-    var sample = p.indexes;
-    var approx = false;
-    if (p.indexes.length > PDF_SAMPLE_LIMIT) {
-      var areas = [];
-      for (var i = 0; i < p.indexes.length; i++) areas.push(engineArtboardArea(p.doc.artboards[p.indexes[i]]));
-      sample = [p.indexes[pdfPickRepresentative(areas)]];
-      approx = true;
+    var layout = p.job.layout === "separate" ? "separate" : "single";
+    var profile = pdfCollectDocProfile(p.doc);
+    var sizes = {};
+    for (var m = 0; m < modes.length; m++) {
+      sizes[modes[m]] = pdfEstimateFromProfile(profile, modes[m], p.job.compression, layout, p.indexes);
     }
-    tempRoot = new Folder(Folder.temp.fsName + "/scctlm-vector-pdf-" + new Date().getTime());
-    tempRoot.create();
-    var sizes = enginePdfWithCopy(p.doc, function (copyDoc) {
-      var out = {};
-      for (var m = 0; m < modes.length; m++) {
-        var target = new File(tempRoot.fsName + "/estimate_" + modes[m] + ".pdf");
-        enginePdfSave(copyDoc, sample, pdfModeDescriptor(modes[m], p.job.compression), target);
-        out[modes[m]] = approx ? pdfScaleEstimate(target.length, sample.length, p.indexes.length) : target.length;
-      }
-      return out;
-    });
-    enginePdfAssertUntouched(p);
-    return JSON.stringify({ ok: true, approx: approx, sizes: sizes });
+    return JSON.stringify({ ok: true, approx: true, profile: profile, sizes: sizes });
   } catch (e) {
     return JSON.stringify({ ok: false, error: engineErrorMessage(e) });
-  } finally {
-    if (tempRoot && tempRoot.exists) {
-      try { engineRemoveFolder(tempRoot); } catch (ignore) {}
-    }
   }
 }
 
