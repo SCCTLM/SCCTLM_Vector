@@ -197,6 +197,13 @@
   var shapeBusy = false;
   var detectBusy = false;
   var inspectBusy = false;
+  var lastHoverInspect = 0;
+  var HOVER_COOLDOWN_MS = 1000;
+
+  function isDailyTab() {
+    var tab = document.body && document.body.dataset && document.body.dataset.tab;
+    return !tab || tab === 'daily';
+  }
 
   var joinNames = { 0: 'round', 1: 'bevel', 2: 'miter', 'round': 'round', 'bevel': 'bevel', 'miter': 'miter' };
 
@@ -273,7 +280,7 @@
 
   // Unified inspector: inspects the selection and updates preview and offset controls.
   function inspectSelection() {
-    if (document.hidden || inspectBusy || !global.Bridge) return;
+    if (document.hidden || !isDailyTab() || inspectBusy || !global.Bridge) return;
     var card = $('offset-preview-svg');
     if (card && card.offsetParent === null) return;
 
@@ -497,6 +504,7 @@
             applyBtn.disabled = false;
             if (res && res.ok) {
               notify(res.message || 'Đã cập nhật viền');
+              inspectSelection();
             } else {
               notify('Lỗi: ' + (res && res.error ? res.error : 'Thất bại'));
             }
@@ -534,6 +542,7 @@
           if (res && res.ok) {
             var succ = state.mode === 'sticker' ? 'Đã tạo viền' : 'Đã offset';
             notify(succ + ' ' + state.offset + 'px');
+            inspectSelection();
           } else {
             notify('Lỗi: ' + (res && res.error ? res.error : 'Thất bại'));
           }
@@ -548,7 +557,23 @@
     sample.d = outlinePath && outlinePath.getAttribute ? outlinePath.getAttribute('d') : null;
     inspectSelection();
     if (typeof global.addEventListener === 'function') global.addEventListener('focus', inspectSelection);
-    if (typeof setInterval === 'function') setInterval(inspectSelection, 800);
+    if (typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) inspectSelection();
+      });
+      document.addEventListener('tab-changed', function (e) {
+        if (!e || !e.detail || e.detail === 'daily') inspectSelection();
+      });
+    }
+    var cardEl = document.querySelector ? document.querySelector('.offset-lab-card') : null;
+    if (cardEl && typeof cardEl.addEventListener === 'function') {
+      cardEl.addEventListener('mouseenter', function () {
+        var now = Date.now();
+        if (now - lastHoverInspect < HOVER_COOLDOWN_MS) return;
+        lastHoverInspect = now;
+        inspectSelection();
+      });
+    }
 
     updateUI();
   }
