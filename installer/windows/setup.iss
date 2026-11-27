@@ -1,4 +1,4 @@
-; Per-user installer: no admin rights. Build: iscc /DAppVersion=X.Y.Z /DSourceDir=<dist\ext> setup.iss
+﻿; Per-user installer: no admin rights. Build: iscc /DAppVersion=X.Y.Z /DSourceDir=<dist\ext> setup.iss
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
@@ -41,6 +41,47 @@ Root: HKCU; Subkey: "Software\Adobe\CSXS.9";  ValueType: string; ValueName: "Pla
 Root: HKCU; Subkey: "Software\Adobe\CSXS.10"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
 Root: HKCU; Subkey: "Software\Adobe\CSXS.11"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
 Root: HKCU; Subkey: "Software\Adobe\CSXS.12"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
+Root: HKCU; Subkey: "Software\Adobe\CSXS.13"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
+Root: HKCU; Subkey: "Software\Adobe\CSXS.14"; ValueType: string; ValueName: "PlayerDebugMode"; ValueData: "1"
 
 [Messages]
 FinishedLabel=Installed. Restart Illustrator, then open Window > Extensions > SCCTLM Vector.
+
+[Code]
+procedure CheckDuplicateSystemInstall;
+var
+  Path32, Path64, FoundPaths, Msg: string;
+begin
+  FoundPaths := '';
+  Path32 := ExpandConstant('{commoncf32}\Adobe\CEP\extensions\vn.scctlm.vector');
+  if DirExists(Path32) then
+    FoundPaths := Path32;
+
+  if IsWin64 then
+  begin
+    Path64 := ExpandConstant('{commoncf64}\Adobe\CEP\extensions\vn.scctlm.vector');
+    if (CompareText(Path64, Path32) <> 0) and DirExists(Path64) then
+    begin
+      if FoundPaths <> '' then
+        FoundPaths := FoundPaths + #13#10 + Path64
+      else
+        FoundPaths := Path64;
+    end;
+  end;
+
+  if FoundPaths <> '' then
+  begin
+    Msg :=
+      'Cảnh báo: Phát hiện bản cài đặt SCCTLM Vector trùng lặp trong thư mục hệ thống:' + #13#10 +
+      FoundPaths + #13#10#13#10 +
+      'Việc tồn tại 2 bản cài đặt cùng lúc (Common Files và AppData) có thể gây xung đột hoặc treo Adobe Illustrator (CEP).' + #13#10 +
+      'Vui lòng đóng hoàn toàn Illustrator và xóa thư mục hệ thống ở trên (cần quyền Administrator) trước khi mở lại Illustrator.';
+    SuppressibleMsgBox(Msg, mbError, MB_OK, IDOK);
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+    CheckDuplicateSystemInstall;
+end;

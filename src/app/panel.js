@@ -6,6 +6,7 @@
   var cepApi = window.cep || (window.parent && window.parent.cep);
   var busy = false;
   var artboardSignature = '';
+  var lastError = '';
   var lastDocName = 'Chưa đặt tên';
   var artboardNames = [];
   var artboardCount = 0;
@@ -40,13 +41,26 @@
   function refreshArtboards() {
     if (busy || document.hidden) return Promise.resolve();
     return Bridge.listArtboards().then(function (r) {
+      if (r && r.ok && lastError) {
+        lastError = '';
+        if ($('status')) $('status').textContent = '';
+      }
       var sig = JSON.stringify(r);
       if (sig === artboardSignature) return r;
       var prev = artboardSignature ? JSON.parse(artboardSignature) : null;
       var sameDoc = !!prev && prev.docName === r.docName && prev.docPath === r.docPath;
       artboardSignature = sig;
       lastDocName = r.ok ? r.docName : 'Chưa đặt tên';
-      if ($('status')) $('status').textContent = r.ok ? '' : r.error;
+      if (r.ok) {
+        lastError = '';
+        if ($('status')) $('status').textContent = '';
+      } else {
+        var errText = r.error || '';
+        if (errText !== lastError) {
+          lastError = errText;
+          if ($('status')) $('status').textContent = errText;
+        }
+      }
       renderArtboards(r.artboards, sameDoc ? selectedArtboards() : null);
       artboardNames = r.artboards.map(function (a) { return a.name; });
       artboardCount = r.artboards.length;
@@ -55,7 +69,11 @@
       }));
       return r;
     }).catch(function (e) {
-      if ($('status')) $('status').textContent = e.message;
+      var msg = (e && e.message) ? e.message : String(e);
+      if (msg !== lastError) {
+        lastError = msg;
+        if ($('status')) $('status').textContent = msg;
+      }
       return null;
     });
   }
@@ -91,6 +109,8 @@
     });
     if (Bridge.cs && window.signalReady) Bridge.loadEngine().then(window.signalReady, function () {});
   }
+
+  window.Panel = { refreshArtboards: refreshArtboards };
 
   init();
 }());

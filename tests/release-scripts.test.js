@@ -24,7 +24,9 @@ test('package-app builds stamped, hashed, native-free artifacts the updater can 
   assert.match(manifest, /ExtensionBundleVersion="1\.2\.3"/);
   assert.match(manifest, /<Extension Id="vn\.scctlm\.vector\.panel" Version="1\.2\.3"/);
   assert.match(manifest, /<Extension Id="vn\.scctlm\.vector\.picker" Version="1\.2\.3"/);
-  assert.match(manifest, /<Extension Id="vn\.scctlm\.vector\.notice" Version="1\.2\.3"/);
+  assert.doesNotMatch(manifest, /vn\.scctlm\.vector\.notice/);
+  assert.doesNotMatch(manifest, /notice-loader\.html/);
+  assert.strictEqual((manifest.match(/<Extension Id="vn\.scctlm\.vector\.[^"]+" Version=/g) || []).length, 2);
   assert.doesNotMatch(manifest, /Version="0\.0\.1"/);
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(out, 'ext', 'app', 'version.json'), 'utf8')).version, '1.2.3');
   assert.ok(fs.existsSync(path.join(out, 'vector-extension.zip.sha256')));

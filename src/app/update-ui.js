@@ -35,10 +35,34 @@
     try { return require(path.join(extDir, 'loader-core.js')).LOADER_VERSION; } catch (e) { return 1; }
   }
 
-  // Messages go to the notice window as plain text.
+  var CLOSE_EVENT = 'vn.scctlm.close';
+  var duplicateWarned = false;
+
+  // Messages go to the in-panel notice modal/toast.
   function say(text, opts) {
     opts = opts || {};
-    if (window.Notice) window.Notice.show(text, { label: opts.label, run: opts.run });
+    if (window.Notice) window.Notice.show(text, opts);
+  }
+
+  // Ask sibling CEP windows (e.g. colour picker) to close before applying an update.
+  function closeSiblingWindows() {
+    try {
+      if (window.Bridge && Bridge.cs && typeof CSEvent !== 'undefined') {
+        var ev = new CSEvent(CLOSE_EVENT, 'APPLICATION');
+        ev.data = '';
+        Bridge.cs.dispatchEvent(ev);
+      }
+    } catch (e) { /* best effort */ }
+  }
+
+  function warnDuplicateInstall() {
+    if (duplicateWarned || !window.Updater || !Updater.findDuplicateInstall) return;
+    duplicateWarned = true;
+    var dupes = Updater.findDuplicateInstall(extDir);
+    if (!dupes.length) return;
+    var msg = 'Phát hiện bản cài đặt SCCTLM Vector trùng lặp có thể gây xung đột hoặc treo Illustrator.\n\n'
+      + 'Vui lòng đóng Illustrator và xóa thư mục sau:\n' + dupes.join('\n');
+    say(msg, { title: 'Cảnh báo cài đặt trùng lặp', modal: true, kind: 'warning' });
   }
 
   function setChecking(on) {
@@ -54,29 +78,39 @@
       try { Updater.recordCheck(stateFile, Date.now()); } catch (e) { /* throttle is best effort */ }
       offered = info;
       if (info) {
-        say('Có bản cập nhật ' + info.version + '.' + (info.notes ? '\n\n' + info.notes : ''), { label: 'Cài đặt', run: install });
+        say('Có bản cập nhật ' + info.version + '.' + (info.notes ? '\n\n' + info.notes : ''), {
+          title: 'Cập nhật mới',
+          label: 'Cài đặt',
+          run: install,
+          modal: true
+        });
       } else if (manual) {
         say('Bạn đang dùng phiên bản mới nhất (v' + current + ').');
       }
     }).catch(function () {
-      if (manual) say('Không kiểm tra được bản cập nhật. Kiểm tra kết nối mạng rồi thử lại.');
+      if (manual) say('Không kiểm tra được bản cập nhật. Kiểm tra kết nối mạng rồi thử lại.', { kind: 'error' });
     }).then(function () { if (manual) setChecking(false); });
   }
 
   function install() {
     if (!offered) return;
     var version = offered.version;
-    say('Đang tải ' + version + '…');
+    say('Đang tải ' + version + '…', { duration: 0 });
     Updater.stageUpdate(offered, { extDir: extDir, publicKeyPem: publicKey(), loaderVersion: loaderVersion() }).then(function () {
-      say('Bản cập nhật ' + version + ' đã sẵn sàng. Đóng và mở lại panel để hoàn tất.');
+      closeSiblingWindows();
+      say('Bản cập nhật ' + version + ' đã sẵn sàng. Hãy khởi động lại Illustrator (hoặc đóng tất cả cửa sổ SCCTLM Vector) để hoàn tất cài đặt an toàn.', {
+        title: 'Sẵn sàng cập nhật',
+        modal: true
+      });
     }).catch(function (e) {
-      if (e && e.needsInstaller) say('Bản cập nhật này cần cài bằng bộ cài đầy đủ. Tải bộ cài mới từ trang phát hành.');
-      else say('Cập nhật thất bại; chưa có gì bị thay đổi.');
+      if (e && e.needsInstaller) say('Bản cập nhật này cần cài bằng bộ cài đầy đủ. Tải bộ cài mới từ trang phát hành.', { title: 'Cần bộ cài mới', modal: true, kind: 'warning' });
+      else say('Cập nhật thất bại; chưa có gì bị thay đổi.', { kind: 'error' });
     });
   }
 
   function init() {
     $('version-label').textContent = 'v' + current;
+    warnDuplicateInstall();
     if (!repo) return; // updates are off in this build
     $('update-check').hidden = false;
     $('update-check').onclick = function () { check(true); };

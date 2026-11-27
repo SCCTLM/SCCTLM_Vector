@@ -70,10 +70,11 @@ test('AlignPanel: wires buttons, persists alignTo, and calls Bridge.alignObjects
       getItem: (k) => (k in storage ? storage[k] : null),
       setItem: (k, v) => { storage[k] = String(v); }
     },
-    NoticeWindow: { show: (m) => notices.push(m) },
+    Notice: { show: (m) => notices.push(m) },
     Bridge: {
       alignObjects(job) {
         calls.push(job);
+        if (job.op === 'fail-case') return Promise.resolve({ ok: false, error: 'Chọn ít nhất 2 đối tượng' });
         return Promise.resolve({ ok: true, count: 2, moved: 2 });
       }
     },
@@ -116,4 +117,8 @@ test('AlignPanel: wires buttons, persists alignTo, and calls Bridge.alignObjects
   await sandbox.AlignPanel.runAlign('h-space');
   assert.deepStrictEqual({ ...calls[1] }, { op: 'h-space', alignTo: 'key', spacingPt: 12.5 });
   assert.strictEqual(notices.length, 0);
+
+  // Error from Illustrator reports via global.Notice.show
+  await sandbox.AlignPanel.runAlign('fail-case');
+  assert.deepStrictEqual(notices, ['Chọn ít nhất 2 đối tượng']);
 });

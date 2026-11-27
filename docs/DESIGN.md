@@ -132,7 +132,7 @@ selection.
   longer, no bounce except the swatch hover.
 - Focus-visible must be visible: segments use a `2px` blue ring at 40%, checkboxes a green ring.
 - Operations that call Illustrator disable their trigger until the result returns and report the
-  outcome through the notice window (`NoticeWindow.show`), falling back to `#status`.
+  outcome through the in-panel notice (`Notice.show`), falling back to `#status`.
 
 ## Copy
 

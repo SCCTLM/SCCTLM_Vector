@@ -127,3 +127,82 @@ test('a staged update waits while an earlier update is still unconfirmed', () =>
   core.markHealthy(data);
   assert.strictEqual(core.applyPending(ext, data).version, '1.2.0');
 });
+
+test('renameWithRetry retries transient EPERM/EBUSY errors and succeeds once unlocked', () => {
+  const { ext } = setup();
+  const src = path.join(ext, 'app');
+  const dst = path.join(ext, 'app.renamed');
+  const realRename = fs.renameSync;
+  let attempts = 0;
+  fs.renameSync = (from, to) => {
+    attempts++;
+    if (attempts === 1) { const e = new Error('busy'); e.code = 'EBUSY'; throw e; }
+    if (attempts === 2) { const e = new Error('perm'); e.code = 'EPERM'; throw e; }
+    return realRename(from, to);
+  };
+  try {
+    core.renameWithRetry(src, dst, { maxAttempts: 4, delayMs: 0, sleep: () => {} });
+  } finally {
+    fs.renameSync = realRename;
+  }
+  assert.strictEqual(attempts, 3);
+  assert.ok(fs.existsSync(dst));
+});
+
+test('renameWithRetry does not retry non-lock errors like ENOENT', () => {
+  const { ext } = setup();
+  let attempts = 0;
+  const realRename = fs.renameSync;
+  fs.renameSync = () => {
+    attempts++;
+    const e = new Error('missing');
+    e.code = 'ENOENT';
+    throw e;
+  };
+  try {
+    assert.throws(() => core.renameWithRetry(path.join(ext, 'a'), path.join(ext, 'b'), { maxAttempts: 5, delayMs: 0, sleep: () => {} }), /missing/);
+  } finally {
+    fs.renameSync = realRename;
+  }
+  assert.strictEqual(attempts, 1);
+});
+
+test('applyPending and rollback survive transient EBUSY/EPERM lock errors', () => {
+  const { ext, data } = setup();
+  writeApp(path.join(ext, 'app.staging'), '1.1.0', { ready: true });
+  const realRename = fs.renameSync;
+  let applyFailures = 0;
+  fs.renameSync = (from, to) => {
+    if (path.basename(from) === 'app' && applyFailures < 2) {
+      applyFailures++;
+      const e = new Error('locked');
+      e.code = 'EBUSY';
+      throw e;
+    }
+    return realRename(from, to);
+  };
+  try {
+    const applied = core.applyPending(ext, data, { maxAttempts: 4, delayMs: 0, sleep: () => {} });
+    assert.deepStrictEqual(applied, { applied: true, version: '1.1.0' });
+  } finally {
+    fs.renameSync = realRename;
+  }
+
+  let rollbackFailures = 0;
+  fs.renameSync = (from, to) => {
+    if (path.basename(from) === 'app.prev' && rollbackFailures < 2) {
+      rollbackFailures++;
+      const e = new Error('locked');
+      e.code = 'EPERM';
+      throw e;
+    }
+    return realRename(from, to);
+  };
+  try {
+    const rb = core.rollback(ext, data, { maxAttempts: 4, delayMs: 0, sleep: () => {} });
+    assert.deepStrictEqual(rb, { rolledBack: true, version: '1.1.0' });
+    assert.strictEqual(versionOf(path.join(ext, 'app')), '1.0.0');
+  } finally {
+    fs.renameSync = realRename;
+  }
+});

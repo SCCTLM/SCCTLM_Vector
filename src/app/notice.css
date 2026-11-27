@@ -1,7 +1,0 @@
-/* Message window, on top of panel.css tokens. Sized for a 360x150 window. */
-body.notice { display: flex; flex-direction: column; height: 100vh; padding: 14px; overflow: hidden; }
-.nt-msg { flex: 1; overflow-y: auto; color: var(--fg); white-space: pre-wrap; word-break: break-word; user-select: text; }
-.nt-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
-.nt-ok { min-width: 80px; }
-.nt-action, .nt-action:hover:not(:disabled) { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 700; }
-.nt-action:hover:not(:disabled) { background: #2bd884; border-color: #2bd884; }

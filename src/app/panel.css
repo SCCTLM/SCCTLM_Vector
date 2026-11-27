@@ -1214,8 +1214,161 @@ button.align-to-btn.on:hover:not(:disabled) {
 }
 button.align-to-btn:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }
 
+/* In-panel notice toast & modal (replaces separate CEP notice extension) */
+.notice-toast {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 900;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px 9px 12px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--commit);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+.notice-toast[data-kind="error"] { border-left-color: var(--err); }
+.notice-toast[data-kind="warning"] { border-left-color: #FDB716; }
+.notice-toast-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+button.notice-toast-close {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s, color .15s, transform .05s;
+}
+button.notice-toast-close:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--fg);
+}
+button.notice-toast-close:active:not(:disabled) { transform: translateY(1px); }
+button.notice-toast-close:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }
+
+.notice-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, .52);
+}
+.notice-dialog {
+  width: 100%;
+  max-width: 340px;
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+}
+.notice-dialog[data-kind="warning"] { border-color: #FDB716; }
+.notice-dialog[data-kind="error"] { border-color: var(--err); }
+.notice-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.notice-dialog-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-strong);
+  color: var(--fg);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notice-dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  line-height: 1.5;
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+.notice-dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+button.notice-btn-secondary,
+button.notice-btn-primary {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: var(--fs-md);
+  transition: background-color .15s, border-color .15s, color .15s, transform .05s;
+}
+button.notice-btn-secondary {
+  background: var(--btn);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-weight: var(--fw-strong);
+}
+button.notice-btn-secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--line);
+}
+button.notice-btn-primary {
+  background: var(--commit);
+  border: 1px solid var(--commit);
+  color: var(--commit-ink);
+  font-weight: var(--fw-bold);
+  letter-spacing: .01em;
+}
+button.notice-btn-primary:hover:not(:disabled) {
+  background: var(--commit-hover);
+  border-color: var(--commit-hover);
+}
+button.notice-btn-secondary:focus-visible { box-shadow: 0 0 0 2px rgba(55, 142, 240, .45); }
+button.notice-btn-primary:focus-visible { box-shadow: 0 0 0 2px rgba(68, 186, 118, .5); }
+
 /* Narrow panel responsive adjustments (down to MinSize 260px and below) */
 @media (max-width: 290px) {
+  .notice-toast { left: 8px; right: 8px; bottom: 8px; padding: 8px 8px 8px 10px; }
+  .notice-backdrop { padding: 8px; }
+  .notice-dialog { padding: 10px; }
+  .notice-dialog-foot { gap: 6px; }
+  button.notice-btn-secondary,
+  button.notice-btn-primary { flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 10px; font-size: var(--fs-sm); }
   body { padding: 8px; }
   section,
   .logo-lab-card,
