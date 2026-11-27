@@ -274,3 +274,37 @@ test('notify invokes Notice.show when available and falls back safely to #status
   });
   await new Promise((r) => setImmediate(r));
 });
+
+test('Logo Lab Fill and Stroke swatches use custom CMYK ColorPickerLauncher when available and fall back to native input otherwise', () => {
+  const { sandbox, elements, getLastSaved } = loadInteractiveLab();
+
+  // Without ColorPickerLauncher -> does not prevent default (native input fallback)
+  let prevented = false;
+  elements['ll-fill'].onclick({ preventDefault() { prevented = true; } });
+  assert.strictEqual(prevented, false);
+
+  // With ColorPickerLauncher available -> prevents default and launches custom picker
+  const picks = [];
+  sandbox.ColorPickerLauncher = {
+    available: () => true,
+    pick(target, hex, onResult) {
+      picks.push({ target, hex, onResult });
+      return true;
+    }
+  };
+
+  elements['ll-fill'].onclick({ preventDefault() { prevented = true; } });
+  assert.strictEqual(prevented, true);
+  assert.strictEqual(picks.length, 1);
+  assert.strictEqual(picks[0].target, 'logo-lab-fill');
+  picks[0].onResult('#12AB34');
+  assert.strictEqual(getLastSaved().style.anchors.fill, '#12ab34');
+
+  let strokePrevented = false;
+  elements['ll-stroke'].onclick({ preventDefault() { strokePrevented = true; } });
+  assert.strictEqual(strokePrevented, true);
+  assert.strictEqual(picks.length, 2);
+  assert.strictEqual(picks[1].target, 'logo-lab-stroke');
+  picks[1].onResult('#FF9900');
+  assert.strictEqual(getLastSaved().style.anchors.stroke, '#ff9900');
+});

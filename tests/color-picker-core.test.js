@@ -161,3 +161,17 @@ test('mask render of the reference colour greys the saturated side only', needsS
   assert.ok(grey(w - 1, 0), 'top-right (saturated, bright blue) is out of gamut');
   assert.ok(!grey(0, h - 1) && !grey(10, 200), 'dark, unsaturated corner is printable');
 });
+
+test('virtual sRGB profile keeps all RGB colors in-gamut and converts RGB <-> CMYK cleanly', () => {
+  assert.strictEqual(CG.isRgbProfile(CG.RGB_PROFILE_NAME), true);
+  assert.strictEqual(CG.isRgbProfile('U.S. Web Coated (SWOP) v2'), false);
+  const rgbProfile = CG.createRgb();
+  assert.strictEqual(rgbProfile.isRgb, true);
+  assert.strictEqual(rgbProfile.isOutOfGamut([0, 255, 255]), false);
+  assert.strictEqual(rgbProfile.isOutOfGamut([255, 0, 255]), false);
+  assert.strictEqual(rgbProfile.maskDeltaE(31, 200, 255), 0);
+  assert.deepStrictEqual(rgbProfile.nearestInGamut([31, 200, 255]), [31, 200, 255]);
+  near(rgbProfile.toCmyk([0, 0, 0]), [0, 0, 0, 100], 1e-6, 'black');
+  near(rgbProfile.toCmyk([255, 255, 255]), [0, 0, 0, 0], 1e-6, 'white');
+  near(rgbProfile.cmykToRgb(rgbProfile.toCmyk([31, 200, 255])), [31, 200, 255], 1e-6, 'round-trip');
+});

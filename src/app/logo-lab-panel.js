@@ -285,14 +285,31 @@
     };
   }
 
+  function bindColorInput(id, target, getCurrent, applyColor) {
+    var el = $(id);
+    if (!el) return;
+    el.oninput = el.onchange = function () { applyColor(this.value); };
+    el.onclick = function (e) {
+      if (global.ColorPickerLauncher && typeof global.ColorPickerLauncher.available === 'function' &&
+          global.ColorPickerLauncher.available()) {
+        if (e && e.preventDefault) e.preventDefault();
+        var cur = getCurrent();
+        var initial = (cur && cur !== 'none') ? cur : (el.value || '#378ef0');
+        global.ColorPickerLauncher.pick(target, initial, function (hex) {
+          applyColor(hex);
+        });
+      }
+    };
+  }
+
   function bind() {
     Array.prototype.forEach.call(document.querySelectorAll('.ll-toggle'), function (b) {
       b.onclick = function () { settings.elements[b.dataset.el] = !settings.elements[b.dataset.el]; save(); };
     });
 
     // Anchors & handles
-    $('ll-fill').oninput = $('ll-fill').onchange = function () { setMarker('fill', this.value); };
-    $('ll-stroke').oninput = $('ll-stroke').onchange = function () { setMarker('stroke', this.value); };
+    bindColorInput('ll-fill', 'logo-lab-fill', function () { return settings.style.anchors.fill; }, function (v) { setMarker('fill', v); });
+    bindColorInput('ll-stroke', 'logo-lab-stroke', function () { return settings.style.anchors.stroke; }, function (v) { setMarker('stroke', v); });
     $('ll-fill-none').onclick = function () { setMarker('fill', settings.style.anchors.fill === 'none' ? ($('ll-fill').value || '#378ef0') : 'none'); };
     $('ll-stroke-none').onclick = function () { setMarker('stroke', settings.style.anchors.stroke === 'none' ? ($('ll-stroke').value || '#ffffff') : 'none'); };
     var swapBtn = $('ll-swap');
@@ -315,8 +332,7 @@
     bindNumber('ll-handle-size-val', function (v) { settings.style.handles.size = v; save(); }, true);
 
     // Circles
-    var cStroke = $('ll-circle-stroke');
-    if (cStroke) cStroke.oninput = cStroke.onchange = function () { settings.style.circles.stroke = this.value; save(); };
+    bindColorInput('ll-circle-stroke', 'logo-lab-circle-stroke', function () { return settings.style.circles.stroke; }, function (v) { settings.style.circles.stroke = v; save(); });
     bindNumber('ll-circle-width', function (v) { settings.style.circles.strokeWidth = v; save(); }, true);
     var cMode = $('ll-circle-mode');
     if (cMode) cMode.onchange = function () { settings.circles.mode = this.value; save(); };
@@ -334,8 +350,7 @@
     }
 
     // Gridlines
-    var gStroke = $('ll-grid-stroke');
-    if (gStroke) gStroke.oninput = gStroke.onchange = function () { settings.style.gridlines.stroke = this.value; save(); };
+    bindColorInput('ll-grid-stroke', 'logo-lab-grid-stroke', function () { return settings.style.gridlines.stroke; }, function (v) { settings.style.gridlines.stroke = v; save(); });
     bindNumber('ll-grid-width', function (v) { settings.style.gridlines.strokeWidth = v; save(); }, true);
     var gSens = $('ll-grid-sensitivity');
     if (gSens) gSens.onchange = function () { settings.gridlines.sensitivity = Number(this.value); save(); };
@@ -344,12 +359,10 @@
     bindNumber('ll-grid-margin', function (v) { settings.gridlines.margin = v; save(); }, true);
 
     // Outlines
-    var oStroke = $('ll-outline-stroke');
-    if (oStroke) oStroke.oninput = oStroke.onchange = function () { settings.style.outlines.stroke = this.value; save(); };
+    bindColorInput('ll-outline-stroke', 'logo-lab-outline-stroke', function () { return settings.style.outlines.stroke; }, function (v) { settings.style.outlines.stroke = v; save(); });
     var oStrokeNone = $('ll-outline-stroke-none');
     if (oStrokeNone) oStrokeNone.onclick = function () { settings.style.outlines.stroke = settings.style.outlines.stroke === 'none' ? ($('ll-outline-stroke').value || '#ff2d55') : 'none'; save(); };
-    var oFill = $('ll-outline-fill');
-    if (oFill) oFill.oninput = oFill.onchange = function () { settings.style.outlines.fill = this.value; save(); };
+    bindColorInput('ll-outline-fill', 'logo-lab-outline-fill', function () { return settings.style.outlines.fill; }, function (v) { settings.style.outlines.fill = v; save(); });
     var oFillNone = $('ll-outline-fill-none');
     if (oFillNone) oFillNone.onclick = function () { settings.style.outlines.fill = settings.style.outlines.fill === 'none' ? ($('ll-outline-fill').value || '#378ef0') : 'none'; save(); };
     bindNumber('ll-outline-width', function (v) { settings.style.outlines.strokeWidth = v; save(); }, true);

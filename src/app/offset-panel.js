@@ -153,6 +153,9 @@
     var colorBtn = $('offset-color-btn');
     if (colorBtn) colorBtn.style.backgroundColor = state.color;
 
+    var nativeColor = $('offset-color-native');
+    if (nativeColor) nativeColor.value = state.color;
+
     var hexInput = $('offset-hex-input');
     if (hexInput && document.activeElement !== hexInput) {
       hexInput.value = state.color.toUpperCase();
@@ -433,12 +436,22 @@
 
     var colorBtn = $('offset-color-btn');
     var nativeColor = $('offset-color-native');
-    if (colorBtn && nativeColor) {
+    if (colorBtn) {
       colorBtn.onclick = function () {
-        nativeColor.value = state.color;
-        nativeColor.click();
+        if (global.ColorPickerLauncher && typeof global.ColorPickerLauncher.pick === 'function' &&
+            global.ColorPickerLauncher.pick('offset-color', state.color, function (hex) {
+              setColor(hex);
+            })) {
+          return;
+        }
+        if (nativeColor) {
+          nativeColor.value = state.color;
+          nativeColor.click();
+        }
       };
-      nativeColor.oninput = function () {
+    }
+    if (nativeColor) {
+      nativeColor.oninput = nativeColor.onchange = function () {
         setColor(nativeColor.value);
       };
     }

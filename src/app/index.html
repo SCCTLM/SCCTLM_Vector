@@ -244,16 +244,18 @@
     </div>
 
     <div class="offset-color-row">
-      <button type="button" id="offset-color-btn" class="offset-color-btn" title="Chọn màu viền">
-        <svg class="offset-palette-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
-          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
-          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
-          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
-          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
-        </svg>
-      </button>
-      <input type="color" id="offset-color-native" style="display:none;" value="#1FC8FF">
+      <div class="offset-color-picker">
+        <button type="button" id="offset-color-btn" class="offset-color-btn" title="Chọn màu viền" aria-label="Chọn màu viền">
+          <svg class="offset-palette-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
+            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+          </svg>
+        </button>
+        <input type="color" id="offset-color-native" class="offset-color-native" value="#1FC8FF" tabindex="-1" aria-hidden="true">
+      </div>
       <div class="offset-hex-wrap">
         <input type="text" id="offset-hex-input" class="offset-hex-input" value="#1FC8FF" maxlength="7" spellcheck="false" title="Mã màu HEX">
       </div>
@@ -603,10 +605,10 @@
   <script src="doc-size.js"></script>
   <script src="color-mode.js"></script>
   <script src="pdf-panel.js"></script>
+  <script src="color-picker-launcher.js"></script>
   <script src="grid-settings.js"></script>
   <script src="logo-lab-panel.js"></script>
   <script src="tabs.js"></script>
-  <script src="color-picker-launcher.js"></script>
   <script src="offset-panel.js"></script>
   <script src="align-panel.js"></script>
   <script src="explore-panel.js"></script>

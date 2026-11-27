@@ -252,3 +252,82 @@ test('OffsetPanel inspectSelection skips polling when document.hidden is true', 
   await new Promise(r => setImmediate(r));
   assert.strictEqual(inspectCalls, 1, 'resumes polling when panel is visible');
 });
+
+test('OffsetPanel color button triggers native color input and syncs oninput/onchange', () => {
+  const { sandbox, elements } = loadPanel();
+  let nativeClicks = 0;
+  elements['offset-color-native'].click = function () { nativeClicks++; };
+
+  sandbox.OffsetPanel.setColor('#FF3366');
+  assert.strictEqual(elements['offset-color-native'].value, '#FF3366');
+
+  elements['offset-color-btn'].click();
+  assert.strictEqual(nativeClicks, 1, 'clicking offset-color-btn opens native color picker');
+  assert.strictEqual(elements['offset-color-native'].value, '#FF3366');
+
+  elements['offset-color-native'].value = '#22aa88';
+  elements['offset-color-native'].oninput();
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#22AA88');
+  assert.strictEqual(elements['offset-color-btn'].style.backgroundColor, '#22AA88');
+  assert.strictEqual(elements['offset-hex-input'].value, '#22AA88');
+
+  elements['offset-color-native'].value = '#114499';
+  elements['offset-color-native'].onchange();
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#114499');
+  assert.strictEqual(elements['offset-color-btn'].style.backgroundColor, '#114499');
+});
+
+test('OffsetPanel uses ColorPickerLauncher when available and skips native input click', () => {
+  const { sandbox, elements } = loadPanel();
+  let nativeClicks = 0;
+  elements['offset-color-native'].click = function () { nativeClicks++; };
+
+  const pickCalls = [];
+  sandbox.ColorPickerLauncher = {
+    available: () => true,
+    pick(target, hex, onResult) {
+      pickCalls.push({ target, hex, onResult });
+      return true;
+    }
+  };
+
+  elements['offset-color-btn'].click();
+  assert.strictEqual(nativeClicks, 0, 'native input must not open when custom CMYK picker is available');
+  assert.strictEqual(pickCalls.length, 1);
+  assert.strictEqual(pickCalls[0].target, 'offset-color');
+  assert.strictEqual(pickCalls[0].hex, '#1FC8FF');
+
+  pickCalls[0].onResult('#E53935');
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#E53935');
+  assert.strictEqual(elements['offset-hex-input'].value, '#E53935');
+  assert.strictEqual(elements['offset-color-btn'].style.backgroundColor, '#E53935');
+  assert.strictEqual(elements['offset-preview-outline']['stroke'], '#E53935');
+});
+
+test('All <input type="color"> elements are anchored over their triggers (never display:none or visibility:hidden)', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../src/app/index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '../src/app/panel.css'), 'utf8');
+
+  const colorInputs = html.match(/<input\b[^>]*type=["']color["'][^>]*>/gi) || [];
+  assert.ok(colorInputs.length >= 7, 'expected Logo Lab (6) + Offset Lab (1) color inputs');
+
+  for (const tag of colorInputs) {
+    assert.doesNotMatch(tag, /display\s*:\s*none/i, `color input must not use display:none: ${tag}`);
+    assert.doesNotMatch(tag, /visibility\s*:\s*hidden/i, `color input must not use visibility:hidden: ${tag}`);
+  }
+
+  // Offset Lab: #offset-color-native is wrapped with #offset-color-btn inside .offset-color-picker
+  const pickerBlock = html.match(/<div class="offset-color-picker">[\s\S]*?<\/div>/);
+  assert.ok(pickerBlock, '.offset-color-picker wrapper must exist in index.html');
+  assert.match(pickerBlock[0], /id="offset-color-btn"/);
+  assert.match(pickerBlock[0], /id="offset-color-native"/);
+
+  // CSS anchors .offset-color-native to .offset-color-picker with opacity: 0
+  assert.match(css, /\.offset-color-picker\s*\{[^}]*position:\s*relative;/);
+  assert.match(css, /input\[type=color\]\.offset-color-native\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*opacity:\s*0;/);
+  assert.doesNotMatch(css, /offset-color-native\s*\{[^}]*(display:\s*none|visibility:\s*hidden)/);
+
+  // Logo Lab: .ll-color anchors its color inputs with position: relative + absolute inset: 0 + opacity: 0
+  assert.match(css, /\.ll-color\s*\{[^}]*position:\s*relative;/);
+  assert.match(css, /\.ll-color\s+input\[type=color\]\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*opacity:\s*0;/);
+});
