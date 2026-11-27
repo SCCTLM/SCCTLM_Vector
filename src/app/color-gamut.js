@@ -9,6 +9,46 @@
 
   var THRESHOLD = 3;
   var GRID = 49;
+  var RGB_PROFILE_NAME = 'sRGB IEC61966-2.1 (RGB)';
+
+  function isRgbProfile(name) {
+    return name === RGB_PROFILE_NAME;
+  }
+
+  // Virtual sRGB profile: all sRGB colours are in-gamut (no CMYK clipping mask),
+  // with standard RGB <-> CMYK math for the numeric CMYK fields.
+  function createRgb() {
+    function toCmyk(rgb) {
+      var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+      var k = 1 - Math.max(r, g, b);
+      if (k >= 1 - 1e-9) return [0, 0, 0, 100];
+      return [
+        ((1 - r - k) / (1 - k)) * 100,
+        ((1 - g - k) / (1 - k)) * 100,
+        ((1 - b - k) / (1 - k)) * 100,
+        k * 100
+      ];
+    }
+    function cmykToRgb(cmyk) {
+      var c = cmyk[0] / 100, m = cmyk[1] / 100, y = cmyk[2] / 100, k = cmyk[3] / 100;
+      return [
+        255 * (1 - c) * (1 - k),
+        255 * (1 - m) * (1 - k),
+        255 * (1 - y) * (1 - k)
+      ];
+    }
+    return {
+      name: RGB_PROFILE_NAME,
+      isRgb: true,
+      toCmyk: toCmyk,
+      cmykToRgb: cmykToRgb,
+      roundTripDeltaE: function () { return 0; },
+      maskDeltaE: function () { return 0; },
+      warmUp: function () {},
+      isOutOfGamut: function () { return false; },
+      nearestInGamut: function (rgb) { return rgb.slice(); }
+    };
+  }
 
   // Folders that hold printing profiles, most specific first. Adobe's come with Creative Cloud apps;
   // Adobe's per-user folder is where newer installs and manually added profiles live.
@@ -172,6 +212,7 @@
 
   global.ColorGamut = {
     THRESHOLD: THRESHOLD, GRID: GRID,
+    RGB_PROFILE_NAME: RGB_PROFILE_NAME, isRgbProfile: isRgbProfile, createRgb: createRgb,
     profileDirs: profileDirs, profileInfo: profileInfo, listCmykProfiles: listCmykProfiles,
     findProfile: findProfile, create: create
   };

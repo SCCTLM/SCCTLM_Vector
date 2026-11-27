@@ -4,6 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 
@@ -34,7 +35,7 @@ function makeStorage() {
   };
 }
 
-function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyResult }) {
+function createPickerWindow({ bus, localStorage, colorContextResult, colorContextFn, colorApplyResult, dataDir, withNode, runTimeouts }) {
   const elements = {};
   const listeners = {};
   let closeCount = 0;
@@ -52,6 +53,9 @@ function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyR
       style: {},
       dataset: {},
       listeners: {},
+      options: [],
+      set innerHTML(v) { if (v === '') this.options = []; },
+      get innerHTML() { return ''; },
       classList: {
         classes: new Set(),
         toggle(c, on) { if (on) this.classes.add(c); else this.classes.delete(c); },
@@ -62,7 +66,7 @@ function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyR
         this.listeners[t].push(fn);
       },
       dispatch(t, ev) { (this.listeners[t] || []).forEach((fn) => fn.call(this, ev)); },
-      appendChild() {}
+      appendChild(child) { this.options.push(child); }
     }, extra);
     elements[id] = el;
     return el;
@@ -108,9 +112,12 @@ function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyR
       queueMicrotask(fn);
       return rafId;
     },
-    setTimeout() { return 1; },
+    setTimeout(fn) {
+      if (runTimeouts) queueMicrotask(fn);
+      return 1;
+    },
     Theme: { watch() {} },
-    Presets: { dataDir: () => '' },
+    Presets: { dataDir: () => dataDir || '' },
     CSEvent: function (type, scope) { this.type = type; this.scope = scope; this.data = ''; },
     Bridge: {
       available: true,
@@ -120,6 +127,7 @@ function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyR
         closeExtension() { closeCount++; }
       },
       colorContext() {
+        if (colorContextFn) return colorContextFn();
         return Promise.resolve(colorContextResult || {
           ok: true, hasDoc: true, isCmyk: false, fillActive: true, rgb: [10, 20, 30], cmyk: null
         });
@@ -143,6 +151,10 @@ function createPickerWindow({ bus, localStorage, colorContextResult, colorApplyR
     addEventListener(t, fn) { listeners['win:' + t] = fn; },
     close() { closeCount++; }
   };
+  if (withNode) {
+    sandbox.require = require;
+    sandbox.process = process;
+  }
   sandbox.window = sandbox;
   vm.createContext(sandbox);
 
@@ -296,4 +308,91 @@ test('End-to-end launcher + picker: switching between return-color mode and norm
   await new Promise((r) => setImmediate(r));
   assert.strictEqual(picker.elements['target'].hidden, false);
   assert.strictEqual(localStorage.getItem('scctlm.picker.request'), null);
+});
+
+test('Cold open across isolated CEP windows: syncs existing hex via shared picker-request.json and resists slow Bridge.colorContext() clobbering', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scctlm-picker-req-'));
+  try {
+    const bus = makeEventBus();
+    const panelStorage = makeStorage();
+    const pickerStorage = makeStorage(); // completely isolated from panelStorage!
+
+    // 1. Panel writes pick request for Offset Lab (#1FC8FF) before picker window even exists
+    const launcherSandbox = {
+      require,
+      process,
+      Presets: { dataDir: () => tmpDir },
+      localStorage: panelStorage,
+      document: { getElementById: () => null },
+      CSEvent: function (type, scope) { this.type = type; this.scope = scope; this.data = ''; },
+      Bridge: {
+        cs: {
+          requestOpenExtension() {},
+          addEventListener(t, fn) { bus.addEventListener(t, fn); },
+          dispatchEvent(ev) { bus.dispatchEvent(ev); }
+        }
+      }
+    };
+    launcherSandbox.window = launcherSandbox;
+    vm.createContext(launcherSandbox);
+    vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/app/color-picker-launcher.js'), 'utf8'), launcherSandbox);
+
+    let returnedHex = null;
+    launcherSandbox.ColorPickerLauncher.pick('offset-color', '#1FC8FF', (hex) => { returnedHex = hex; });
+    assert.ok(fs.existsSync(path.join(tmpDir, 'picker-request.json')), 'shared request file written for cold boot');
+
+    // 2. Picker window boots AFTER the initial CSEvent already fired, with isolated localStorage
+    //    and a delayed Bridge.colorContext() returning a different Illustrator selection color (#FF0000).
+    let resolveCtx;
+    const picker = createPickerWindow({
+      bus,
+      localStorage: pickerStorage,
+      dataDir: tmpDir,
+      withNode: true,
+      runTimeouts: true,
+      colorContextFn: () => new Promise((r) => { resolveCtx = r; })
+    });
+    await new Promise((r) => setImmediate(r));
+
+    // Immediately synced to #1FC8FF even before Bridge.colorContext() resolves
+    assert.strictEqual(picker.elements['target'].hidden, true);
+    assert.strictEqual(picker.elements['f-hex'].value.toLowerCase(), '1fc8ff');
+    assert.strictEqual(picker.elements['sw-cur'].style.background, 'rgb(31,200,255)');
+    assert.strictEqual(picker.elements['sw-new'].style.background, 'rgb(31,200,255)');
+
+    // Now Bridge.colorContext() resolves with red [255, 0, 0] -> MUST NOT overwrite #1FC8FF!
+    resolveCtx({ ok: true, hasDoc: true, isCmyk: false, fillActive: true, rgb: [255, 0, 0], cmyk: null });
+    await new Promise((r) => setImmediate(r));
+    assert.strictEqual(picker.elements['f-hex'].value.toLowerCase(), '1fc8ff');
+    assert.strictEqual(picker.elements['sw-cur'].style.background, 'rgb(31,200,255)');
+
+    // Press OK without changing -> returns #1FC8FF and deletes shared request file
+    picker.elements['ok'].onclick();
+    assert.strictEqual(returnedHex, '#1FC8FF');
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'picker-request.json')), false);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('Picker profile selector includes sRGB (RGB) option with no CMYK gamut warning and clean switching', async () => {
+  const bus = makeEventBus();
+  const localStorage = makeStorage();
+
+  const picker = createPickerWindow({
+    bus,
+    localStorage,
+    runTimeouts: true,
+    colorContextResult: { ok: true, hasDoc: true, isCmyk: false, fillActive: true, rgb: [0, 255, 255], cmyk: null }
+  });
+  await new Promise((r) => setImmediate(r));
+  await new Promise((r) => setImmediate(r));
+
+  const profileSel = picker.elements['profile'];
+  const optionValues = profileSel.options.map((o) => o.value);
+  assert.ok(optionValues.includes('sRGB IEC61966-2.1 (RGB)'), 'profile selector includes sRGB (RGB) option');
+  assert.strictEqual(profileSel.value, 'sRGB IEC61966-2.1 (RGB)');
+  assert.strictEqual(picker.elements['warn'].hidden, true, 'saturated cyan is in-gamut in sRGB mode');
+  assert.strictEqual(picker.elements['pk-status'].textContent, 'Không gian màu RGB (sRGB)');
+  assert.strictEqual(picker.elements['pk-status'].classList.contains('err'), false);
 });

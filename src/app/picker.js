@@ -11,10 +11,12 @@
   var RESULT_EVENT = 'vn.scctlm.picker.result';
   var CLOSE_EVENT = 'vn.scctlm.close';
   var PICK_REQUEST_KEY = 'scctlm.picker.request';
+  var PICK_REQUEST_FILE = 'picker-request.json';
   var DEFAULT_RGB_DOC_PROFILE = /FOGRA39/i;
   var hasNode = typeof require === 'function' && typeof process === 'object';
   var fs = hasNode ? require('fs') : null;
   var path = hasNode ? require('path') : null;
+  var loadSeq = 0;
 
   var state = {
     mode: 'hsb-h',
@@ -126,7 +128,7 @@
 
   function gamutMask() {
     var g = state.gamut;
-    if (!g || !state.gamutOn) return null;
+    if (!g || g.isRgb || !state.gamutOn) return null;
     return function (r, gg, b) { return g.maskDeltaE(r, gg, b) > CG.THRESHOLD; };
   }
 
@@ -274,31 +276,50 @@
     sel.disabled = locked;
   }
 
-  // CMYK documents check against their own profile; RGB documents against the profile chosen here.
+  // CMYK documents default to their own profile; RGB documents and return-color mode use the chosen profile (including sRGB).
   function setupGamut() {
-    if (!hasNode) { status('Không có Node.js: tắt kiểm tra gamut'); return; }
+    var rgbName = CG.RGB_PROFILE_NAME;
+    if (!hasNode) {
+      fillProfileSelect([rgbName], rgbName, false);
+      useProfile(rgbName);
+      return;
+    }
     try {
       if (!state.profiles) state.profiles = CG.listCmykProfiles(profileFolders());
     } catch (e) { state.profiles = []; }
-    var names = state.profiles.map(function (p) { return p.name; });
+    var cmykNames = state.profiles.map(function (p) { return p.name; });
+    var allNames = [rgbName].concat(cmykNames);
     var want;
-    if (state.ctx.isCmyk) {
+    if (state.ctx.isCmyk && !state.pickRequest) {
       want = state.ctx.profileName;
-      fillProfileSelect(want ? [want] : [], want, true);
-      if (!want) { useProfile('', 'Tài liệu CMYK chưa gắn profile: không kiểm tra được gamut'); return; }
+      var cmykList = want ? [rgbName, want] : [rgbName];
+      if (!want) {
+        fillProfileSelect(cmykList, rgbName, false);
+        useProfile('', 'Tài liệu CMYK chưa gắn profile: không kiểm tra được gamut');
+        return;
+      }
+      fillProfileSelect(cmykList, want, false);
     } else {
       want = settings.rgbDocProfile;
-      if (!CG.findProfile(state.profiles, want)) {
+      if (!CG.isRgbProfile(want) && !CG.findProfile(state.profiles, want)) {
         var def = state.profiles.filter(function (p) { return DEFAULT_RGB_DOC_PROFILE.test(p.name); })[0] || state.profiles[0];
-        want = def ? def.name : '';
+        want = def ? def.name : rgbName;
       }
-      fillProfileSelect(names, want, false);
-      if (!want) { useProfile('', 'Không tìm thấy profile CMYK nào trên máy: không kiểm tra được gamut'); return; }
+      fillProfileSelect(allNames, want, false);
     }
     useProfile(want);
   }
 
   function useProfile(name, missingText) {
+    if (CG.isRgbProfile(name)) {
+      state.gamut = CG.createRgb();
+      state.gamutName = name;
+      status('Không gian màu RGB (sRGB)');
+      if (!state.typedCmyk) updateCmyk();
+      fieldKey = '';
+      render();
+      return;
+    }
     var p = CG.findProfile(state.profiles || [], name);
     if (!p) {
       state.gamut = null; state.gamutName = '';
@@ -320,6 +341,12 @@
   }
 
   // ---------- return-color mode (panel controls: Offset Lab / Logo Lab) ----------
+  function pickRequestFile() {
+    if (!hasNode || typeof Presets === 'undefined' || !Presets || typeof Presets.dataDir !== 'function') return '';
+    var dir = Presets.dataDir();
+    return dir ? path.join(dir, PICK_REQUEST_FILE) : '';
+  }
+
   function parsePickRequest(raw) {
     if (!raw) return null;
     try {
@@ -337,6 +364,13 @@
 
   function readStoredPickRequest() {
     try {
+      var f = pickRequestFile();
+      if (f && fs.existsSync(f)) {
+        var fromFile = parsePickRequest(fs.readFileSync(f, 'utf8'));
+        if (fromFile) return fromFile;
+      }
+    } catch (e) { /* fs unavailable or unreadable */ }
+    try {
       if (typeof localStorage !== 'undefined') {
         return parsePickRequest(localStorage.getItem(PICK_REQUEST_KEY));
       }
@@ -347,14 +381,21 @@
   function clearPickRequest() {
     state.pickRequest = null;
     try {
+      var f = pickRequestFile();
+      if (f && fs.existsSync(f)) fs.unlinkSync(f);
+    } catch (e) { /* ignore */ }
+    try {
       if (typeof localStorage !== 'undefined') localStorage.removeItem(PICK_REQUEST_KEY);
     } catch (e) { /* ignore */ }
   }
 
   // ---------- Illustrator ----------
   function loadContext(eventData) {
+    var seq = ++loadSeq;
     var req = eventData === '' ? null : (parsePickRequest(eventData) || readStoredPickRequest());
     state.pickRequest = req;
+
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
 
     var targetEl = $('target');
     if (req) {
@@ -364,12 +405,16 @@
       state.currentCmyk = null;
       $('ok').disabled = false;
       status('');
+      fieldKey = '';
+      sliderKey = '';
       setColor('rgb', rgb);
       if (Bridge.available) {
         return Bridge.colorContext().then(function (ctx) {
+          if (seq !== loadSeq || !state.pickRequest) return;
           if (ctx && ctx.ok) state.ctx = ctx;
           setTimeout(setupGamut, 30);
         }).catch(function () {
+          if (seq !== loadSeq || !state.pickRequest) return;
           setTimeout(setupGamut, 30);
         });
       }
@@ -380,17 +425,23 @@
     if (targetEl) { targetEl.hidden = false; targetEl.disabled = false; }
     if (!Bridge.available) { setupGamut(); return Promise.resolve(); }
     return Bridge.colorContext().then(function (ctx) {
+      if (seq !== loadSeq || state.pickRequest) return;
       if (!ctx.ok) throw new Error(ctx.error);
       state.ctx = ctx;
       state.current = ctx.rgb.slice();
       state.currentCmyk = ctx.cmyk ? ctx.cmyk.slice() : null;
       $('target').value = ctx.fillActive ? 'fill' : 'stroke';
       $('ok').disabled = !ctx.hasDoc;
+      fieldKey = '';
+      sliderKey = '';
       setColor('rgb', ctx.rgb, { cmyk: ctx.cmyk });
       // Profile scan and table build take a few hundred ms: after the first paint.
       setTimeout(setupGamut, 30);
       if (!ctx.hasDoc) status('Chưa mở tài liệu nào: chỉ xem màu', true);
-    }).catch(function (e) { status(e.message, true); });
+    }).catch(function (e) {
+      if (seq !== loadSeq || state.pickRequest) return;
+      status(e.message, true);
+    });
   }
 
   function close() {
@@ -446,8 +497,10 @@
       render();
     };
     $('profile').onchange = function () {
-      settings.rgbDocProfile = this.value;
-      saveSettings();
+      if (!state.ctx.isCmyk || state.pickRequest) {
+        settings.rgbDocProfile = this.value;
+        saveSettings();
+      }
       useProfile(this.value);
     };
     $('warn-btn').onclick = $('warn-sw').onclick = function () {
@@ -469,8 +522,8 @@
     if (typeof window !== 'undefined' && window.addEventListener) {
       window.addEventListener('beforeunload', clearPickRequest);
     }
-    setColor('rgb', state.rgb);
     loadContext();
+    if (!state.pickRequest) setColor('rgb', state.rgb);
   }
 
   start();

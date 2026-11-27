@@ -8,6 +8,11 @@
   var REFRESH_EVENT = 'vn.scctlm.picker.refresh';
   var RESULT_EVENT = 'vn.scctlm.picker.result';
   var PICK_REQUEST_KEY = 'scctlm.picker.request';
+  var PICK_REQUEST_FILE = 'picker-request.json';
+
+  var hasNode = typeof require === 'function' && typeof process === 'object';
+  var fs = hasNode ? require('fs') : null;
+  var path = hasNode ? require('path') : null;
 
   var seq = 0;
   var activeRequest = null;
@@ -16,15 +21,34 @@
     return !!(typeof Bridge !== 'undefined' && Bridge && Bridge.cs);
   }
 
+  function requestFilePath() {
+    if (!hasNode || typeof Presets === 'undefined' || !Presets || typeof Presets.dataDir !== 'function') return '';
+    var dir = Presets.dataDir();
+    return dir ? path.join(dir, PICK_REQUEST_FILE) : '';
+  }
+
   function clearStoredRequest() {
+    try {
+      var f = requestFilePath();
+      if (f && fs.existsSync(f)) fs.unlinkSync(f);
+    } catch (e) { /* ignore fs errors */ }
     try {
       if (typeof localStorage !== 'undefined') localStorage.removeItem(PICK_REQUEST_KEY);
     } catch (e) { /* ignore storage errors */ }
   }
 
   function writeStoredRequest(req) {
+    var payload = JSON.stringify(req);
     try {
-      if (typeof localStorage !== 'undefined') localStorage.setItem(PICK_REQUEST_KEY, JSON.stringify(req));
+      var f = requestFilePath();
+      if (f) {
+        fs.mkdirSync(path.dirname(f), { recursive: true });
+        fs.writeFileSync(f + '.tmp', payload, 'utf8');
+        fs.renameSync(f + '.tmp', f);
+      }
+    } catch (e) { /* ignore fs errors; fall back to localStorage + CSEvent */ }
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.setItem(PICK_REQUEST_KEY, payload);
     } catch (e) { /* ignore storage errors */ }
   }
 
