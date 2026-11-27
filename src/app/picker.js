@@ -8,7 +8,9 @@
   var $ = function (id) { return document.getElementById(id); };
   var CM = ColorMath, CF = ColorField, CG = ColorGamut;
   var REFRESH_EVENT = 'vn.scctlm.picker.refresh';
+  var RESULT_EVENT = 'vn.scctlm.picker.result';
   var CLOSE_EVENT = 'vn.scctlm.close';
+  var PICK_REQUEST_KEY = 'scctlm.picker.request';
   var DEFAULT_RGB_DOC_PROFILE = /FOGRA39/i;
   var hasNode = typeof require === 'function' && typeof process === 'object';
   var fs = hasNode ? require('fs') : null;
@@ -21,7 +23,8 @@
     typedCmyk: null,   // CMYK the user typed (or the selection had); applied as is
     current: [255, 255, 255], currentCmyk: null,
     ctx: { hasDoc: false, isCmyk: false, fillActive: true },
-    profiles: null, gamut: null, gamutName: '', gamutOn: true
+    profiles: null, gamut: null, gamutName: '', gamutOn: true,
+    pickRequest: null  // When set: return-color mode for panel controls (Offset Lab / Logo Lab)
   };
   var settings = { gamutOn: true, mode: 'hsb-h', rgbDocProfile: '' };
 
@@ -316,8 +319,65 @@
     render();
   }
 
+  // ---------- return-color mode (panel controls: Offset Lab / Logo Lab) ----------
+  function parsePickRequest(raw) {
+    if (!raw) return null;
+    try {
+      var data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (data && typeof data.target === 'string' && data.target) {
+        return {
+          requestId: data.requestId ? String(data.requestId) : '',
+          target: data.target,
+          hex: typeof data.hex === 'string' ? data.hex : ''
+        };
+      }
+    } catch (e) { /* ignore malformed payload */ }
+    return null;
+  }
+
+  function readStoredPickRequest() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        return parsePickRequest(localStorage.getItem(PICK_REQUEST_KEY));
+      }
+    } catch (e) { /* storage unavailable */ }
+    return null;
+  }
+
+  function clearPickRequest() {
+    state.pickRequest = null;
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(PICK_REQUEST_KEY);
+    } catch (e) { /* ignore */ }
+  }
+
   // ---------- Illustrator ----------
-  function loadContext() {
+  function loadContext(eventData) {
+    var req = eventData === '' ? null : (parsePickRequest(eventData) || readStoredPickRequest());
+    state.pickRequest = req;
+
+    var targetEl = $('target');
+    if (req) {
+      if (targetEl) { targetEl.hidden = true; targetEl.disabled = true; }
+      var rgb = CM.hexToRgb(req.hex) || [255, 255, 255];
+      state.current = rgb.slice();
+      state.currentCmyk = null;
+      $('ok').disabled = false;
+      status('');
+      setColor('rgb', rgb);
+      if (Bridge.available) {
+        return Bridge.colorContext().then(function (ctx) {
+          if (ctx && ctx.ok) state.ctx = ctx;
+          setTimeout(setupGamut, 30);
+        }).catch(function () {
+          setTimeout(setupGamut, 30);
+        });
+      }
+      setTimeout(setupGamut, 30);
+      return Promise.resolve();
+    }
+
+    if (targetEl) { targetEl.hidden = false; targetEl.disabled = false; }
     if (!Bridge.available) { setupGamut(); return Promise.resolve(); }
     return Bridge.colorContext().then(function (ctx) {
       if (!ctx.ok) throw new Error(ctx.error);
@@ -334,11 +394,23 @@
   }
 
   function close() {
+    clearPickRequest();
     if (Bridge.cs) Bridge.cs.closeExtension();
     else window.close();
   }
 
   function apply() {
+    if (state.pickRequest) {
+      var req = state.pickRequest;
+      var hex = '#' + CM.rgbToHex(state.rgb).toUpperCase();
+      if (Bridge.cs && typeof CSEvent === 'function') {
+        var ev = new CSEvent(RESULT_EVENT, 'APPLICATION');
+        ev.data = JSON.stringify({ requestId: req.requestId, target: req.target, hex: hex });
+        Bridge.cs.dispatchEvent(ev);
+      }
+      close();
+      return;
+    }
     $('ok').disabled = true;
     Bridge.colorApply({ rgb: state.rgb, cmyk: state.typedCmyk, fill: $('target').value === 'fill' }).then(function (res) {
       if (res.ok) { close(); return; }
@@ -391,8 +463,11 @@
     });
 
     if (Bridge.cs) {
-      Bridge.cs.addEventListener(REFRESH_EVENT, function () { loadContext(); });
+      Bridge.cs.addEventListener(REFRESH_EVENT, function (ev) { loadContext(ev ? ev.data : ''); });
       Bridge.cs.addEventListener(CLOSE_EVENT, close);
+    }
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('beforeunload', clearPickRequest);
     }
     setColor('rgb', state.rgb);
     loadContext();

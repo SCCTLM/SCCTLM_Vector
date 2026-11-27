@@ -436,11 +436,21 @@
 
     var colorBtn = $('offset-color-btn');
     var nativeColor = $('offset-color-native');
-    if (colorBtn && nativeColor) {
+    if (colorBtn) {
       colorBtn.onclick = function () {
-        nativeColor.value = state.color;
-        nativeColor.click();
+        if (global.ColorPickerLauncher && typeof global.ColorPickerLauncher.pick === 'function' &&
+            global.ColorPickerLauncher.pick('offset-color', state.color, function (hex) {
+              setColor(hex);
+            })) {
+          return;
+        }
+        if (nativeColor) {
+          nativeColor.value = state.color;
+          nativeColor.click();
+        }
       };
+    }
+    if (nativeColor) {
       nativeColor.oninput = nativeColor.onchange = function () {
         setColor(nativeColor.value);
       };

@@ -277,6 +277,33 @@ test('OffsetPanel color button triggers native color input and syncs oninput/onc
   assert.strictEqual(elements['offset-color-btn'].style.backgroundColor, '#114499');
 });
 
+test('OffsetPanel uses ColorPickerLauncher when available and skips native input click', () => {
+  const { sandbox, elements } = loadPanel();
+  let nativeClicks = 0;
+  elements['offset-color-native'].click = function () { nativeClicks++; };
+
+  const pickCalls = [];
+  sandbox.ColorPickerLauncher = {
+    available: () => true,
+    pick(target, hex, onResult) {
+      pickCalls.push({ target, hex, onResult });
+      return true;
+    }
+  };
+
+  elements['offset-color-btn'].click();
+  assert.strictEqual(nativeClicks, 0, 'native input must not open when custom CMYK picker is available');
+  assert.strictEqual(pickCalls.length, 1);
+  assert.strictEqual(pickCalls[0].target, 'offset-color');
+  assert.strictEqual(pickCalls[0].hex, '#1FC8FF');
+
+  pickCalls[0].onResult('#E53935');
+  assert.strictEqual(sandbox.OffsetPanel.state.color, '#E53935');
+  assert.strictEqual(elements['offset-hex-input'].value, '#E53935');
+  assert.strictEqual(elements['offset-color-btn'].style.backgroundColor, '#E53935');
+  assert.strictEqual(elements['offset-preview-outline']['stroke'], '#E53935');
+});
+
 test('All <input type="color"> elements are anchored over their triggers (never display:none or visibility:hidden)', () => {
   const html = fs.readFileSync(path.join(__dirname, '../src/app/index.html'), 'utf8');
   const css = fs.readFileSync(path.join(__dirname, '../src/app/panel.css'), 'utf8');
