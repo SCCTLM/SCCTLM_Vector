@@ -23,6 +23,12 @@
   var search = document.getElementById('explore-search');
   var chips = document.getElementById('explore-chips');
   var topic = TOPICS[0];
+  var listRendered = false;
+
+  function isExploreTab() {
+    var tab = document.body && document.body.dataset && document.body.dataset.tab;
+    return !tab || tab === 'explore';
+  }
 
   function openUrl(url) {
     if (cs) cs.openURLInDefaultBrowser(url);
@@ -55,9 +61,10 @@
       list.innerHTML = '<li class="explore-empty">Không có bài phù hợp.</li>';
       return;
     }
+    listRendered = true;
     list.innerHTML = rows.map(function (v) {
       return '<li><button type="button" class="explore-video" data-url="https://www.youtube.com/watch?v=' + v.id + '">' +
-        '<img class="explore-thumb" loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg">' +
+        '<img class="explore-thumb" loading="lazy" decoding="async" alt="" src="https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg">' +
         '<span class="explore-video-text"><span class="explore-video-title">' + esc(v.title) + '</span>' +
         '<span class="explore-video-link">Xem trên YouTube ' + EXT_ICON + '</span></span></button></li>';
     }).join('');
@@ -76,6 +83,13 @@
   });
   search.addEventListener('input', renderList);
 
+  if (typeof document.addEventListener === 'function') {
+    document.addEventListener('tab-changed', function (e) {
+      if (!listRendered && (!e || !e.detail || e.detail === 'explore')) renderList();
+    });
+  }
+
   renderChips();
-  renderList();
+  // Defer thumbnail DOM/network/decode until the user actually opens the Khám phá tab.
+  if (isExploreTab()) renderList();
 }());

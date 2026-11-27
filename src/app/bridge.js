@@ -56,12 +56,24 @@
     });
   }
 
+  // Deduplicate concurrent calls to passive read-only ExtendScript queries so Illustrator's
+  // single-threaded main loop never queues overlapping inspections.
+  var inFlightReads = {};
+  function dedupeRead(key, code) {
+    if (inFlightReads[key]) return inFlightReads[key];
+    var p = evalScript(code);
+    var clear = function () { if (inFlightReads[key] === p) inFlightReads[key] = null; };
+    p.then(clear, clear);
+    inFlightReads[key] = p;
+    return p;
+  }
+
   global.Bridge = {
     available: !!cs,
     cs: cs,
     loadEngine: loadEngine,
     literal: literal,
-    listArtboards: function () { return evalScript('listArtboards()'); },
+    listArtboards: function () { return dedupeRead('listArtboards', 'listArtboards()'); },
     setColorSpace: function (space) { return evalScript('engineSetDocumentColorSpace(' + literal(space) + ')'); },
     resizeArtboards: function (job) { return evalScript('engineResizeArtboards(' + literal(JSON.stringify(job)) + ')'); },
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },
@@ -78,7 +90,7 @@
     offsetCreate: function (job) { return evalScript('engineOffsetPath(' + literal(JSON.stringify(job)) + ')'); },
     offsetDetect: function () { return evalScript('offsetDetectExisting()'); },
     offsetUpdate: function (job) { return evalScript('offsetUpdateExisting(' + literal(JSON.stringify(job)) + ')'); },
-    offsetInspect: function () { return evalScript('offsetInspectSelection()'); },
+    offsetInspect: function () { return dedupeRead('offsetInspect', 'offsetInspectSelection()'); },
     alignObjects: function (job) { return evalScript('engineAlignObjects(' + literal(JSON.stringify(job || {})) + ')'); },
     // names: every artboard name in index order, so de-duplication matches the engine.
     previewName: function (template, ctx, names, index, isRaster, scaleCount) {

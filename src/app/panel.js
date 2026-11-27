@@ -4,12 +4,19 @@
   var $ = function (id) { return document.getElementById(id); };
   var each = function (nodes, fn) { Array.prototype.forEach.call(nodes, fn); };
   var cepApi = window.cep || (window.parent && window.parent.cep);
-  var busy = false;
+  var inFlight = null;
+  var lastHoverRefresh = 0;
+  var HOVER_COOLDOWN_MS = 1500;
   var artboardSignature = '';
   var lastError = '';
   var lastDocName = 'Chưa đặt tên';
   var artboardNames = [];
   var artboardCount = 0;
+
+  function needsArtboards() {
+    var tab = document.body && document.body.dataset && document.body.dataset.tab;
+    return !tab || tab === 'artboard' || tab === 'pdf';
+  }
 
   function selectedArtboards() {
     var box = $('artboards');
@@ -35,12 +42,16 @@
     });
   }
 
-  // Called on focus and every 2s: Illustrator exposes no reliable document-change event to CEP.
+  // Event-driven refresh (tab switch, focus, visibility, panel hover, post-mutation):
+  // never polls Illustrator's single-threaded main loop in the background while the user draws.
   // Resolves with the response on a successful read (even when nothing changed) and null on failure,
   // so a caller can tell its own message from an error this refresh found.
-  function refreshArtboards() {
-    if (busy || document.hidden) return Promise.resolve();
-    return Bridge.listArtboards().then(function (r) {
+  function refreshArtboards(opts) {
+    var force = opts && opts.force === true;
+    if (document.hidden) return Promise.resolve();
+    if (!force && !needsArtboards()) return Promise.resolve();
+    if (inFlight) return inFlight;
+    var req = Bridge.listArtboards().then(function (r) {
       if (r && r.ok && lastError) {
         lastError = '';
         if ($('status')) $('status').textContent = '';
@@ -76,6 +87,18 @@
       }
       return null;
     });
+    var clear = function () { if (inFlight === req) inFlight = null; };
+    req.then(clear, clear);
+    inFlight = req;
+    return req;
+  }
+
+  function refreshOnHover() {
+    if (!needsArtboards() || document.hidden) return;
+    var now = Date.now();
+    if (now - lastHoverRefresh < HOVER_COOLDOWN_MS) return;
+    lastHoverRefresh = now;
+    refreshArtboards();
   }
 
   function browse() {
@@ -96,14 +119,20 @@
     if ($('ab-none')) $('ab-none').onclick = function () { each($('artboards').querySelectorAll('input'), function (i) { i.checked = false; }); };
     if ($('browse')) $('browse').onclick = browse;
 
-    refreshArtboards();
-    window.addEventListener('focus', refreshArtboards);
-    setInterval(refreshArtboards, 2000);
+    if (needsArtboards()) refreshArtboards();
+    window.addEventListener('focus', function () { refreshArtboards(); });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) refreshArtboards();
+    });
+    document.addEventListener('tab-changed', function () {
+      if (needsArtboards()) refreshArtboards();
+    });
+    document.addEventListener('mouseenter', refreshOnHover);
 
     // Another module changed the document; re-read it and then show the message it asked to display.
     // A failed re-read left its own error in the status line, so nothing is overwritten then.
     document.addEventListener('refresh-artboards', function (e) {
-      refreshArtboards().then(function (r) {
+      refreshArtboards({ force: true }).then(function (r) {
         if (r && e.detail && e.detail.message && $('status')) $('status').textContent = e.detail.message;
       });
     });

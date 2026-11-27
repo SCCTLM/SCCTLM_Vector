@@ -383,13 +383,19 @@ function engineOffsetPath(jobJson) {
   }
 }
 
+// Limits for passive inspection so selecting thousands of paths never stalls Illustrator's UI thread.
+var OFFSET_INSPECT_MAX_SEL = 50;
+var OFFSET_MAX_SIBLING_SCAN = 500;
+var OFFSET_MAX_TAG_DEPTH = 6;
+
 // Flattens the current selection into one SVG path string for the panel preview.
-// Read-only: it never touches the document. Y is flipped so the SVG renders upright.
+// Strictly read-only: never duplicates, outlines, or mutates document items. Y is flipped so the SVG renders upright.
 function offsetShapeFromSelection() {
   try {
     if (app.documents.length === 0) return JSON.stringify({ ok: false });
     var sel = app.activeDocument.selection;
     if (!sel || sel.length === 0 || typeof sel === "string") return JSON.stringify({ ok: false });
+    if (sel.length > OFFSET_INSPECT_MAX_SEL) return JSON.stringify({ ok: false, tooMany: true });
 
     var MAX_POINTS = 4000;
     var state = { d: "", points: 0, minX: 1e9, minY: 1e9, maxX: -1e9, maxY: -1e9, over: false };
@@ -429,21 +435,20 @@ function offsetShapeFromSelection() {
       if (t === "PathItem") {
         addPath(item);
       } else if (t === "CompoundPathItem") {
-        for (var i = 0; i < item.pathItems.length; i++) addPath(item.pathItems[i]);
+        for (var i = 0; i < item.pathItems.length; i++) {
+          if (state.over) return;
+          addPath(item.pathItems[i]);
+        }
       } else if (t === "GroupItem") {
         for (var j = 0; j < item.pageItems.length; j++) {
+          if (state.over) return;
           var childTag = offsetReadTag(item.pageItems[j]);
           if (childTag && childTag.role === "offset") continue;
           walk(item.pageItems[j], depth + 1);
         }
-      } else if (t === "TextFrame") {
-        try {
-          var textCopy = item.duplicate();
-          var textOutline = textCopy.createOutline();
-          walk(textOutline, depth + 1);
-          try { textOutline.remove(); } catch (eTo) {}
-        } catch (eTf) {}
       }
+      // TextFrame is intentionally skipped here: duplicating/outlining live text mutates the
+      // document, pollutes Illustrator's Undo history, and stalls the main thread.
     };
 
     for (var s = 0; s < sel.length; s++) {
@@ -514,6 +519,7 @@ function offsetGetItemSibling(item, direction) {
     var parent = item.parent;
     if (!parent || !parent.pageItems) return null;
     var len = parent.pageItems.length;
+    if (len > OFFSET_MAX_SIBLING_SCAN) return null;
     for (var i = 0; i < len; i++) {
       if (parent.pageItems[i] === item) {
         var targetIdx = i + direction;
@@ -536,17 +542,18 @@ function offsetReadLiveTag(item) {
 }
 
 // Recursively checks an item, its group children, or its adjacent siblings for an offset tag.
-function offsetFindItemTag(item) {
-  if (!item) return null;
+function offsetFindItemTag(item, depth) {
+  if (!item || (depth || 0) > OFFSET_MAX_TAG_DEPTH) return null;
 
   // 1. Tag directly on the item
   var tag = offsetReadLiveTag(item);
   if (tag) return { item: item, tag: tag };
 
-  // 2. Item is a GroupItem: inspect children
+  // 2. Item is a GroupItem: inspect children (bounded so huge groups cannot stall Illustrator)
   if (item.typename === "GroupItem" && item.pageItems) {
-    for (var i = 0; i < item.pageItems.length; i++) {
-      var childRes = offsetFindItemTag(item.pageItems[i]);
+    var limit = Math.min(item.pageItems.length, OFFSET_INSPECT_MAX_SEL);
+    for (var i = 0; i < limit; i++) {
+      var childRes = offsetFindItemTag(item.pageItems[i], (depth || 0) + 1);
       if (childRes) return childRes;
     }
   }
@@ -568,18 +575,8 @@ function offsetFindItemTag(item) {
   return null;
 }
 
-// Bounds [left, top, right, bottom] of the visible artwork; live text is measured on an
-// outlined copy because the frame bounds include side bearings the border never covers.
+// Bounds [left, top, right, bottom] of the artwork. Strictly read-only (never duplicates/outlines text).
 function offsetVisualBounds(item) {
-  try {
-    if (item.typename === "TextFrame") {
-      var dup = item.duplicate();
-      var outlined = dup.createOutline();
-      var b = outlined.geometricBounds;
-      try { outlined.remove(); } catch (eR) {}
-      return b;
-    }
-  } catch (e) {}
   return item.geometricBounds;
 }
 
@@ -647,6 +644,7 @@ function offsetDetectExisting() {
     if (app.documents.length === 0) return JSON.stringify({ ok: true, found: false });
     var sel = app.activeDocument.selection;
     if (!sel || sel.length === 0 || typeof sel === "string") return JSON.stringify({ ok: true, found: false });
+    if (sel.length > OFFSET_INSPECT_MAX_SEL) return JSON.stringify({ ok: true, found: false, tooMany: true });
 
     for (var i = 0; i < sel.length; i++) {
       var item = sel[i];
@@ -840,6 +838,17 @@ function offsetInspectSelection() {
     var sel = doc.selection;
     if (!sel || sel.length === 0 || typeof sel === "string") {
       return JSON.stringify({ ok: true, hasDoc: true, hasSelection: false });
+    }
+    if (sel.length > OFFSET_INSPECT_MAX_SEL) {
+      return JSON.stringify({
+        ok: true,
+        hasDoc: true,
+        hasSelection: true,
+        tooMany: true,
+        selectionKey: "s_many_" + sel.length,
+        offsetInfo: { ok: true, found: false, tooMany: true },
+        shape: { ok: false, tooMany: true }
+      });
     }
 
     var offsetInfo = JSON.parse(offsetDetectExisting());
