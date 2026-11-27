@@ -153,6 +153,9 @@
     var colorBtn = $('offset-color-btn');
     if (colorBtn) colorBtn.style.backgroundColor = state.color;
 
+    var nativeColor = $('offset-color-native');
+    if (nativeColor) nativeColor.value = state.color;
+
     var hexInput = $('offset-hex-input');
     if (hexInput && document.activeElement !== hexInput) {
       hexInput.value = state.color.toUpperCase();
@@ -438,7 +441,7 @@
         nativeColor.value = state.color;
         nativeColor.click();
       };
-      nativeColor.oninput = function () {
+      nativeColor.oninput = nativeColor.onchange = function () {
         setColor(nativeColor.value);
       };
     }
