@@ -20,6 +20,9 @@ test('panel.css includes narrow-width responsive protections for all tabs', () =
   assert.match(css, /\.offset-options-row\s*\{[^}]*flex-wrap:\s*wrap;/);
   assert.match(css, /\.align-bottom\s*\{[^}]*flex-wrap:\s*wrap;/);
   assert.match(css, /\.pdf-size-row\s*\{[^}]*flex-wrap:\s*wrap;/);
+  assert.match(css, /\.pdf-size-meta\s*\{[^}]*min-width:\s*0;/);
+  assert.match(css, /\.pdf-size-val\s*\{[^}]*font-variant-numeric:\s*tabular-nums;/);
+  assert.match(css, /button\.pdf-recalc-btn\s*\{[^}]*white-space:\s*nowrap;/);
   assert.match(css, /body\[data-tab="pdf"\]\s+#artboards\s*\{[^}]*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /@media\s*\(max-width:\s*290px\)/);
   assert.match(css, /@media\s*\(max-width:\s*260px\)/);

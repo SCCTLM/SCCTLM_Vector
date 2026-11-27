@@ -79,6 +79,7 @@
     runJob: function (job) { return evalScript('runExport(' + literal(JSON.stringify(job)) + ')'); },
     runPdfJob: function (job) { return evalScript('runPdfExport(' + literal(JSON.stringify(job)) + ')'); },
     estimatePdf: function (job) { return evalScript('estimatePdf(' + literal(JSON.stringify(job)) + ')'); },
+    profilePdfDoc: function () { return dedupeRead('profilePdfDoc', 'profilePdfDoc()'); },
     gridInspect: function (job) { return evalScript('gridInspect(' + literal(JSON.stringify(job || {})) + ')'); },
     gridGenerate: function (job) { return evalScript('gridGenerate(' + literal(JSON.stringify(job)) + ')'); },
     gridRestyle: function (job) { return evalScript('gridRestyle(' + literal(JSON.stringify(job || {})) + ')'); },

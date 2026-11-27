@@ -128,3 +128,76 @@ test('a failed copy is reported', () => {
   l.ctx.File = function () { return { exists: false }; };
   assert.throws(() => l.run('enginePdfWithCopy(broken, function () {})'), /bản sao tạm.*denied/);
 });
+
+test('profilePdfDoc is read-only, works on unsaved docs, and caps raster scan at 200 items', () => {
+  const l = load();
+  let scanned = 0;
+  const fakeRasterList = new Proxy({ length: 500 }, {
+    get(target, prop) {
+      if (prop === 'length') return 500;
+      if (/^\d+$/.test(String(prop))) {
+        scanned++;
+        return { width: 100, height: 100, matrix: { mValueA: 0.24, mValueB: 0, mValueC: 0, mValueD: 0.24 } };
+      }
+      return target[prop];
+    }
+  });
+  const doc = {
+    name: 'Untitled-1',
+    saved: false,
+    get fullName() { throw new Error('unsaved'); },
+    artboards: [{ artboardRect: [0, 800, 600, 0] }, { artboardRect: [0, 800, 600, 0] }],
+    pathItems: { length: 420 },
+    textFrames: { length: 12 },
+    meshItems: { length: 1 },
+    symbolItems: { length: 3 },
+    rasterItems: fakeRasterList,
+    placedItems: { length: 0 },
+    saveAs() { throw new Error('must never call saveAs'); }
+  };
+  l.ctx.app = {
+    documents: [doc],
+    activeDocument: doc,
+    open() { throw new Error('must never open a copy'); }
+  };
+  l.ctx.engineErrorMessage = (e) => (e && e.message ? e.message : String(e));
+
+  const res = JSON.parse(l.run('profilePdfDoc()'));
+  assert.strictEqual(res.ok, true);
+  assert.strictEqual(scanned, 200, 'raster scan must be capped at PDF_IMAGE_SCAN_LIMIT (200)');
+  assert.strictEqual(res.profile.totalArtboards, 2);
+  assert.strictEqual(res.profile.pathCount, 420);
+  assert.strictEqual(res.profile.rasterTotalCount, 500);
+  assert.ok(res.profile.rasterRawBytes > 0);
+  assert.ok(res.profile.rasterReviewRawBytes < res.profile.rasterRawBytes, '300 ppi images downsample in review mode');
+  assert.strictEqual(res.profile.sourceFileBytes, 0);
+});
+
+test('estimatePdf runs analytically with zero disk writes and reports no open document', () => {
+  const l = load();
+  l.ctx.app = { documents: [] };
+  l.ctx.engineErrorMessage = (e) => (e && e.message ? e.message : String(e));
+  const empty = JSON.parse(l.run('estimatePdf("{}")'));
+  assert.strictEqual(empty.ok, false);
+  assert.match(empty.error, /Chưa mở tài liệu/);
+
+  const doc = {
+    name: 'Heavy.ai',
+    saved: true,
+    fullName: { fsName: 'C:/Heavy.ai', exists: true, length: 40 * 1024 * 1024 },
+    artboards: [{ artboardRect: [0, 1000, 1000, 0] }],
+    pathItems: { length: 500 },
+    textFrames: { length: 10 },
+    meshItems: { length: 0 },
+    symbolItems: { length: 0 },
+    rasterItems: [{ width: 300, height: 300, matrix: { mValueA: 0.24, mValueB: 0, mValueC: 0, mValueD: 0.24 } }],
+    placedItems: [],
+    saveAs() { throw new Error('must never call saveAs'); }
+  };
+  l.ctx.app = { documents: [doc], activeDocument: doc, open() { throw new Error('must never open'); } };
+  l.ctx.engineResolveArtboards = () => [0];
+  const est = JSON.parse(l.run('estimatePdf(\'{"artboards":[0],"compression":20,"modes":["print","review"]}\')'));
+  assert.strictEqual(est.ok, true);
+  assert.strictEqual(est.approx, true);
+  assert.ok(est.sizes.print > est.sizes.review && est.sizes.review > 0);
+});

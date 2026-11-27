@@ -80,3 +80,83 @@ function pdfScaleEstimate(sampleBytes, sampleCount, total) {
   if (!(sampleCount > 0)) return 0;
   return Math.round(sampleBytes * (total / sampleCount));
 }
+
+// Fast analytical PDF size estimator (ES3 mirror of src/app/pdf-estimate.js) so estimatePdf()
+// in ExtendScript also runs in sub-millisecond read-only time without saving a temp PDF.
+function pdfJpegCompressionRatio(compression) {
+  var c = Number(compression);
+  if (!isFinite(c)) c = 50;
+  if (c < 0) c = 0;
+  if (c > 100) c = 100;
+  return 0.016 + 0.164 * Math.exp(-0.028 * c);
+}
+
+function pdfEstimateFromProfile(profile, mode, compression, layout, selectedIndexes) {
+  profile = profile || {};
+  var selectedCount = selectedIndexes && selectedIndexes.length ? selectedIndexes.length : 0;
+  if (selectedCount <= 0) return 0;
+  var totalArtboards = profile.totalArtboards > selectedCount ? profile.totalArtboards : selectedCount;
+  if (!(totalArtboards > 0)) totalArtboards = 1;
+
+  var countRatio = selectedCount / totalArtboards;
+  if (countRatio > 1) countRatio = 1;
+  var selectionRatio = countRatio;
+  if (profile.artboardAreas && profile.artboardAreas.length > 0) {
+    var totalArea = 0;
+    var i;
+    for (i = 0; i < profile.artboardAreas.length; i++) {
+      if (profile.artboardAreas[i] > 0) totalArea += profile.artboardAreas[i];
+    }
+    if (totalArea > 0) {
+      var selArea = 0;
+      for (i = 0; i < selectedIndexes.length; i++) {
+        var idx = selectedIndexes[i];
+        if (idx >= 0 && idx < profile.artboardAreas.length && profile.artboardAreas[idx] > 0) {
+          selArea += profile.artboardAreas[idx];
+        }
+      }
+      var areaRatio = selArea / totalArea;
+      if (areaRatio > 1) areaRatio = 1;
+      selectionRatio = 0.6 * areaRatio + 0.4 * countRatio;
+    }
+  }
+
+  var baseOverhead = 18 * 1024;
+  var pageOverhead = 4 * 1024;
+  var overhead = layout === "separate"
+    ? selectedCount * (baseOverhead + pageOverhead)
+    : baseOverhead + selectedCount * pageOverhead;
+
+  var vectorBytes = (
+    (profile.pathCount || 0) * 95 +
+    (profile.textCount || 0) * 420 +
+    (profile.meshCount || 0) * 4500 +
+    (profile.symbolCount || 0) * 160
+  ) * selectionRatio;
+
+  var rawPrint = (profile.rasterRawBytes || 0) + (profile.placedRawBytes || 0);
+  var rawReview = (profile.rasterReviewRawBytes || 0) + (profile.placedReviewRawBytes || 0);
+  var linked = profile.linkedFileBytes || 0;
+  if (rawPrint <= 0 && linked > 0) {
+    rawPrint = linked * 3.5;
+    rawReview = linked * 1.4;
+  }
+  if (rawReview <= 0 && rawPrint > 0) rawReview = rawPrint * 0.5;
+  if (rawReview > rawPrint) rawReview = rawPrint;
+
+  var ratio = pdfJpegCompressionRatio(compression);
+  var rasterBytes = (mode === "review" ? rawReview : rawPrint) * ratio * selectionRatio;
+  var contentBytes = vectorBytes + rasterBytes;
+
+  if (profile.sourceFileBytes > 0) {
+    var hasRaster = rawPrint > 0 || linked > 0 || (profile.rasterTotalCount || 0) > 0 || (profile.placedTotalCount || 0) > 0;
+    var aiBase = profile.sourceFileBytes * 0.42 * selectionRatio;
+    var modeFactor = mode === "review" ? (hasRaster ? 0.55 : 0.88) : 1.0;
+    var compFactor = 0.45 + 0.55 * (ratio / pdfJpegCompressionRatio(0));
+    var calibrated = aiBase * modeFactor * compFactor;
+    if (calibrated > contentBytes) contentBytes = 0.5 * contentBytes + 0.5 * calibrated;
+  }
+
+  var total = Math.round(overhead + contentBytes);
+  return total < 1024 ? 1024 : total;
+}
